@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Player • Playlist Manager</title>
+    <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
+</head>
+<body>
+<div class="wrap wide">
+    <!-- Top bar: indietro + home -->
+    <div class="topbar">
+        <a class="iconbtn" href="#" onclick="history.back();return false;" aria-label="Torna indietro">
+            <!-- freccia indietro -->
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 6l-6 6 6 6"/></svg>
+        </a>
+        <a class="iconbtn" href="index.html" th:href="@{/}" aria-label="Vai alla Home">
+            <!-- icona home -->
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v10H6V11H3z"/></svg>
+        </a>
+    </div>
+
+    <article class="media">
+        <!-- Copertina -->
+        <div class="cover">
+            <img
+                    src="https://via.placeholder.com/640x640?text=Cover"
+                    th:src="${track.coverUrl}"
+                    alt="Copertina album" />
+        </div>
+
+        <!-- Metadati -->
+        <div class="meta">
+            <h2 class="song-title" th:text="${track.title}">Titolo del brano</h2>
+            <p class="artist" th:text="${track.artist}">Artista</p>
+            <p class="albumline">
+                <span th:text="${track.album}">Album</span>
+                · <span th:text="${track.year}">2025</span>
+                · <span th:text="${track.genre}">Genere</span>
+            </p>
+        </div>
+
+        <!-- Player -->
+        <div class="audio-box">
+            <audio id="audio" controls preload="metadata"
+                   src="sample.mp3" th:src="${track.audioUrl}"></audio>
+
+            <!-- tempi mm:ss -->
+            <div class="time-row">
+                <span id="elapsed">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+    </article>
+</div>
+
+<script>
+    // Aggiorna i tempi (passati/totali) in mm:ss
+    document.addEventListener("DOMContentLoaded", () => {
+        const audio = document.getElementById("audio");
+        const elapsed = document.getElementById("elapsed");
+        const duration = document.getElementById("duration");
+
+        const fmt = (s) => {
+            if (!isFinite(s) || s < 0) return "0:00";
+            s = Math.floor(s);
+            const m = Math.floor(s / 60);
+            const ss = String(s % 60).padStart(2, "0");
+            return `${m}:${ss}`;
+        };
+
+        const setDuration = () => {
+            if (!isNaN(audio.duration)) duration.textContent = fmt(audio.duration);
+        };
+
+        audio.addEventListener("loadedmetadata", setDuration);
+        audio.addEventListener("durationchange", setDuration);
+        audio.addEventListener("timeupdate", () => {
+            elapsed.textContent = fmt(audio.currentTime);
+        });
+    });
+</script>
+</body>
+</html>

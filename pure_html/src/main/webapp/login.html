@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Benvenuto su Playlist Manager</title>
+    <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
+</head>
+<body>
+<div class="wrap">
+    <h1 class="title">Benvenuto su Playlist Manager!</h1>
+
+    <div class="panel">
+        <!-- Errore opzionale (da ?error=... o variabile server) -->
+        <div class="alert" th:if="${param.error or error}">
+        <span th:text="${param.error != null ? param.error[0] : (error != null ? error : 'Credenziali non valide')}">
+          Credenziali non valide
+        </span>
+        </div>
+
+        <form action="/login" th:action="@{/login}" method="post" autocomplete="on" class="stack">
+            <!-- Nickname -->
+            <div class="field pad-left">
+          <span class="badge left" aria-hidden="true">
+            <!-- utente -->
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg>
+          </span>
+                <input type="text" id="nickname" name="nickname" placeholder="Nickname" required />
+            </div>
+
+            <!-- Password -->
+            <div class="field pad-left">
+          <span class="badge left" aria-hidden="true">
+            <!-- lucchetto -->
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0Z"/></svg>
+          </span>
+                <input type="password" id="password" name="password" placeholder="Password" minlength="6" required />
+            </div>
+
+            <!-- Azioni -->
+            <button class="btn" type="submit">LOGIN</button>
+            <a class="btn secondary" href="#" th:href="@{/register}">Registrati</a>
+        </formd
+    </div>
+</div>
+</body>
+</html>
