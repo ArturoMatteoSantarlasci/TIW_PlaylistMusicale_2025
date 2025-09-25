@@ -1,0 +1,5 @@
+
+# Ignora file di configurazione IntelliJ specifici
+.idea/copilot.data.migration.ask.xml
+.idea/copilot.data.migration.ask2agent.xml
+
