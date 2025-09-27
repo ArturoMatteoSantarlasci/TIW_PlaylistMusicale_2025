@@ -1,13 +1,12 @@
-package it.polimi.ria.DAO;
+package it.polimi.pure_html.DAO;
 
-import it.polimi.ria.entities.Playlist;
-import it.polimi.ria.entities.Track;
-import it.polimi.ria.entities.User;
+import it.polimi.pure_html.entities.Playlist;
+import it.polimi.pure_html.entities.Track;
+import it.polimi.pure_html.entities.User;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 
 public class PlaylistDAO implements DAO {
     private final Connection connection;
@@ -17,28 +16,28 @@ public class PlaylistDAO implements DAO {
     }
 
     /**
-     * ritorna tutte le playlist di un utente
+     * Ritorna playlists di un utente
      *
      * @param user User
      * @return Lista di Playlist
-     * @throws SQLException alla servlet
+     * @throws SQLException
      */
     public List<Playlist> getUserPlaylists(User user) throws SQLException {
         List<Playlist> playlists = new ArrayList<>();
 
         PreparedStatement querywithparam = connection.prepareStatement("""
-                SELECT playlist_id, playlist_title, creation_date
-                FROM playlist 
-                WHERE user_id = ?
+                SELECT b.playlist_id, b.playlist_title, b.creation_date
+                FROM  playlist b
+                WHERE b.user_id = ?
                 ORDER BY creation_date DESC
                 """);
 
         querywithparam.setInt(1, user.id());
         ResultSet res = querywithparam.executeQuery();
-        if (!res.isBeforeFirst()) {
-            closeQuery(res, querywithparam);
-            return playlists;
-        }
+          if(!res.isBeforeFirst()) {
+                 closeQuery(res, querywithparam);
+                 return playlists;
+          }
         while (res.next()) {
             Playlist playlist = new Playlist(
                     res.getInt("playlist_id"),
@@ -51,31 +50,29 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return playlists;
     }
-
-    /**
-     * ritorna tutte le tracce di una playlist di un utente dato titolo playlist
-     *
+/**
+     * Ritorna le tracce di una playlist dato il titolo della playlist e l'utente
      * @param playlistTitle titolo della playlist
-     * @param user          User
-     * @return Lista di tracce di una Playlist
-     * @throws SQLException alla servlet
+     * @param user utente proprietario della playlist
+     * @return lista di tracce
+     * @throws SQLException
      */
     public List<Track> getPlaylistTracksByTitle(String playlistTitle, User user) throws SQLException {
         List<Track> tracks = new ArrayList<>();
 
         PreparedStatement querywithparam = connection.prepareStatement("""
-                 SELECT t.track_id, t.user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
+                 SELECT t.track_id,t.user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
                  FROM  playlist a
                      JOIN playlist_tracks b ON a.playlist_id = b.playlist_id
                      JOIN track t on b.track_id = t.track_id
+            
                  WHERE a.user_id = ? AND a.playlist_title = ?
                 """);
 
         querywithparam.setInt(1, user.id());
         querywithparam.setString(2, playlistTitle);
-        ResultSet res = querywithparam.executeQuery();
-
-        if (!res.isBeforeFirst()) {
+        ResultSet res= querywithparam.executeQuery();
+        if(!res.isBeforeFirst()) {
             closeQuery(res, querywithparam);
             return tracks;
         }
@@ -95,39 +92,29 @@ public class PlaylistDAO implements DAO {
             );
             tracks.add(track);
         }
+
         closeQuery(res, querywithparam);
         return tracks;
     }
-
-    /**
-     * ritorna tutte le tracce di una playlist dato id playlist
-     *
+/**
+     * Ritorna le tracce di una playlist dato l'id della playlist
      * @param playlistID id della playlist
-     * @return Lista di tracce di una Playlist
-     * @throws SQLException alla servlet
+     * @return lista di tracce
+     * @throws SQLException
      */
-
     public List<Track> getPlaylistTracksById(int playlistID) throws SQLException {
         List<Track> tracks = new ArrayList<>();
-//NO GROUPBY NEL CONTEGGIO, HAI 1 SOLA PLAYLIST
+
         PreparedStatement querywithparam = connection.prepareStatement("""
-                SELECT custom_order, track_id, user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
-                FROM playlist_tracks b NATURAL JOIN track a , (SELECT COUNT(*) AS count
-                                                              FROM track a NATURAL JOIN playlist_tracks b
-                                                              WHERE playlist_id = ? AND custom_order IS NOT NULL) c 
-                
-                WHERE b.playlist_id = ?
-                ORDER BY
-                    CASE WHEN c.count = 0 THEN artist END,
-                    CASE WHEN c.count = 0 THEN year END,
-                    CASE WHEN c.count = 0 THEN a.track_id END,
-                    CASE WHEN c.count != 0 THEN -custom_order END DESC,
-                    CASE WHEN c.count != 0 THEN a.track_id END
-                """);//- DESC per avere ordine crescente in caso di negativi
+                 SELECT track_id,user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
+                 FROM track a NATURAL JOIN playlist_tracks b
+                 WHERE b.playlist_id = ?
+                 ORDER BY a.artist, a.title, a.track_id
+                """);
+
         querywithparam.setInt(1, playlistID);
-        querywithparam.setInt(2, playlistID);
         ResultSet res = querywithparam.executeQuery();
-        if (!res.isBeforeFirst()) {
+        if(!res.isBeforeFirst()) {
             closeQuery(res, querywithparam);
             return tracks;
         }
@@ -143,8 +130,7 @@ public class PlaylistDAO implements DAO {
                     res.getString("image_path"),
                     res.getString("song_path"),
                     res.getString("song_checksum"),
-                    res.getString("image_checksum"),
-                    res.getInt("custom_order")
+                    res.getString("image_checksum")
             );
             tracks.add(track);
         }
@@ -152,14 +138,12 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return tracks;
     }
-
-    /**
-     * ritorna tutte le tracce non in una playlist dato id playlist
-     *
-     * @param userId
+/**
+     * Ritorna le tracce di un utente che non sono nella playlist
      * @param playlistTitle titolo della playlist
-     * @return Lista di tracce non in una Playlist
-     * @throws SQLException alla servlet
+     * @param userId id dell'utente
+     * @return lista di tracce
+     * @throws SQLException
      */
     public List<Track> getTracksNotInPlaylist(String playlistTitle, Integer userId) throws SQLException {
         List<Track> userTracks = new ArrayList<>();
@@ -178,17 +162,17 @@ public class PlaylistDAO implements DAO {
                  FROM track
                  WHERE user_id = ? AND track_id not in (
                     SELECT t.track_id
-                    FROM playlist p NATURAL JOIN playlist_tracks pt
+                    FROM playlist p NATURAL JOIN playlist_tracks pt JOIN track t ON t.track_id=pt.track_id
                     WHERE p.playlist_title= ? AND p.user_id = ?
                  )
-                 ORDER BY artist ASC, year ASC, track_id ASC
+                 ORDER BY artist ASC, YEAR ASC, track_id ASC
                 """);
         querywithparam.setInt(1, userId);
         querywithparam.setString(2, playlistTitle);
         querywithparam.setInt(3, userId);
         ResultSet res = querywithparam.executeQuery();
 
-        if (!res.isBeforeFirst()) {
+        if(!res.isBeforeFirst()) {
             closeQuery(res, querywithparam);
             return userTracks;
         }
@@ -211,23 +195,21 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return userTracks;
     }
-
     /**
-     * Get 6 Tracks data una Playlist.
-     *
-     * @param playlistId ID playlist
-     * @param groupId    group (inizia da 1
-     * @return lista di tracks a gruppi
-     * @throws SQLException alla servlet
-     */
+      * Ritorna le tracce di una playlist in gruppi di 5
+      * @param playlistId id della playlist
+      * @param groupId id del gruppo (0,1,2,...)
+      * @return lista di tracce
+      * @throws SQLException
+      */
     public List<Track> getTrackGroup(int playlistId, int groupId) throws SQLException {
         List<Track> tracks = new ArrayList<>();
 
         PreparedStatement querywithparam = connection.prepareStatement("""
-                 SELECT track_id, user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
+                 SELECT track_id, user_id,title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
                  FROM track a NATURAL JOIN playlist_tracks b
                  WHERE b.playlist_id = ?
-                 ORDER BY custom_order, artist ASC, year ASC, track_id ASC
+                 ORDER BY artist ASC, YEAR ASC, a.track_id ASC
                  OFFSET ? ROWS
                  FETCH NEXT 5 ROWS ONLY
                 """);
@@ -235,8 +217,7 @@ public class PlaylistDAO implements DAO {
         querywithparam.setInt(1, playlistId);
         querywithparam.setInt(2, groupId * 5);
         ResultSet res = querywithparam.executeQuery();
-
-        if (!res.isBeforeFirst()) {
+        if(!res.isBeforeFirst()) {
             closeQuery(res, querywithparam);
             return tracks;
         }
@@ -260,13 +241,12 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return tracks;
     }
-
-    /**
-     * Ritorna il titolo di una playlist dato l'id
+   /**
+     * Ritorna il titolo della playlist dato l'id
      *
      * @param playlistID id della playlist
      * @return titolo della playlist
-     * @throws SQLException alla servlet
+     * @throws SQLException
      */
     public String getPlaylistTitle(int playlistID) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
@@ -279,23 +259,19 @@ public class PlaylistDAO implements DAO {
         ResultSet res = querywithparam.executeQuery();
 
         String playlistTitle = null;
-        if (!res.isBeforeFirst()) {
-            closeQuery(res, querywithparam);
-            return playlistTitle;
-        } else {
+        if (res.isBeforeFirst()) {
             res.next();
             playlistTitle = res.getString("playlist_title");
-
-            closeQuery(res, querywithparam);
-            return playlistTitle;
         }
+        closeQuery(res, querywithparam);
+        return playlistTitle;
     }
 
     /**
-     * Crea playlist per un user.
+     * Crea playlist nel db User.
      *
      * @param playlist Playlist da creare
-     * @throws SQLException alla servlet
+     * @throws SQLException
      */
     public Integer createPlaylist(Playlist playlist) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
@@ -310,33 +286,33 @@ public class PlaylistDAO implements DAO {
         if (res.isBeforeFirst()) {
             res.next();
 
-            playlistID = res.getInt(1);
-        }
+        playlistID = res.getInt(1);
+    }
         closeQuery(res, querywithparam);
         return playlistID;
     }
 
+
+
     /**
-     * Aggiunge tracce a playlist data.
+     * Aggiunge tracce ad una playlist
      *
      * @param trackIds
      * @param playlistId
-     * @throws SQLException alla servlet
+     * @throws SQLException
      */
     public void addTracksToPlaylist(List<Integer> trackIds, Integer playlistId) throws SQLException {
-        //void e non boolean per gestione errori, lancia eccezioni e non dice solo true o false
         PreparedStatement querywithparam = connection.prepareStatement("""
                 INSERT INTO playlist_tracks (playlist_id, track_id) VALUES (?,?)
                 """);
         querywithparam.setInt(1, playlistId);
         connection.setAutoCommit(false);
         try {
-            for (Integer i : trackIds) {
+            for (int i : trackIds) {
                 querywithparam.setInt(2, i);
                 querywithparam.executeUpdate();
             }
             connection.commit();
-
         } catch (SQLIntegrityConstraintViolationException e) {
             connection.rollback();
             throw new SQLIntegrityConstraintViolationException();
@@ -351,17 +327,17 @@ public class PlaylistDAO implements DAO {
 
 
     /**
-     * controlla ownership playlist
-     * @param playlist_id playlist_id
-     * @param user        user
-     * @return true se appartiene, false altrimenti
-     * @throws SQLException alla servlet
+     * Controlla se l'utente è il proprietario della playlist
+     * @param playlist_id
+     * @param user
+     * @return true se l'utente è il proprietario, false altrimenti
+     * @throws SQLException
      */
     public boolean checkPlaylistOwner(int playlist_id, User user) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
                  SELECT playlist_id,
                         user_id
-                 FROM playlist
+                 FROM playlist 
                  WHERE playlist_id = ?
                 """);
 
@@ -372,92 +348,11 @@ public class PlaylistDAO implements DAO {
         boolean result = false;
         if (res.isBeforeFirst()) {
             res.next();
-            if(userId == res.getInt("user_id")) {
+            if( userId == res.getInt("user_id"))
                 result = true;
-            }
         }
 
-        closeQuery(res, querywithparam);
+        closeQuery(res,querywithparam);
         return result;
     }
-
-
-    /**
-     * ritorna tracce ordinate di una playlist nel db
-     * @param playlist_id playlist_id
-     * @return lista di tracce ordinate
-     * @throws SQLException
-     */
-    public List<Track> getOrderderedTracks(User user, int playlist_id) throws SQLException {
-        List<Track> tracks = new ArrayList<>();
-
-        PreparedStatement querywithparam = connection.prepareStatement("""
-                        SELECT track_id, user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path, custom_order
-                        FROM track NATURAL JOIN playlist_tracks
-                        WHERE user_id = ? AND playlist_id = ?
-                """);
-
-        querywithparam.setInt(1, user.id());
-        querywithparam.setInt(2, playlist_id);
-        ResultSet res = querywithparam.executeQuery();
-
-        while (res.next()) {
-            Track track = new Track(
-                    res.getInt("track_id"),
-                    res.getInt("user_id"),
-                    res.getString("title"),
-                    res.getString("artist"),
-                    res.getInt("year"),
-                    res.getString("album_title"),
-                    res.getString("genre"),
-                    res.getString("image_path"),
-                    res.getString("song_path"),
-                    res.getString("song_checksum"),
-                    res.getString("image_checksum"),
-                    res.getInt("custom_order")
-            );
-            tracks.add(track);
-        }
-
-        closeQuery(res, querywithparam);
-        return tracks;
-    }
-
-
-
-    /**
-     * Update Track custom order data una playlist.
-     *
-     * @param trackIds    lista di trackId in ordine desiderato
-     * @param playlist_id playlist_id della playlist da modificare
-     * @param user        session user
-     * @throws SQLException alla servlet
-     */
-    public void updateTrackOrder(List<Integer> trackIds, int playlist_id, User user) throws SQLException {
-        PreparedStatement querywithparam = connection.prepareStatement("""
-                UPDATE playlist_tracks pt JOIN playlist p ON p.playlist_id = pt.playlist_id
-                SET pt.custom_order = ?
-                WHERE pt.playlist_id = ? AND pt.track_id = ? AND p.user_id = ?
-                """);
-
-        connection.setAutoCommit(false);
-        querywithparam.setInt(2, playlist_id);
-        querywithparam.setInt(4, user.id());
-
-        try {
-            for (int i = 0; i < trackIds.size(); i++) {
-                querywithparam.setInt(1, i + 1);
-                querywithparam.setInt(3, trackIds.get(i));
-                querywithparam.executeUpdate();
-            }
-            connection.commit();
-        } catch (SQLException e) {
-            connection.rollback();
-            throw new SQLException(e);
-        }
-
-        connection.setAutoCommit(true);
-        closeQuery(querywithparam);
-    }
-
 }
