@@ -2,16 +2,22 @@
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Registrati</title>
     <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
 </head>
 <body>
+<!-- Contenitore centrale, usa wrap, che sono delle regole definite in css-->
 <div class="wrap">
     <h1 class="title">Registrati</h1>
 
     <div class="panel">
-        <!-- Messaggi -->
+        <!-- Messaggi solo in cas di errore
+        span è un contenitore inline (a differenza di div che è block);
+        alert per lo stile grafico;
+        th:if -> attributo di Thymeleaf (mostra questo solo se la condizione è vera);
+        th:text="..." → sostituisce il contenuto dello span con il valore calcolato dall’espressione;
+        -->
         <div class="alert" th:if="${param.error or error}">
         <span th:text="${param.error != null ? param.error[0] : (error != null ? error : 'Errore di registrazione')}">
           Errore di registrazione
@@ -22,9 +28,12 @@
             <!-- Nickname -->
             <div class="field pad-left">
           <span class="badge left" aria-hidden="true">
+
+            <!-- Inserimento incona svg -->
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/>
             </svg>
+
           </span>
                 <input type="text" id="nickname" name="nickname" placeholder="Nickname" required />
             </div>
@@ -43,8 +52,7 @@
             <div class="field pad-left">
           <span class="badge left" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z"/>
-              <path d="M4 19c0-3.1 3.6-5 8-5s8 1.9 8 5v1H4z"/>
+              <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/>
             </svg>
           </span>
                 <input type="text" id="nome" name="nome" placeholder="Nome" required />
@@ -54,8 +62,7 @@
             <div class="field pad-left">
           <span class="badge left" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Z"/>
-              <path d="M4 19c0-3.1 3.6-5 8-5s8 1.9 8 5v1H4z"/>
+             <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/>
             </svg>
           </span>
                 <input type="text" id="cognome" name="cognome" placeholder="Cognome" required />

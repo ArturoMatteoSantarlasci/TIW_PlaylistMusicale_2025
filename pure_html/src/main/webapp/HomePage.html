@@ -1,0 +1,83 @@
+
+<!-- TODO: da rivedere
+     TODO: Aggiungere collegamento a pagina tutte le tracce e una bottone per il logout
+-->
+
+<!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Le mie Playlist • Playlist Manager</title>
+    <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
+</head>
+<body>
+<div class="wrap wide">
+    <h1 class="title">Le mie Playlist</h1>
+
+    <!-- Barra azioni: cerca + crea -->
+    <div class="actions-row between">
+        <!-- Ricerca -->
+        <div class="field pad-left search">
+        <span class="badge left" aria-hidden="true">
+          <!-- icona lente -->
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM10 15a5 5 0 110-10 5 5 0 010 10z"/></svg>
+        </span>
+            <input type="search" id="q" placeholder="Cerca playlist..." />
+        </div>
+
+        <!-- Crea playlist -->
+        <a class="btn" href="new-playlist.html" th:href="@{/playlists/new}">Crea playlist</a>
+    </div>
+
+    <!-- Griglia playlist -->
+    <section class="grid playlists" id="playlistsGrid">
+        <!-- Esempio statico + loop Thymeleaf -->
+        <a class="pl-card"
+           href="playlist.html"
+           th:each="p : ${playlists}"
+           th:href="@{/playlist(id=${p.id})}">
+            <div class="pl-cover">
+                <img src="https://via.placeholder.com/640x640?text=Cover"
+                     th:src="${p.coverUrl}"
+                     th:alt="'Cover ' + ${p.name}"
+                     alt="Cover playlist" />
+            </div>
+            <div class="pl-meta">
+                <h3 class="pl-name" th:text="${p.name}">Playlist di esempio</h3>
+                <p class="pl-sub">
+                    <span th:text="${p.tracksCount}">12</span> brani ·
+                    <span th:text="${p.durationFormatted}">45:20</span>
+                </p>
+            </div>
+        </a>
+
+        <!-- Card di esempio duplicabile se apri come puro HTML -->
+        <a class="pl-card" href="playlist.html">
+            <div class="pl-cover">
+                <img src="https://via.placeholder.com/640x640?text=Cover" alt="Cover playlist" />
+            </div>
+            <div class="pl-meta">
+                <h3 class="pl-name">Running Mix</h3>
+                <p class="pl-sub">18 brani · 1:12:10</p>
+            </div>
+        </a>
+
+    </section>
+</div>
+
+<script>
+    // Filtro client-side per nome playlist
+    const q = document.getElementById('q');
+    const grid = document.getElementById('playlistsGrid');
+    q?.addEventListener('input', ()=>{
+        const term = q.value.toLowerCase().trim();
+        Array.from(grid.querySelectorAll('.pl-card')).forEach(card=>{
+            const name = (card.querySelector('.pl-name')?.textContent || '').toLowerCase();
+            card.style.display = name.includes(term) ? '' : 'none';
+        });
+    });
+</script>
+</body>
+</html>

@@ -5,13 +5,18 @@
     --txt:#e8f1f2;
     --muted:#c6d0d1;
     --accent:#ffffff;
+
+    /*bordi arrotondati*/
     --radius-pill:999px;
+    /*larghezza massima contenitore principale*/
     --w:460px;
 }
 
 /* reset leggero e accessibilità */
 *{box-sizing:border-box}
 html,body{height:100%}
+
+/*centra verticalmente e orizzontalmente il contenuto della pagina*/
 body{
     margin:0; background:var(--bg); color:var(--txt);
     font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;
@@ -22,7 +27,7 @@ a{color:inherit; text-decoration:none}
 button,input,select,textarea{font:inherit}
 :focus-visible{outline:2px solid #9fe7ff; outline-offset:2px}
 
-/* layout */
+/* layout base */
 .wrap{width:100%; max-width:var(--w)}
 .title{
     text-align:center; font-weight:800; letter-spacing:.2px; margin:0 0 26px;
@@ -106,4 +111,186 @@ form{ display:grid; gap:16px; }
 .time-row{
     display:flex; justify-content:space-between; align-items:center;
     font-variant-numeric:tabular-nums; color:var(--muted); margin-top:4px;
+}
+
+/*TODO: rivedi da qua in poi per playlist page e homePage*/
+
+/* --- Playlist page --- */
+
+/* barra azioni sopra la lista */
+.actions-row{ display:flex; gap:12px; margin-bottom:12px; }
+
+/* lista brani */
+.tracks{
+    list-style:none; padding:0; margin:0; display:grid; gap:10px;
+}
+.track{
+    display:grid;
+    grid-template-columns: 40px 1fr auto auto;
+    align-items:center;
+    gap:12px;
+    padding:12px 14px;
+    background:var(--pill);
+    border:1px solid var(--pill-brd);
+    border-radius:14px;
+}
+.track.playing{ outline:2px solid #9fe7ff40; }
+
+.idx{
+    width:40px; height:40px; border-radius:999px;
+    display:grid; place-items:center;
+    background:#ffffff18; border:1px solid #ffffff28;
+    font-weight:700;
+}
+.info{ min-width:0; }
+.info .t{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.info .a{ color:var(--muted); font-size:.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.dur{ color:var(--muted); font-variant-numeric:tabular-nums; margin-right:8px; }
+
+.row-actions{ display:flex; gap:8px; }
+
+/* icon buttons piccoli */
+.iconbtn.tiny{
+    width:36px; height:36px;
+    border-radius:999px; background:var(--pill);
+    border:1px solid var(--pill-brd);
+    display:grid; place-items:center;
+}
+.iconbtn.tiny svg{ width:18px; height:18px; }
+
+/* mini-player */
+.floating-player{
+    position:fixed; left:50%; transform:translateX(-50%);
+    bottom: max(12px, env(safe-area-inset-bottom, 12px));
+    display:flex; align-items:center; gap:14px;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.25);
+    backdrop-filter: blur(10px);
+    padding:10px 12px; border-radius:999px;
+    box-shadow:0 12px 32px rgba(0,0,0,.35);
+    z-index:40; max-width:92vw;
+}
+.fp-left, .fp-right{ display:flex; align-items:center; gap:8px; }
+.fp-center{ min-width:0; display:grid; }
+.fp-title{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fp-sub{ color:var(--muted); font-size:.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fp-time{ color:var(--muted); font-variant-numeric:tabular-nums; }
+
+/* responsive stretto */
+@media (max-width:560px){
+    .track{ grid-template-columns: 36px 1fr auto auto; padding:10px 12px; }
+    .idx{ width:36px; height:36px; }
+    .dur{ display:none; } /* nasconde durata in liste strette per spazio */
+    .fp-sub{ display:none; } /* mini-player più compatto */
+}
+
+
+/* --- Corner buttons (angoli / centro alto) --- */
+:root{
+    --safe-top: 12px;
+    --safe-left: 12px;
+    --safe-right: 12px;
+}
+@supports (padding: max(0px)) {
+    :root{
+        --safe-top:  max(12px, env(safe-area-inset-top));
+        --safe-left: max(12px, env(safe-area-inset-left));
+        --safe-right:max(12px, env(safe-area-inset-right));
+    }
+}
+
+/* riutilizza .iconbtn che hai già */
+.corner{ position: fixed; z-index: 50; backdrop-filter: blur(6px); }
+.corner-left{  top: var(--safe-top); left:  var(--safe-left); }
+.corner-right{ top: var(--safe-top); right: var(--safe-right); }
+
+/* bottone centrato in alto (per Home in playlist) */
+.corner-center{
+    position: fixed; z-index: 50;
+    top: var(--safe-top); left: 50%; transform: translateX(-50%);
+}
+
+
+
+/* se avevi una topbar vecchia, nascondila */
+.topbar{ display:none !important; }
+
+
+/* --- Home Playlists (griglia) --- */
+.actions-row.between{ justify-content:space-between; align-items:center; }
+
+.field.search{ flex:1; max-width:420px; } /* campo cerca più largo */
+
+.grid.playlists{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap:16px;
+    margin-top:10px;
+}
+
+.pl-card{
+    display:grid; gap:10px;
+    background:var(--pill);
+    border:1px solid var(--pill-brd);
+    border-radius:16px;
+    padding:12px;
+    text-decoration:none;
+    color:inherit;
+    transition:background .15s ease, transform .08s ease;
+}
+.pl-card:hover{ background:#ffffff22; transform:translateY(-1px); }
+
+.pl-cover img{
+    width:100%; height:auto; display:block;
+    border-radius:12px;
+    box-shadow:0 10px 26px rgba(0,0,0,.25);
+}
+
+.pl-meta{ display:grid; gap:2px; }
+.pl-name{ margin:0; font-weight:800; }
+.pl-sub{ margin:0; color:var(--muted); }
+
+/* responsive: card più strette su schermi piccoli */
+@media (max-width:480px){
+    .grid.playlists{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+}
+
+
+/* --- Home Playlists (griglia) --- */
+.actions-row.between{ justify-content:space-between; align-items:center; }
+
+.field.search{ flex:1; max-width:420px; } /* campo cerca più largo */
+
+.grid.playlists{
+    display:grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap:16px;
+    margin-top:10px;
+}
+
+.pl-card{
+    display:grid; gap:10px;
+    background:var(--pill);
+    border:1px solid var(--pill-brd);
+    border-radius:16px;
+    padding:12px;
+    text-decoration:none;
+    color:inherit;
+    transition:background .15s ease, transform .08s ease;
+}
+.pl-card:hover{ background:#ffffff22; transform:translateY(-1px); }
+
+.pl-cover img{
+    width:100%; height:auto; display:block;
+    border-radius:12px;
+    box-shadow:0 10px 26px rgba(0,0,0,.25);
+}
+
+.pl-meta{ display:grid; gap:2px; }
+.pl-name{ margin:0; font-weight:800; }
+.pl-sub{ margin:0; color:var(--muted); }
+
+/* responsive: card più strette su schermi piccoli */
+@media (max-width:480px){
+    .grid.playlists{ grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
 }
