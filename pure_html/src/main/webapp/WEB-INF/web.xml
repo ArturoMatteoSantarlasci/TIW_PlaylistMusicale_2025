@@ -4,13 +4,14 @@
          xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
          version="6.0">
 
-    #etichetta che identifica l'applicazione
+    <!--etichetta che identifica l'applicazione-->
     <display-name>TIW_PlaylistMusicale_2025</display-name>
 
-    #Database connection parameters
+    <!--Database connection parameters-->
     <context-param>
         <param-name>dbUrl</param-name>
-        <param-value>jdbc:mariadb://localhost:3307/tiw?serverTimezone=UTC</param-value>
+        <!-- Allineato a tables.sql: USE tiw2025; -->
+        <param-value>jdbc:mariadb://localhost:3307/tiw2025?serverTimezone=UTC</param-value>
     </context-param>
     <context-param>
         <param-name>dbUser</param-name>
@@ -25,10 +26,9 @@
         <param-value>org.mariadb.jdbc.Driver</param-value>
     </context-param>
 
-    #dice a Tomcat quale pagina mostrare di default
+    <!--dice a Tomcat quale pagina mostrare di default-->
     <welcome-file-list>
         <welcome-file>Login</welcome-file>
     </welcome-file-list>
 
 </web-app>
-
