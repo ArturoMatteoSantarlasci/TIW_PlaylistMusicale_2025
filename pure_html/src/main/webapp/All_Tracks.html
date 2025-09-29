@@ -37,23 +37,23 @@
         <ul class="tracks" id="tracks" style="width:100%;">
             <li class="track"
                 th:each="t,iter : ${tracks}"
-                th:attr="data-src=${t.song_path},
+                th:attr="data-src=${t.songUrl},
                      data-title=${t.title},
                      data-artist=${t.artist},
-                     data-album=${t.album_title},
-                     data-player-url=@{/player(trackId=${t.track_id})}">
+                     data-album=${t.albumTitle},
+                     data-player-url=@{/player(trackId=${t.trackId})}">
                 <div class="idx" th:text="${iter.index + 1}">1</div>
                 <div class="info">
                     <div class="t" th:text="${t.title}">Titolo</div>
                     <div class="a"
-                         th:text="${t.artist} + (${t.album_title}!=null ? ' • ' + ${t.album_title} : '')">Artista • Album</div>
+                         th:text="${t.artist} + (t.albumTitle != null ? ' • ' + t.albumTitle : '')">Artista • Album</div>
                 </div>
-                <div class="dur" th:text="${t.durationFormatted}">--:--</div>
+                <div class="dur" th:text="${t.durationFormatted} ?: '--:--'">--:--</div>
                 <div class="row-actions">
                     <button class="iconbtn tiny js-play" title="Riproduci/Pausa">
                         <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>
                     </button>
-                    <a class="iconbtn tiny" th:href="@{/player(trackId=${t.track_id})}" title="Apri player">
+                    <a class="iconbtn tiny" th:href="@{/player(trackId=${t.trackId})}" title="Apri player">
                         <svg viewBox="0 0 24 24" fill="none">
                             <path d="M14 3h7v7M10 14 21 3M21 13v7H3V3h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                         </svg>
@@ -143,8 +143,16 @@
             if (audio.paused) audio.play().catch(()=>{}); else audio.pause();
         };
 
-        const next = () => load((current + 1) % list().length, true);
-        const prev = () => load((current - 1 + list().length) % list().length, true);
+        const next = () => {
+            const items = list();
+            if (items.length === 0) return;
+            load((current + 1) % items.length, true);
+        };
+        const prev = () => {
+            const items = list();
+            if (items.length === 0) return;
+            load((current - 1 + items.length) % items.length, true);
+        };
 
         const updateToggle = () => {
             toggleBtn.innerHTML = audio.paused ? iconPlay : iconPause;

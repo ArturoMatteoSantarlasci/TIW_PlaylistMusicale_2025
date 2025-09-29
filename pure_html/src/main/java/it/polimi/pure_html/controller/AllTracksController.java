@@ -1,8 +1,8 @@
 package it.polimi.pure_html.controller;
 
 import it.polimi.pure_html.DAO.TrackDAO;
-import it.polimi.pure_html.entities.Track;
 import it.polimi.pure_html.entities.User;
+import it.polimi.pure_html.view.TrackView;
 import it.polimi.pure_html.utils.ConnectionHandler;
 import it.polimi.pure_html.utils.TemplateThymeleaf;
 import jakarta.servlet.ServletContext;
@@ -29,6 +29,7 @@ public class AllTracksController extends HttpServlet {
     private TemplateEngine templateEngine;
     private Connection connection;
     private TrackDAO trackDAO;
+    private JakartaServletWebApplication webApplication;
 
     @Override
     public void init() throws ServletException {
@@ -36,28 +37,36 @@ public class AllTracksController extends HttpServlet {
         connection = ConnectionHandler.openConnection(context);
         trackDAO = new TrackDAO(connection);
         templateEngine = TemplateThymeleaf.getTemplateEngine(context);
+        webApplication = JakartaServletWebApplication.buildApplication(context);
     }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
+        res.setCharacterEncoding("UTF-8");
+        res.setContentType("text/html;charset=UTF-8");
+
         User user = (User) req.getSession().getAttribute("user");
         if (user == null) {
             res.sendRedirect(getServletContext().getContextPath() + "/Login");
             return;
         }
 
-        List<Track> tracks;
+        List<TrackView> tracks;
         try {
-            tracks = trackDAO.getUserTracks(user);
+            tracks = trackDAO.getUserTracks(user)
+                    .stream()
+                    .map(track -> TrackView.fromTrack(track, req.getContextPath()))
+                    .toList();
         } catch (SQLException e) {
-            res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database errore");
-            e.printStackTrace();
+            getServletContext().log("Unable to retrieve tracks for user " + user.id(), e);
+            res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+                    "Errore durante il recupero delle tracce");
             return;
         }
 
-        JakartaServletWebApplication webApplication = JakartaServletWebApplication.buildApplication(getServletContext());
         WebContext context = new WebContext(webApplication.buildExchange(req, res), req.getLocale());
         context.setVariable("tracks", tracks);
+        context.setVariable("hasTracks", !tracks.isEmpty());
 
         templateEngine.process("All_Tracks.html", context, res.getWriter());
     }
@@ -65,5 +74,8 @@ public class AllTracksController extends HttpServlet {
     @Override
     public void destroy() {
         ConnectionHandler.closeConnection(connection);
+        connection = null;
+        trackDAO = null;
+        webApplication = null;
     }
 }
