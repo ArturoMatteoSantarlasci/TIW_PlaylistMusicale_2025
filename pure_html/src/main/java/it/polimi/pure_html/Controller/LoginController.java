@@ -1,4 +1,4 @@
-package it.polimi.pure_html.controller;
+package it.polimi.pure_html.Controller;
 
 import it.polimi.pure_html.DAO.UserDAO;
 import it.polimi.pure_html.entities.User;
