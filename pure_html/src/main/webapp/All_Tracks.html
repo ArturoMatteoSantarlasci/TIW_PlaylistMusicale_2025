@@ -1,4 +1,192 @@
+<!-- TODO: da rivedere -->
 <!DOCTYPE html>
+<html lang="it" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Tutte le Tracce</title>
+    <link rel="icon" type="image/x-icon" href="img/icon.ico" th:href="@{/img/icon.ico}">
+    <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}">
+</head>
+<body class="page-tracks">
 
+<!-- Corner: Home (riusa i tuoi corner) -->
+<div class="corner corner-left">
+    <a class="btn ghost" href="HomePage.html" th:href="@{/HomePage}" title="Torna alla Home">← Home</a>
+</div>
 
-<!-- TODO: da fare -->
+<!-- NB: nessun nuovo CSS: solo questo margin/padding inline per stare “attaccati” in alto -->
+<div class="wrap wide" style="margin-top:0; padding-top:8px;">
+    <h1 class="title" style="margin-top:0;">Tutte le tracce</h1>
+
+    <div class="panel stack" style="margin-top:8px;">
+        <!-- Azioni: solo ricerca, centrata tramite la struttura esistente -->
+        <div class="actions-row" style="justify-content:center;">
+            <div class="field pad-left field search" style="max-width:560px; width:92vw;">
+          <span class="badge left" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M10.5 3.5a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm10 18-5.4-5.4"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </span>
+                <input id="q" type="search" placeholder="Cerca tra le tue tracce…"/>
+            </div>
+        </div>
+
+        <!-- Lista tracce -->
+        <ul class="tracks" id="tracks" style="width:100%;">
+            <li class="track"
+                th:each="t,iter : ${tracks}"
+                th:attr="data-src=${t.song_path},
+                     data-title=${t.title},
+                     data-artist=${t.artist},
+                     data-album=${t.album_title},
+                     data-player-url=@{/player(trackId=${t.track_id})}">
+                <div class="idx" th:text="${iter.index + 1}">1</div>
+                <div class="info">
+                    <div class="t" th:text="${t.title}">Titolo</div>
+                    <div class="a"
+                         th:text="${t.artist} + (${t.album_title}!=null ? ' • ' + ${t.album_title} : '')">Artista • Album</div>
+                </div>
+                <div class="dur" th:text="${t.durationFormatted}">--:--</div>
+                <div class="row-actions">
+                    <button class="iconbtn tiny js-play" title="Riproduci/Pausa">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>
+                    </button>
+                    <a class="iconbtn tiny" th:href="@{/player(trackId=${t.track_id})}" title="Apri player">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M14 3h7v7M10 14 21 3M21 13v7H3V3h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<!-- MiniPlayer flottante (riusa i tuoi stili .floating-player) -->
+<div class="floating-player" id="miniPlayer" hidden>
+    <div class="fp-left">
+        <button class="iconbtn js-prev" title="Traccia precedente">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <button class="iconbtn js-toggle" title="Play/Pausa" aria-pressed="false" id="toggleBtn">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>
+        </button>
+        <button class="iconbtn js-next" title="Traccia successiva">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </button>
+    </div>
+    <div class="fp-center">
+        <div class="fp-title" id="fpTitle">—</div>
+        <div class="fp-sub" id="fpSub">—</div>
+    </div>
+    <div class="fp-right">
+        <div class="fp-time"><span id="fpCur">0:00</span> / <span id="fpDur">0:00</span></div>
+        <a class="iconbtn" id="fpGoPlayer" href="#" title="Apri player completo">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M14 3h7v7M10 14 21 3M21 13v7H3V3h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </a>
+    </div>
+    <audio id="audio" preload="metadata"></audio>
+</div>
+
+<script>
+    (function(){
+        const tracksEl = document.getElementById('tracks');
+        const list = () => Array.from(tracksEl.querySelectorAll('.track'));
+        const audio = document.getElementById('audio');
+        const mini = document.getElementById('miniPlayer');
+        const fpTitle = document.getElementById('fpTitle');
+        const fpSub   = document.getElementById('fpSub');
+        const fpCur   = document.getElementById('fpCur');
+        const fpDur   = document.getElementById('fpDur');
+        const fpGo    = document.getElementById('fpGoPlayer');
+        const toggleBtn = document.getElementById('toggleBtn');
+
+        const iconPlay = '<svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>';
+        const iconPause= '<svg viewBox="0 0 24 24" fill="none"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>';
+
+        let current = -1;
+
+        const fmt = s => {
+            if (!isFinite(s)) return '0:00';
+            const m = Math.floor(s/60), sec = Math.floor(s%60);
+            return m + ':' + String(sec).padStart(2,'0');
+        };
+
+        const highlight = (idx, playing) => {
+            list().forEach((li,i) => li.classList.toggle('playing', i===idx && playing));
+        };
+
+        const load = (idx, autoplay=true) => {
+            const li = list()[idx];
+            if (!li) return;
+            current = idx;
+            audio.src = li.dataset.src || '';
+            fpTitle.textContent = li.dataset.title || '—';
+            fpSub.textContent = [li.dataset.artist, li.dataset.album].filter(Boolean).join(' • ') || '—';
+            fpGo.href = li.dataset.playerUrl || '#';
+            mini.hidden = false;
+            if (autoplay) audio.play().catch(()=>{});
+            requestAnimationFrame(()=>updateToggle());
+            highlight(idx, !audio.paused);
+        };
+
+        const playPause = () => {
+            if (audio.src === '') { load(0, true); return; }
+            if (audio.paused) audio.play().catch(()=>{}); else audio.pause();
+        };
+
+        const next = () => load((current + 1) % list().length, true);
+        const prev = () => load((current - 1 + list().length) % list().length, true);
+
+        const updateToggle = () => {
+            toggleBtn.innerHTML = audio.paused ? iconPlay : iconPause;
+            toggleBtn.setAttribute('aria-pressed', String(!audio.paused));
+            highlight(current, !audio.paused);
+        };
+
+        audio.addEventListener('timeupdate', () => fpCur.textContent = fmt(audio.currentTime));
+        audio.addEventListener('loadedmetadata', () => fpDur.textContent = fmt(audio.duration));
+        audio.addEventListener('play', updateToggle);
+        audio.addEventListener('pause', updateToggle);
+        audio.addEventListener('ended', next);
+
+        tracksEl.addEventListener('click', (e) => {
+            const li = e.target.closest('.track');
+            if (!li) return;
+            const idx = list().indexOf(li);
+            if (e.target.closest('.js-play')) {
+                if (current === idx && audio.src) playPause();
+                else load(idx, true);
+                e.stopPropagation();
+                return;
+            }
+            load(idx, true);
+        });
+
+        document.querySelector('.js-prev')?.addEventListener('click', prev);
+        document.querySelector('.js-next')?.addEventListener('click', next);
+        document.querySelector('.js-toggle')?.addEventListener('click', playPause);
+
+        // Ricerca client-side
+        const q = document.getElementById('q');
+        if (q) {
+            q.addEventListener('input', () => {
+                const needle = q.value.trim().toLowerCase();
+                list().forEach(li => {
+                    const hay = [li.dataset.title, li.dataset.artist, li.dataset.album].filter(Boolean).join(' ').toLowerCase();
+                    li.style.display = hay.includes(needle) ? '' : 'none';
+                });
+            });
+        }
+    })();
+</script>
+</body>
+</html>

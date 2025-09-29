@@ -1,4 +1,4 @@
-package it.polimi.pure_html.Controller;
+package it.polimi.pure_html.controller;
 
 import it.polimi.pure_html.entities.User;
 import it.polimi.pure_html.utils.TemplateThymeleaf;
