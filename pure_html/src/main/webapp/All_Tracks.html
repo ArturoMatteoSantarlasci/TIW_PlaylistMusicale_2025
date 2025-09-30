@@ -37,6 +37,11 @@
         <ul class="tracks" id="tracks" style="width:100%;">
             <li class="track"
                 th:each="t,iter : ${tracks}"
+                th:attr="data-src=${t.songUrl},
+                     data-title=${t.title},
+                     data-artist=${t.artist},
+                     data-album=${t.albumTitle},
+                     data-player-url=@{/player(trackId=${t.trackId})}">
                 th:data-src="${t.songUrl}"
                 th:data-title="${t.title}"
                 th:data-artist="${t.artist}"
@@ -76,33 +81,7 @@
 <div class="floating-player" id="miniPlayer" hidden>
     <div class="fp-left">
         <button class="iconbtn js-prev" title="Traccia precedente">
-            <svg viewBox="0 0 24 24" fill="none">
-                <path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
-        <button class="iconbtn js-toggle" title="Play/Pausa" aria-pressed="false" id="toggleBtn">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>
-        </button>
-        <button class="iconbtn js-next" title="Traccia successiva">
-            <svg viewBox="0 0 24 24" fill="none">
-                <path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </button>
-    </div>
-    <div class="fp-center">
-        <div class="fp-title" id="fpTitle">—</div>
-        <div class="fp-sub" id="fpSub">—</div>
-    </div>
-    <div class="fp-right">
-        <div class="fp-time"><span id="fpCur">0:00</span> / <span id="fpDur">0:00</span></div>
-        <a class="iconbtn" id="fpGoPlayer" href="#" title="Apri player completo">
-            <svg viewBox="0 0 24 24" fill="none">
-                <path d="M14 3h7v7M10 14 21 3M21 13v7H3V3h7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-        </a>
-    </div>
-    <audio id="audio" preload="metadata"></audio>
-</div>
+@@ -98,92 +106,148 @@
 
 <script>
     (function(){
@@ -217,6 +196,7 @@
         };
 
         audio.addEventListener('timeupdate', () => fpCur.textContent = fmt(audio.currentTime));
+        audio.addEventListener('loadedmetadata', () => fpDur.textContent = fmt(audio.duration));
         audio.addEventListener('loadedmetadata', () => {
             fpDur.textContent = fmt(audio.duration);
             const li = list()[current];
