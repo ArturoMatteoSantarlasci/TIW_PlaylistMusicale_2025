@@ -37,12 +37,20 @@
         <ul class="tracks" id="tracks" style="width:100%;">
             <li class="track"
                 th:each="t,iter : ${tracks}"
-                th:attr="data-src=${t.songUrl},
-                     data-title=${t.title},
-                     data-artist=${t.artist},
-                     data-album=${t.albumTitle},
-                     data-player-url=@{/player(trackId=${t.trackId})}">
+                th:data-src="${t.songUrl}"
+                th:data-title="${t.title}"
+                th:data-artist="${t.artist}"
+                th:data-album="${t.albumTitle}"
+                th:data-image="${t.imageUrl}"
+                th:data-player-url="@{/player(trackId=${t.trackId})}">
                 <div class="idx" th:text="${iter.index + 1}">1</div>
+                <div class="cover-thumb"
+                     th:classappend="${t.imageUrl} == null ? ' cover-thumb--empty' : ''">
+                    <img th:if="${t.imageUrl}" th:src="${t.imageUrl}"
+                         th:alt="${'Copertina di ' + t.title}" alt="Copertina">
+                    <span class="cover-thumb__placeholder" th:if="${t.imageUrl == null}" aria-hidden="true">♪</span>
+                    <span class="sr-only" th:if="${t.imageUrl == null}">Copertina non disponibile</span>
+                </div>
                 <div class="info">
                     <div class="t" th:text="${t.title}">Titolo</div>
                     <div class="a"
@@ -120,6 +128,54 @@
             return m + ':' + String(sec).padStart(2,'0');
         };
 
+        const durationCache = new Map();
+
+        const updateDurationDisplay = (li, seconds) => {
+            const durEl = li.querySelector('.dur');
+            if (!durEl) return;
+            if (typeof seconds === 'number' && isFinite(seconds) && seconds > 0) {
+                durEl.textContent = fmt(seconds);
+            }
+        };
+
+        const probeDurations = () => {
+            list().forEach(li => {
+                const url = li.dataset.src;
+                if (!url) return;
+                if (durationCache.has(url)) {
+                    const cached = durationCache.get(url);
+                    if (typeof cached === 'number') {
+                        updateDurationDisplay(li, cached);
+                    }
+                    return;
+                }
+
+                const probe = new Audio();
+                probe.preload = 'metadata';
+                const cleanup = () => {
+                    probe.removeAttribute('src');
+                    probe.load();
+                };
+                probe.addEventListener('loadedmetadata', () => {
+                    if (isFinite(probe.duration) && probe.duration > 0) {
+                        durationCache.set(url, probe.duration);
+                        li.dataset.duration = String(probe.duration);
+                        updateDurationDisplay(li, probe.duration);
+                    } else {
+                        durationCache.set(url, null);
+                    }
+                    cleanup();
+                }, { once: true });
+                probe.addEventListener('error', () => {
+                    durationCache.set(url, null);
+                    cleanup();
+                }, { once: true });
+                probe.src = url;
+            });
+        };
+
+        probeDurations();
+
         const highlight = (idx, playing) => {
             list().forEach((li,i) => li.classList.toggle('playing', i===idx && playing));
         };
@@ -161,7 +217,15 @@
         };
 
         audio.addEventListener('timeupdate', () => fpCur.textContent = fmt(audio.currentTime));
-        audio.addEventListener('loadedmetadata', () => fpDur.textContent = fmt(audio.duration));
+        audio.addEventListener('loadedmetadata', () => {
+            fpDur.textContent = fmt(audio.duration);
+            const li = list()[current];
+            if (li && isFinite(audio.duration) && audio.duration > 0) {
+                durationCache.set(li.dataset.src, audio.duration);
+                li.dataset.duration = String(audio.duration);
+                updateDurationDisplay(li, audio.duration);
+            }
+        });
         audio.addEventListener('play', updateToggle);
         audio.addEventListener('pause', updateToggle);
         audio.addEventListener('ended', next);
