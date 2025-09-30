@@ -2,7 +2,7 @@ package it.polimi.pure_html.controller;
 
 import it.polimi.pure_html.DAO.TrackDAO;
 import it.polimi.pure_html.entities.User;
-import it.polimi.pure_html.view.TrackView;
+import it.polimi.pure_html.utils.TrackView;
 import it.polimi.pure_html.utils.ConnectionHandler;
 import it.polimi.pure_html.utils.TemplateThymeleaf;
 import jakarta.servlet.ServletContext;

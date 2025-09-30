@@ -1,4 +1,4 @@
-package it.polimi.pure_html.view;
+package it.polimi.pure_html.utils;
 
 import it.polimi.pure_html.entities.Track;
 
