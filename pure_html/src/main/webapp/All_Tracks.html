@@ -41,8 +41,16 @@
                      data-title=${t.title},
                      data-artist=${t.artist},
                      data-album=${t.albumTitle},
+                     data-image=${t.imageUrl},
                      data-player-url=@{/player(trackId=${t.trackId})}">
                 <div class="idx" th:text="${iter.index + 1}">1</div>
+                <div class="cover-thumb"
+                     th:classappend="${t.imageUrl} == null ? ' cover-thumb--empty' : ''">
+                    <img th:if="${t.imageUrl}" th:src="${t.imageUrl}"
+                         th:alt="${'Copertina di ' + t.title}" alt="Copertina">
+                    <span class="cover-thumb__placeholder" th:if="${t.imageUrl == null}" aria-hidden="true">♪</span>
+                    <span class="sr-only" th:if="${t.imageUrl == null}">Copertina non disponibile</span>
+                </div>
                 <div class="info">
                     <div class="t" th:text="${t.title}">Titolo</div>
                     <div class="a"
