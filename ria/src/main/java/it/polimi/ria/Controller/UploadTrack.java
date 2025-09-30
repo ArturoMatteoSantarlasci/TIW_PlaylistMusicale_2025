@@ -187,11 +187,12 @@ public class UploadTrack extends HttpServlet {
         if (pathFileRelative != null) {
             return new FileDetails(pathFileRelative, hash);
         }
-
+//prendi percorso filesisttem+upload, poi prendi file name dall'input , lo rendi unico con uuid random, componi path assoluto , ci crei cartella, ci crei file,
+// copi file input nel file, e crei percorso relativo con upload+name di file
         String absoluteOutputFolderPath = context.getRealPath(relativeOutputFolder) + File.separator + mimeType + File.separator;
         String realname = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-        String FilePathAssoluto=absoluteOutputFolderPath + absoluteOutputFolderPath + UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
-        File outputfolder = new File(FilePathAssoluto);
+        String FilePathAbsolute=absoluteOutputFolderPath + absoluteOutputFolderPath + UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
+        File outputfolder = new File(FilePathAbsolute);
 
         if (!outputfolder.exists()) {
             boolean created = outputfolder.mkdirs();
@@ -200,7 +201,7 @@ public class UploadTrack extends HttpServlet {
             }
         }
 
-        File outputFile = new File(FilePathAssoluto);
+        File outputFile = new File(FilePathAbsolute);
 
         try {
             Files.copy(part.getInputStream(), outputFile.toPath());
