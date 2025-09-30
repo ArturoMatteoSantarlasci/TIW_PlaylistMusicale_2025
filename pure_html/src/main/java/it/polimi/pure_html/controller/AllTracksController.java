@@ -1,8 +1,8 @@
 package it.polimi.pure_html.controller;
 
 import it.polimi.pure_html.DAO.TrackDAO;
+import it.polimi.pure_html.entities.Track;
 import it.polimi.pure_html.entities.User;
-import it.polimi.pure_html.utils.TrackView;
 import it.polimi.pure_html.utils.ConnectionHandler;
 import it.polimi.pure_html.utils.TemplateThymeleaf;
 import jakarta.servlet.ServletContext;
@@ -20,6 +20,7 @@ import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 @WebServlet("/All_Tracks")
 public class AllTracksController extends HttpServlet {
@@ -51,11 +52,11 @@ public class AllTracksController extends HttpServlet {
             return;
         }
 
-        List<TrackView> tracks;
+        List<TrackViewModel> tracks;
         try {
             tracks = trackDAO.getUserTracks(user)
                     .stream()
-                    .map(track -> TrackView.fromTrack(track, req.getContextPath()))
+                    .map(track -> TrackViewModel.fromTrack(track, req.getContextPath()))
                     .toList();
         } catch (SQLException e) {
             getServletContext().log("Unable to retrieve tracks for user " + user.id(), e);
@@ -77,5 +78,44 @@ public class AllTracksController extends HttpServlet {
         connection = null;
         trackDAO = null;
         webApplication = null;
+    }
+
+    private static record TrackViewModel(int trackId,
+                                  String title,
+                                  String artist,
+                                  String albumTitle,
+                                  String songUrl,
+                                  String imageUrl,
+                                  String durationFormatted) {
+
+        private static TrackViewModel fromTrack(Track track, String contextPath) {
+            Objects.requireNonNull(track, "track");
+            String basePath = contextPath == null ? "" : contextPath;
+            return new TrackViewModel(
+                    track.id(),
+                    track.title(),
+                    track.artist(),
+                    track.album_title(),
+                    buildUrl(basePath, track.song_path()),
+                    buildUrl(basePath, track.image_path()),
+                    null
+            );
+        }
+
+        private static String buildUrl(String contextPath, String relativePath) {
+            if (relativePath == null || relativePath.isBlank()) {
+                return relativePath;
+            }
+            if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
+                return relativePath;
+            }
+            if (contextPath == null || contextPath.isBlank()) {
+                return relativePath;
+            }
+            if (relativePath.startsWith("/")) {
+                return contextPath + relativePath;
+            }
+            return contextPath + '/' + relativePath;
+        }
     }
 }
