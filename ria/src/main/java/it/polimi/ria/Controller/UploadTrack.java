@@ -143,7 +143,7 @@ public class UploadTrack extends HttpServlet {
             if (e.getMessage().contains("Duplicate")) {
                 resp.setStatus(HttpServletResponse.SC_CONFLICT);
                 resp.setContentType("text/plain");
-                resp.getWriter().println("Duplicate track");
+                resp.getWriter().println("Duplicato track");
             }
             // Delete newly created files if addTrack fails
             newFiles.forEach(File::delete);
