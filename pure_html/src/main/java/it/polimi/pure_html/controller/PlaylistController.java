@@ -22,9 +22,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Generates the tracks associated to a Playlist.
- */
+
 @WebServlet("/Playlist")
 public class PlaylistController extends HttpServlet {
     @Serial
