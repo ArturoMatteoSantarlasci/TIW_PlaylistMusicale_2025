@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Home page</title>
+    <link rel="stylesheet" href="CSS/colors.css">
+    <link rel="stylesheet" href="CSS/components.css">
+    <link rel="stylesheet" href="CSS/home_page.css">
+    <link rel="icon" type="image/x-icon" href="img/icon.ico">
+    <script src="utils.js" charset="UTF-8" defer></script>
+    <script src="homepage.js" charset="UTF-8" defer></script>
+</head>
+<body>
+<div id="side-bar" class="side-bar">
+    <button class="entry-button" id="homepage-button">
+        <span class="title">Homepage</span>
+        <img class="icon" src="img/side-bar/home.svg" alt="home button">
+    </button>
+    <button class="entry-button" id="playlist-button">
+        <span class="title">Playlist</span>
+        <img class="icon" src="img/side-bar/playlist.svg" alt="playlist button">
+    </button>
+    <button class="entry-button" id="track-button">
+        <span class="title">Track</span>
+        <img class="icon" src="img/side-bar/track.svg" alt="track button">
+    </button>
+</div>
+<div class="nav-bar">
+    <div class="main-label">All Playlists</div>
+    <div class="spacer"></div>
+    <button id="upload-track-modal-button" class="button">Upload Track</button>
+    <button id="track-selector-modal-button" class="button">Add Playlist</button>
+    <button id="logout-button" type="submit" class="button logout">Logout</button>
+</div>
+<div id="main" class="main"></div>
+<div id="modals"></div>
+</body>
+</html>

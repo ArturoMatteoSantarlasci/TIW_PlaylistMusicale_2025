@@ -5,7 +5,6 @@ import it.polimi.ria.entities.User;
 import it.polimi.ria.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,7 +15,6 @@ import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@MultipartConfig
 @WebServlet("/Login") // nome servlet per accesso via js
 public class LoginController extends HttpServlet {
     @Serial
