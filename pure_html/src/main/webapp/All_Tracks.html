@@ -37,12 +37,18 @@
         <ul class="tracks" id="tracks" style="width:100%;">
             <li class="track"
                 th:each="t,iter : ${tracks}"
-                th:attr="data-src=${t.songUrl},
-                     data-title=${t.title},
-                     data-artist=${t.artist},
-                     data-album=${t.albumTitle},
-                     data-image=${t.imageUrl},
-                     data-player-url=@{/player(trackId=${t.trackId})}">
+                th:data-src="${t.songUrl}"
+                th:data-title="${t.title}"
+                th:data-artist="${t.artist}"
+                th:data-album="${t.albumTitle}"
+                th:data-image="${t.imageUrl}"
+                th:data-player-url="@{/player(trackId=${t.trackId})}"
+                data-src="sample.mp3"
+                data-title="Titolo"
+                data-artist="Artista"
+                data-album="Album"
+                data-image=""
+                data-player-url="#">
                 <div class="idx" th:text="${iter.index + 1}">1</div>
                 <div class="cover-thumb"
                      th:classappend="${t.imageUrl} == null ? ' cover-thumb--empty' : ''">
@@ -128,6 +134,55 @@
             return m + ':' + String(sec).padStart(2,'0');
         };
 
+        const loadDurations = () => {
+            const pending = list().map(li => ({
+                durEl: li.querySelector('.dur'),
+                src: li.dataset.src
+            })).filter(item => item.durEl && item.src && item.durEl.dataset.loaded !== 'true');
+
+            if (pending.length === 0) return;
+
+            const probe = document.createElement('audio');
+            probe.preload = 'metadata';
+            probe.muted = true;
+            probe.style.display = 'none';
+            document.body.appendChild(probe);
+
+            const loadNext = () => {
+                if (pending.length === 0) {
+                    probe.remove();
+                    return;
+                }
+
+                const { durEl, src } = pending.shift();
+
+                const onLoaded = () => {
+                    durEl.textContent = fmt(probe.duration);
+                    durEl.dataset.loaded = 'true';
+                    cleanup();
+                };
+
+                const onError = () => {
+                    durEl.textContent = '--:--';
+                    cleanup();
+                };
+
+                const cleanup = () => {
+                    probe.removeEventListener('loadedmetadata', onLoaded);
+                    probe.removeEventListener('error', onError);
+                    loadNext();
+                };
+
+                probe.addEventListener('loadedmetadata', onLoaded);
+                probe.addEventListener('error', onError);
+
+                probe.src = src;
+                probe.load();
+            };
+
+            loadNext();
+        };
+
         const highlight = (idx, playing) => {
             list().forEach((li,i) => li.classList.toggle('playing', i===idx && playing));
         };
@@ -190,6 +245,8 @@
         document.querySelector('.js-prev')?.addEventListener('click', prev);
         document.querySelector('.js-next')?.addEventListener('click', next);
         document.querySelector('.js-toggle')?.addEventListener('click', playPause);
+
+        loadDurations();
 
         // Ricerca client-side
         const q = document.getElementById('q');

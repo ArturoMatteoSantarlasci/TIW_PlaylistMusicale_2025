@@ -1,2 +1,3 @@
 track_id,user_id,title,album_title,artist,year,genre,song_checksum,image_checksum,song_path,image_path
 1001,1,James Bande,James Bande,Nesta,2025,House,9bdd6b23981a73d7dffbb1ba1ca23f82c58667045b0f089e56a5e87d29c27cdf,abb2e86b882a057377e5cce6f8b062a30dedceb6a6b0a6b4dbcbddb3b2c3f24d,/media/audio/1/1001.mp3,/media/img/1/1001.jpg
+1002,2,Another Life,altro,Naomi Sharon,2024,House,bf55cdc70e710865abca12ecc1f05a2bee66ea4330796f9b596cf3b1173b4606,9e288ebee6f1ad90c034a6db137909113e0df2ac0e38ffab53ab20293638b0b7,/media/audio/2/1002.mp3,/media/img/2/1002.jpg
