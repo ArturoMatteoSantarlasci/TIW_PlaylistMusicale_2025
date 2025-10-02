@@ -5,4 +5,6 @@ out/
 # Ignora file di configurazione IntelliJ specifici
 .idea/copilot.data.migration.ask.xml
 .idea/copilot.data.migration.ask2agent.xml
+.idea/dataSources.local.xml
+.idea/sqldialects.xml
 
