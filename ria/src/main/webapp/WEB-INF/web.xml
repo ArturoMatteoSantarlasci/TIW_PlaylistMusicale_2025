@@ -29,5 +29,62 @@
     <welcome-file-list>
         <welcome-file>Login</welcome-file>
     </welcome-file-list>
+    <context-param>
+        <param-name>outputPath</param-name>
+        <param-value>uploads</param-value>
+    </context-param>
+    <filter>
+        <filter-name>InvalidUserChecker</filter-name>
+        <filter-class>it.polimi.ria.filters.InvalidUserChecker</filter-class>
+    </filter>
+    <filter-mapping>
+        <!-- Class to invoke -->
+        <filter-name>InvalidUserChecker</filter-name>
+        <!-- Servlets and URLs on which to invoke the check -->
+        <url-pattern>/HomePage</url-pattern>
+        <url-pattern>/Playlist</url-pattern>
+        <url-pattern>/Track</url-pattern>
+        <url-pattern>/AddTracks</url-pattern>
+        <url-pattern>/CreatePlaylist</url-pattern>
+        <url-pattern>/UploadTrack</url-pattern>
+        <url-pattern>/Logout</url-pattern>
+        <url-pattern>/TrackReorder</url-pattern>
+        <url-pattern>/GetTracksNotInPlaylist</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>UserChecker</filter-name>
+        <filter-class>it.polimi.ria.filters.UserChecker</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>UserChecker</filter-name>
+        <url-pattern>/Login</url-pattern>
+        <url-pattern>/Register</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>PlaylistChecker</filter-name>
+        <filter-class>it.polimi.ria.filters.PlaylistChecker</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>PlaylistChecker</filter-name>
+        <url-pattern>/Playlist</url-pattern>
+        <url-pattern>/AddTracks</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>SelectedTracksChecker</filter-name>
+        <filter-class>it.polimi.ria.filters.SelectedTracksChecker</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>SelectedTracksChecker</filter-name>
+        <url-pattern>/CreatePlaylist</url-pattern>
+        <url-pattern>/AddTracks</url-pattern>
+    </filter-mapping>
+    <filter>
+        <filter-name>TrackChecker</filter-name>
+        <filter-class>it.polimi.ria.filters.TrackChecker</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>TrackChecker</filter-name>
+        <url-pattern>/Track</url-pattern>
+    </filter-mapping>
 
 </web-app>
