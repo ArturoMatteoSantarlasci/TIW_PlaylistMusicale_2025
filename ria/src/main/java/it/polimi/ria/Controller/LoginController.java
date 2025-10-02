@@ -55,7 +55,7 @@ public class LoginController extends HttpServlet {
             res.setStatus(HttpServletResponse.SC_OK);
         } else {
             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            res.setContentType("plain/text");
+            res.setContentType("text/plain");
             res.getWriter().println("Credenziali non valide");
         }
     }
