@@ -11,26 +11,20 @@
     <script src="homepage.js" charset="UTF-8" defer></script>
 </head>
 <body>
-<div id="side-bar" class="side-bar">
-    <button class="entry-button" id="homepage-button">
-        <span class="title">Homepage</span>
-        <img class="icon" src="img/side-bar/home.svg" alt="home button">
-    </button>
-    <button class="entry-button" id="playlist-button">
-        <span class="title">Playlist</span>
-        <img class="icon" src="img/side-bar/playlist.svg" alt="playlist button">
-    </button>
-    <button class="entry-button" id="track-button">
-        <span class="title">Track</span>
-        <img class="icon" src="img/side-bar/track.svg" alt="track button">
-    </button>
-</div>
 <div class="nav-bar">
     <div class="main-label">All Playlists</div>
     <div class="spacer"></div>
     <button id="upload-track-modal-button" class="button">Upload Track</button>
     <button id="track-selector-modal-button" class="button">Add Playlist</button>
     <button id="logout-button" type="submit" class="button logout">Logout</button>
+    <button id="homepage-button" class="icon-only floating-home" title="Homepage">
+        <img class="icon" src="img/side-bar/home.svg" alt="home">
+    </button>
+</div>
+<div class="below-bar">
+    <button id="back-button" class="icon-only" title="Indietro" disabled>
+        <img class="icon" src="img/side-bar/back.svg" alt="back">
+    </button>
 </div>
 <div id="main" class="main"></div>
 <div id="modals"></div>

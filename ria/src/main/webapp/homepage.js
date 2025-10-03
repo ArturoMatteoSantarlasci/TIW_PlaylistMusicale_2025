@@ -47,6 +47,21 @@
 
     // Initialize all the global variables and objects
     let lastPlaylist = null, lastTrack = null;
+    // Simple navigation history stack for undo (stores functions to execute)
+    const viewHistory = [];
+    function pushView(showFn) {
+        if (typeof showFn === 'function') {
+            viewHistory.push(showFn);
+            const backBtn = document.getElementById("back-button");
+            if (backBtn) backBtn.disabled = (viewHistory.length <= 1);
+        }
+    }
+    function undoLastView() {
+        // Pop current view
+        viewHistory.pop();
+        const prev = viewHistory[viewHistory.length - 1];
+        if (prev) prev(); else homeView.show();
+    }
     let tracklist, trackGroup = 0;
     let homeView = new HomeView(),
         playlistView = new PlaylistView(),
@@ -78,6 +93,7 @@
             loadUploadTrackModal();
             loadButtons();
             loadPlaylists();
+            pushView(() => homeView.show());
         }
 
         /**
@@ -240,6 +256,7 @@
             openBtn.className = "playlist-open";
             openBtn.addEventListener("click", () => {
                 playlistView.show(playlist);
+                pushView(() => playlistView.show(playlist));
                 trackGroup = 0;
             });
 
@@ -1021,22 +1038,29 @@
                 });
             });
 
-            // add listeners on sidebar buttons
-            document.getElementById("homepage-button").addEventListener("click", function () {
-                homeView.show();
-            });
+            // add listener for remaining homepage sidebar button only
+            const homepageBtn = document.getElementById("homepage-button");
+            if (homepageBtn) {
+                homepageBtn.addEventListener("click", function () {
+                    homeView.show();
+                    pushView(() => homeView.show());
+                });
+            }
 
-            document.getElementById("playlist-button").addEventListener("click", function () {
-                if (lastPlaylist != null) {
-                    playlistView.show(lastPlaylist);
-                }
-            });
-
-            document.getElementById("track-button").addEventListener("click", function () {
-                if (lastTrack != null) {
-                    trackView.show(lastTrack);
-                }
-            });
+            const backBtn = document.getElementById("back-button");
+            function refreshBackState() {
+                if (backBtn) backBtn.disabled = (viewHistory.length <= 1);
+            }
+            if (backBtn) {
+                backBtn.addEventListener("click", () => {
+                    if (viewHistory.length > 1) {
+                        undoLastView();
+                        refreshBackState();
+                    }
+                });
+            }
+            // Initial state
+            refreshBackState();
 
             // load modal data when clicking on the modal
             document.getElementById("upload-track-modal-button").addEventListener("click", function () {
