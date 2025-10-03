@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
-//aggiunge tracce a playlist esistente
+
 @WebServlet("/AddTracks")
 @MultipartConfig
 public class AddTracksToPlaylist extends HttpServlet {

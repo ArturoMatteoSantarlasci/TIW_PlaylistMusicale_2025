@@ -50,6 +50,44 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return playlists;
     }
+
+    /**
+     * Ritorna le playlist dell'utente con metadati aggregati utili alla HomePage.
+     *
+     * @param user utente proprietario
+     * @return lista di riassunti playlist
+     * @throws SQLException in caso di errori di accesso al DB
+     */
+    public List<PlaylistSummary> getPlaylistSummaries(User user) throws SQLException {
+        List<PlaylistSummary> playlists = new ArrayList<>();
+
+        PreparedStatement querywithparam = connection.prepareStatement("""
+                SELECT p.playlist_id,
+                       p.playlist_title,
+                       p.creation_date,
+                       COUNT(pt.track_id) AS tracks_count
+                FROM playlist p
+                LEFT JOIN playlist_tracks pt ON p.playlist_id = pt.playlist_id
+                WHERE p.user_id = ?
+                GROUP BY p.playlist_id, p.playlist_title, p.creation_date
+                ORDER BY p.creation_date DESC
+                """);
+
+        querywithparam.setInt(1, user.id());
+        ResultSet res = querywithparam.executeQuery();
+
+        while (res.next()) {
+            playlists.add(new PlaylistSummary(
+                    res.getInt("playlist_id"),
+                    res.getString("playlist_title"),
+                    res.getDate("creation_date"),
+                    res.getInt("tracks_count")
+            ));
+        }
+
+        closeQuery(res, querywithparam);
+        return playlists;
+    }
 /**
      * Ritorna le tracce di una playlist dato il titolo della playlist e l'utente
      * @param playlistTitle titolo della playlist
@@ -354,5 +392,8 @@ public class PlaylistDAO implements DAO {
 
         closeQuery(res,querywithparam);
         return result;
+    }
+
+    public record PlaylistSummary(int id, String title, Date creationDate, int tracksCount) {
     }
 }
