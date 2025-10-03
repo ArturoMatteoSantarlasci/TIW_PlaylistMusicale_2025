@@ -1011,9 +1011,11 @@
         this.start = function () {
             document.getElementById("logout-button").addEventListener("click", () => {
                 makeCall("GET", "Logout", null, (req) => {
-                    if (req.readyState == XMLHttpRequest.DONE) {
-                        if (req.status == 200) {
-                            location.href = "index.html";
+                    if (req.readyState === XMLHttpRequest.DONE) {
+                        if (req.status === 200) {
+                            window.location.href = withCtx("/login.html");
+                        } else {
+                            console.error("Logout failed, status:", req.status);
                         }
                     }
                 });
