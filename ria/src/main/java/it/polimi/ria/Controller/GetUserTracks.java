@@ -1,13 +1,11 @@
 package it.polimi.ria.Controller;
-import it.polimi.ria.DAO.PlaylistDAO;
-import it.polimi.ria.ConnectionHandler;
-import it.polimi.ria.entities.Playlist;
+
+import it.polimi.ria.DAO.TrackDAO;
+import it.polimi.ria.entities.Track;
 import it.polimi.ria.entities.User;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import it.polimi.ria.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,12 +16,13 @@ import java.io.IOException;
 import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-@WebServlet("/HomePage")
-@MultipartConfig
-public class HomepageController extends HttpServlet {
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+@WebServlet("/GetUserTracks")
+public class GetUserTracks extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
     private Connection connection = null;
@@ -44,11 +43,11 @@ public class HomepageController extends HttpServlet {
             return;
         }
 
-        PlaylistDAO playlistDAO = new PlaylistDAO(connection);
+        TrackDAO trackDAO = new TrackDAO(connection);
 
-        List<Playlist> playlists= new ArrayList<Playlist>();
+        List<Track> tracks;
         try {
-            playlists = playlistDAO.getUserPlaylists(user);
+            tracks = trackDAO.getUserTracks(user);
         } catch (SQLException e) {
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             e.printStackTrace();
@@ -57,11 +56,11 @@ public class HomepageController extends HttpServlet {
 
         Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
 
-        String playlists_json = gson.toJson(playlists);
+        String tracks_json = gson.toJson(tracks);
 
         res.setContentType("application/json");
         res.setStatus(HttpServletResponse.SC_OK);
-        res.getWriter().write(playlists_json);
+        res.getWriter().write(tracks_json);
     }
 
     @Override

@@ -5,6 +5,7 @@ import it.polimi.ria.entities.User;
 import it.polimi.ria.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +16,7 @@ import java.io.Serial;
 import java.sql.Connection;
 
 @WebServlet("/Register")//no redirect, chiamata ajax
+@MultipartConfig
 public class RegisterController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;

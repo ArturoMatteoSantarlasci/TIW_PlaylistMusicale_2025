@@ -41,7 +41,6 @@ public class UploadTrack extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
     private Connection connection = null;
-    private String relativeOutputFolder;
     private User user;
     private Track track;
     private List<File> newFiles;
@@ -51,8 +50,7 @@ public class UploadTrack extends HttpServlet {
     public void init() throws ServletException {
         context = getServletContext();
         connection = ConnectionHandler.openConnection(context);
-        //NOME CARTELLA DOVE SALVARE I FILE NELLA WEBAPP ES. ''uploads''
-        relativeOutputFolder = getServletContext().getInitParameter("outputPath");
+        // I file ora vengono salvati direttamente in webapp/media/
         newFiles = new ArrayList<>();
 
         try {
@@ -187,26 +185,60 @@ public class UploadTrack extends HttpServlet {
         if (pathFileRelative != null) {
             return new FileDetails(pathFileRelative, hash);
         }
-//prendi percorso filesisttem+upload, poi prendi file name dall'input , lo rendi unico con uuid random, componi path assoluto , ci crei cartella, ci crei file,
-// copi file input nel file, e crei percorso relativo con upload+name di file
-        String absoluteOutputFolderPath = context.getRealPath(relativeOutputFolder) + File.separator + mimeType + File.separator;
+//prendi percorso filesisttem+media, poi prendi file name dall'input , lo rendi unico con uuid random, componi path assoluto , ci crei cartella, ci crei file,
+// copi file input nel file, e crei percorso relativo con media+name di file
+        String absoluteOutputFolderPath = context.getRealPath("media") + File.separator + mimeType + File.separator;
         String realname = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-        String FilePathAbsolute=absoluteOutputFolderPath + absoluteOutputFolderPath + UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
-        File outputfolder = new File(FilePathAbsolute);
+        String fileName = UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
+        String filePathAbsolute = absoluteOutputFolderPath + fileName;
+        File outputFile = new File(filePathAbsolute);
 
-        if (!outputfolder.exists()) {
-            boolean created = outputfolder.mkdirs();
+        // Crea le cartelle se necessario
+        if (!outputFile.getParentFile().exists()) {
+            boolean created = outputFile.getParentFile().mkdirs();
             if (!created) {
-                throw new ServerErrorException("Errore durante salvataggio file", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                throw new ServerErrorException("Errore durante creazione cartelle", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
         }
-
-        File outputFile = new File(FilePathAbsolute);
 
         try {
             Files.copy(part.getInputStream(), outputFile.toPath());
             newFiles.add(outputFile);
-            pathFileRelative = relativeOutputFolder + File.separator + mimeType + File.separator + outputFile.getName();
+            // >>> Salva nel DB **il path WEB**, non il path di filesystem
+            pathFileRelative = "/media/" + mimeType + "/" + fileName;
+
+            // Copia anche nella cartella sorgente per persistenza tra rebuild (src/main/webapp/media/...)
+            try {
+                // path della root del progetto: risalgo da context real path (che punta alla cartella war esplosa)
+                // Cerco una cartella che contenga "src" risalendo
+                File warRoot = new File(context.getRealPath("/"));
+                File current = warRoot;
+                File projectRoot = null;
+                int maxLevels = 6; // evita loop infiniti
+                while (current != null && maxLevels-- > 0) {
+                    File srcDir = new File(current, "src");
+                    if (srcDir.exists() && srcDir.isDirectory()) { // trovata root progetto (heuristic)
+                        projectRoot = current;
+                        break;
+                    }
+                    current = current.getParentFile();
+                }
+                if (projectRoot != null) {
+                    File sourceMediaDir = new File(projectRoot, "src" + File.separator + "main" + File.separator + "webapp" + File.separator + "media" + File.separator + mimeType);
+                    if (!sourceMediaDir.exists() && !sourceMediaDir.mkdirs()) {
+                        System.err.println("[UploadTrack] Impossibile creare directory sorgente media: " + sourceMediaDir.getAbsolutePath());
+                    } else {
+                        File sourceCopy = new File(sourceMediaDir, fileName);
+                        if (!sourceCopy.exists()) {
+                            Files.copy(outputFile.toPath(), sourceCopy.toPath());
+                        }
+                    }
+                } else {
+                    System.err.println("[UploadTrack] Root progetto non trovata per copia sorgente media");
+                }
+            } catch (Exception copyEx) {
+                System.err.println("[UploadTrack] Errore copia file in sorgente: " + copyEx.getMessage());
+            }
             return new FileDetails(pathFileRelative, hash);
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,1 +1,146 @@
 /* Specific styles for home page */
+
+.items-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding: 16px;
+}
+
+.single-item {
+    background-color: var(--spotify-gray);
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.single-item:hover {
+    background-color: var(--spotify-dark-gray);
+}
+
+.playlist-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--spotify-white);
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.first-line {
+    font-size: 14px;
+    color: var(--spotify-light-gray);
+    text-align: center;
+}
+
+.reorder-button {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+.reorder-button:hover {
+    opacity: 1;
+}
+
+.text-field {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--spotify-gray);
+    border-radius: 4px;
+    background-color: var(--spotify-dark-gray);
+    color: var(--spotify-white);
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.text-field:focus {
+    outline: none;
+    border-color: var(--spotify-green);
+}
+
+.label {
+    display: block;
+    font-size: 14px;
+    color: var(--spotify-light-gray);
+    margin-bottom: 4px;
+}
+
+.successo {
+    color: var(--spotify-green);
+    font-weight: bold;
+}
+
+.errore, .error {
+    color: var(--spotify-red);
+    font-weight: bold;
+}
+
+.modal-window {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--spotify-dark-gray);
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.modal-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--spotify-white);
+    margin-bottom: 16px;
+}
+
+.modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: var(--spotify-light-gray);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.modal-close:hover {
+    color: var(--spotify-white);
+}
+
+.nav-bar {
+    background-color: var(--spotify-dark-gray);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--spotify-gray);
+}
+
+.spacer {
+    flex: 1;
+}
+
+/* Modal styles */
+.modal-window.hidden {
+    display: none;
+}
