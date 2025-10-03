@@ -51,17 +51,11 @@
            href="#"
            th:each="p : ${playlists}"
            th:href="@{/Playlist(playlistId=${p.id})}">
-          <div class="pl-cover">
-            <img src="https://via.placeholder.com/640x640?text=Cover"
-                 th:src="${p.coverUrl}"
-                 th:alt="${'Cover ' + p.title}"
-                 alt="Cover playlist" />
-          </div>
+
           <div class="pl-meta">
             <h3 class="pl-name" th:text="${p.title}">Playlist di esempio</h3>
             <p class="pl-sub">
-              <span th:text="${p.tracksCount}">0</span> brani ·
-              <span th:text="${p.durationFormatted}">--:--</span>
+              <span th:text="${p.tracksCount}">0</span> brani
             </p>
             <p class="pl-sub" th:if="${p.creationDate != null}" th:text="${#temporals.format(p.creationDate, 'dd/MM/yyyy')}">01/01/2025</p>
           </div>

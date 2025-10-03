@@ -28,41 +28,28 @@ import java.util.List;
 public class HomepageController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
-    private static final String DEFAULT_PLAYLIST_COVER = "https://via.placeholder.com/640x640?text=Cover";
-    private static final String DEFAULT_PLAYLIST_DURATION = "--:--";
-
     private TemplateEngine templateEngine;
-    private Connection connection; // aggiunto
-    private TrackDAO trackDAO;      // aggiunto
+    private Connection connection;
+    private TrackDAO trackDAO;
     private PlaylistDAO playlistDAO;
 
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
         templateEngine = TemplateThymeleaf.getTemplateEngine(context);
-        connection = ConnectionHandler.openConnection(context); // open connection
+        connection = ConnectionHandler.openConnection(context);
         trackDAO = new TrackDAO(connection);
         playlistDAO = new PlaylistDAO(connection);
     }
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
-        // Verifica se l'utente è loggato
         User user = (User) req.getSession().getAttribute("user");
-        if (user == null) {
-            // Se non è loggato, redirect al login
-            res.sendRedirect(getServletContext().getContextPath() + "/Login");
-            return;
-        }
 
-        // Se è loggato, mostra la homepage
         JakartaServletWebApplication webApplication = JakartaServletWebApplication.buildApplication(getServletContext());
         WebContext context = new WebContext(webApplication.buildExchange(req, res), req.getLocale());
 
-        // Aggiungi l'utente al contesto Thymeleaf se necessario
-        context.setVariable("user", user);
-
-        // Recupero lista tracce dell'utente (per popup playlist)
+        // Recupero lista tracce dell'utente
         try {
             List<Track> userTracks = trackDAO.getUserTracks(user);
             context.setVariable("availableTracks", userTracks);
@@ -83,8 +70,6 @@ public class HomepageController extends HttpServlet {
                         summary.id(),
                         summary.title(),
                         summary.tracksCount(),
-                        DEFAULT_PLAYLIST_DURATION,
-                        DEFAULT_PLAYLIST_COVER,
                         creationDate
                 ));
             }
@@ -97,6 +82,7 @@ public class HomepageController extends HttpServlet {
         templateEngine.process("HomePage.html", context, res.getWriter());
     }
 
+    //eventuali form che per errore usano POST non rompono
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
         doGet(req, res);
@@ -113,8 +99,6 @@ public class HomepageController extends HttpServlet {
     private record HomePlaylistView(int id,
                                     String title,
                                     int tracksCount,
-                                    String durationFormatted,
-                                    String coverUrl,
                                     LocalDate creationDate) {
     }
 }

@@ -15,54 +15,6 @@ public class TrackDAO implements DAO {
     }
 
     /**
-     * Get di una traccia tramite primary key (id)
-     *
-     * @param trackId
-     * @return traccia
-     * @throws SQLException
-     */
-    public Track getTrackById(int trackId) throws SQLException {
-        PreparedStatement querywithparam = connection.prepareStatement("""
-                 SELECT track_id,
-                        user_id,
-                        title,
-                        artist,
-                        year,
-                        album_title,
-                        genre,
-                        image_path,
-                        song_path,
-                        song_checksum,
-                        image_checksum
-                 FROM track
-                 WHERE track_id = ?
-                """);
-
-        querywithparam.setInt(1, trackId);
-        ResultSet res = querywithparam.executeQuery();
-Track track = null;
-        if(res.isBeforeFirst()) {
-            res.next();
-
-             track = new Track(
-                    res.getInt("track_id"),
-                     res.getInt("user_id"),
-                     res.getString("title"),
-                    res.getString("artist"),
-                    res.getInt("year"),
-                    res.getString("album_title"),
-                    res.getString("genre"),
-                    res.getString("image_path"),
-                    res.getString("song_path"),
-                    res.getString("song_checksum"),
-                    res.getString("image_checksum")
-            );
-        }
-        closeQuery(res, querywithparam);
-        return track;
-    }
-
-    /**
      * Restituisce tutte le tracce di un utente
      *
      * @param user Utente di cui si vogliono le tracce
