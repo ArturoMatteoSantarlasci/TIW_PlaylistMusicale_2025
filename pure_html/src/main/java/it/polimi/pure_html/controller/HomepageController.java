@@ -1,6 +1,10 @@
 package it.polimi.pure_html.controller;
 
+import it.polimi.pure_html.DAO.PlaylistDAO;
+import it.polimi.pure_html.DAO.TrackDAO;
+import it.polimi.pure_html.entities.Track;
 import it.polimi.pure_html.entities.User;
+import it.polimi.pure_html.utils.ConnectionHandler;
 import it.polimi.pure_html.utils.TemplateThymeleaf;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -14,17 +18,31 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
 import java.io.Serial;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @WebServlet("/HomePage")
 public class HomepageController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
+    private static final String DEFAULT_PLAYLIST_COVER = "https://via.placeholder.com/640x640?text=Cover";
+    private static final String DEFAULT_PLAYLIST_DURATION = "--:--";
+
     private TemplateEngine templateEngine;
+    private Connection connection; // aggiunto
+    private TrackDAO trackDAO;      // aggiunto
+    private PlaylistDAO playlistDAO;
 
     @Override
     public void init() throws ServletException {
         ServletContext context = getServletContext();
         templateEngine = TemplateThymeleaf.getTemplateEngine(context);
+        connection = ConnectionHandler.openConnection(context); // open connection
+        trackDAO = new TrackDAO(connection);
+        playlistDAO = new PlaylistDAO(connection);
     }
 
     @Override
@@ -44,11 +62,59 @@ public class HomepageController extends HttpServlet {
         // Aggiungi l'utente al contesto Thymeleaf se necessario
         context.setVariable("user", user);
 
+        // Recupero lista tracce dell'utente (per popup playlist)
+        try {
+            List<Track> userTracks = trackDAO.getUserTracks(user);
+            context.setVariable("availableTracks", userTracks);
+            context.setVariable("availableTracksCount", userTracks.size());
+        } catch (SQLException e) {
+            getServletContext().log("Errore nel recupero delle tracce per la homepage", e);
+            context.setVariable("availableTracks", List.of());
+            context.setVariable("availableTracksCount", 0);
+        }
+
+        // Recupero playlist da mostrare nella rail
+        List<HomePlaylistView> playlistViews = new ArrayList<>();
+        try {
+            List<PlaylistDAO.PlaylistSummary> summaries = playlistDAO.getPlaylistSummaries(user);
+            for (PlaylistDAO.PlaylistSummary summary : summaries) {
+                LocalDate creationDate = summary.creationDate() == null ? null : summary.creationDate().toLocalDate();
+                playlistViews.add(new HomePlaylistView(
+                        summary.id(),
+                        summary.title(),
+                        summary.tracksCount(),
+                        DEFAULT_PLAYLIST_DURATION,
+                        DEFAULT_PLAYLIST_COVER,
+                        creationDate
+                ));
+            }
+        } catch (SQLException e) {
+            getServletContext().log("Errore nel recupero delle playlist per la homepage", e);
+        }
+        context.setVariable("playlists", playlistViews);
+        context.setVariable("hasPlaylists", !playlistViews.isEmpty());
+
         templateEngine.process("HomePage.html", context, res.getWriter());
     }
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
         doGet(req, res);
+    }
+
+    @Override
+    public void destroy() {
+        ConnectionHandler.closeConnection(connection);
+        connection = null;
+        trackDAO = null;
+        playlistDAO = null;
+    }
+
+    private record HomePlaylistView(int id,
+                                    String title,
+                                    int tracksCount,
+                                    String durationFormatted,
+                                    String coverUrl,
+                                    LocalDate creationDate) {
     }
 }
