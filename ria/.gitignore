@@ -1,10 +1,13 @@
+# Build artifacts
 target/
-*.war
-*_war_exploded/
 out/
-# Ignora file di configurazione IntelliJ specifici
-.idea/copilot.data.migration.ask.xml
-.idea/copilot.data.migration.ask2agent.xml
-.idea/dataSources.local.xml
-.idea/sqldialects.xml
+**/*_war_exploded/
+*.war
 
+# IntelliJ
+.idea/
+*.iml
+
+# Log e runtime
+*.log
+uploads/
