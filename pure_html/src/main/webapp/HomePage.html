@@ -42,7 +42,8 @@
     </div>
 
     <div class="board">
-      <section class="rail playlists-rail" id="playlistsRail">
+      <!-- Sostituito layout: da rail orizzontale a griglia 3x3 con scroll verticale -->
+      <section class="playlists-grid" id="playlistsRail">
         <div class="pl-empty" th:if="${!hasPlaylists}">
           <p>Non hai ancora creato una playlist.</p>
         </div>
@@ -51,7 +52,6 @@
            href="#"
            th:each="p : ${playlists}"
            th:href="@{/Playlist(playlistId=${p.id})}">
-
           <div class="pl-meta">
             <h3 class="pl-name" th:text="${p.title}">Playlist di esempio</h3>
             <p class="pl-sub">
