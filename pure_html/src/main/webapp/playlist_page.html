@@ -1,4 +1,3 @@
-
 <!-- TODO: da rivedere e provare con dati effettivi -->
 
 <!DOCTYPE html>
@@ -19,194 +18,116 @@
     </svg>
 </a>
 
-<div class="wrap wide">
-    <h1 class="title" th:text="${playlist != null ? playlist.name : 'La mia Playlist'}">
-        La mia Playlist
-    </h1>
+<div class="wrap wide playlist-page">
+    <h1 class="title" th:text="${playlistTitle}">La mia Playlist</h1>
 
-    <!-- Azioni -->
-    <div class="actions-row">
-        <button class="btn" type="button" id="addTracksBtn">Aggiungi tracce</button>
-    </div>
-
-    <!-- Lista brani -->
-    <ol class="tracks" id="trackList">
-        <!-- Template riga: funziona sia statico che con Thymeleaf -->
-        <li class="track"
-            data-id="1"
-            data-audio="media/track1.mp3"
-            data-title="Titolo 1"
-            data-artist="Artista 1"
-            th:each="t,iter : ${tracks}"
-            th:attr="data-id=${t.id},data-audio=${t.audioUrl},data-title=${t.title},data-artist=${t.artist}">
-            <div class="idx" th:text="${iter.index + 1}">1</div>
-
-            <div class="info">
-                <div class="t" th:text="${t.title}">Titolo 1</div>
-                <div class="a" th:text="${t.artist}">Artista 1</div>
-            </div>
-
-            <div class="dur" th:text="${t.durationFormatted}">3:45</div>
-
-            <div class="row-actions">
-                <!-- Play/Pausa inline della riga -->
-                <button class="iconbtn tiny play-btn" type="button" aria-label="Riproduci/Pausa">
-                    <svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    <svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-                </button>
-
-                <!-- Vai al player completo del brano -->
-                <a class="iconbtn tiny open-player"
-                   href="player.html"
-                   th:href="@{/player(id=${t.id})}"
-                   aria-label="Apri nel player">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h7v7h-2V6.41l-8.29 8.3-1.42-1.42 8.3-8.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
+    <div id="playlistBrowser" class="playlist-browser">
+        <div class="playlist-nav-row">
+            <a class="btn ghost playlist-nav-btn" th:if="${hasPrev}" th:href="@{/Playlist(playlistId=${playlistId},gr=${trackGroup - 1})}">PRECEDENTI</a>
+            <div class="playlist-row" role="grid" aria-label="Brani della playlist (blocco da 5)">
+                <div th:if="${#lists.isEmpty(playlistTracks)}" class="muted-msg" style="flex:1;display:flex;align-items:center;justify-content:center;">Nessun brano in questa playlist.</div>
+                <a class="playlist-cell" th:each="t : ${playlistTracks}" th:href="@{/player(trackId=${t.id})}" th:title="${t.title}">
+                    <div class="pl-cover">
+                        <img th:if="${t.image_path != null}" th:src="@{/${t.image_path}}" th:alt="${'Copertina ' + t.album_title}" />
+                        <div class="pl-cover-placeholder" th:if="${t.image_path == null}" aria-hidden="true">♪</div>
+                    </div>
+                    <div class="pl-meta">
+                        <div class="pl-song-title" th:text="${t.title}">Titolo</div>
+                        <div class="pl-artist" th:text="${t.artist}">Artista</div>
+                        <div class="pl-album" th:text="${t.album_title + (t.year != null ? ' · ' + t.year : '')}">Album · 2024</div>
+                    </div>
                 </a>
             </div>
-        </li>
-    </ol>
-</div>
-
-<!-- Mini-player flottante -->
-<div class="floating-player" id="miniPlayer" hidden>
-    <div class="fp-left">
-        <button class="iconbtn tiny" id="prevBtn" aria-label="Brano precedente">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6v12L9 12z"/></svg>
-        </button>
-        <button class="iconbtn tiny" id="toggleBtn" aria-label="Play/Pausa">
-            <svg id="fpPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="fpPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
-        <button class="iconbtn tiny" id="nextBtn" aria-label="Brano successivo">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6v12l11-6z"/></svg>
-        </button>
+            <a class="btn ghost playlist-nav-btn" th:if="${hasNext}" th:href="@{/Playlist(playlistId=${playlistId},gr=${trackGroup + 1})}">SUCCESSIVI</a>
+        </div>
+        <p id="emptyPlaylistMsg" class="muted-msg" th:if="${#lists.isEmpty(playlistTracks) && !hasPrev && !hasNext}" >La playlist è vuota. Aggiungi qualche brano.</p>
     </div>
 
-    <div class="fp-center">
-        <div class="fp-title" id="nowTitle">—</div>
-        <div class="fp-sub" id="nowArtist">—</div>
-    </div>
-
-    <div class="fp-right">
-        <span class="fp-time" id="fpTime">0:00 / 0:00</span>
-        <a class="iconbtn tiny" id="openInPlayer" href="player.html" aria-label="Apri nel player completo">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h7v7h-2V6.41l-8.29 8.3-1.42-1.42 8.3-8.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
-        </a>
+    <div class="actions-row top-actions" style="margin-top:28px;">
+        <button type="button" class="btn" th:if="${addableTracks != null && !#lists.isEmpty(addableTracks)}" onclick="openAddTracksModal()">Aggiungi brani</button>
+        <button type="button" class="btn secondary" th:if="${addableTracks == null || #lists.isEmpty(addableTracks)}" disabled>Nessun brano disponibile</button>
     </div>
 </div>
 
-<!-- Audio condiviso -->
-<audio id="audio" preload="metadata"></audio>
+<!-- MODAL Aggiunta Brani -->
+<div id="addTracksModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Aggiungi Brani alla Playlist</h2>
+            <button class="modal-close" type="button" aria-label="Chiudi" onclick="closeAddTracksModal()">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            </button>
+        </div>
+        <div class="modal-content">
+            <form id="addTracksForm" method="post" th:action="@{/AddTracks}">
+                <input type="hidden" name="playlistId" th:value="${playlistId}" />
+                <div class="form-group">
+                    <label class="form-label">Seleziona brani (non presenti nella playlist)</label>
+                    <div class="playlist-tracks-block" id="addTracksBlock">
+                        <div class="playlist-tracks-tools" th:if="${addableTracks != null && !#lists.isEmpty(addableTracks)}">
+                            <div class="field" style="flex:1; height:42px;">
+                                <input type="search" id="addTrackFilter" placeholder="Filtra brani (titolo, artista, album)..." autocomplete="off" />
+                            </div>
+                            <div class="counts">
+                                <span id="selectedAddCount">0</span>/<span th:text="${#lists.size(addableTracks)}">0</span> selezionati
+                            </div>
+                        </div>
+                        <ul class="playlist-tracks-list" id="addTracksList">
+                            <li class="playlist-tracks-empty" th:if="${addableTracks == null || #lists.isEmpty(addableTracks)}">Nessun brano disponibile</li>
+                            <li class="track-choice" th:each="t : ${addableTracks}">
+                                <input type="checkbox" th:id="'pladd_' + ${t.id}" th:value="${t.id}" name="selectedTracksIds" />
+                                <label th:for="'pladd_' + ${t.id}" class="track-choice-info">
+                                    <span class="track-choice-title" th:text="${t.title}">Titolo</span>
+                                    <span class="track-choice-meta">
+                                        <span th:text="${t.artist}">Artista</span>
+                                        <span> · </span>
+                                        <span th:text="${t.album_title}">Album</span>
+                                        <span th:if="${t.year != null}"> · <span th:text="${t.year}">2024</span></span>
+                                    </span>
+                                </label>
+                            </li>
+                        </ul>
+                        <div class="playlist-tracks-actions" th:if="${addableTracks != null && !#lists.isEmpty(addableTracks)}">
+                            <button type="button" id="selectAllAddTracksBtn" title="Seleziona tutti i brani visibili">Seleziona tutti</button>
+                            <button type="button" id="clearAddTracksBtn" title="Deseleziona tutti i brani">Pulisci</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn ghost" onclick="closeAddTracksModal()">Annulla</button>
+                    <button type="submit" class="btn" id="confirmAddTracksBtn" disabled>Aggiungi alla playlist</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<!-- RIMOSSA logica JS di paginazione client: ora server-side -->
 <script>
-    // Utility: mm:ss
-    function fmt(s){
-        if(!isFinite(s)||s<0) return "0:00";
-        s = Math.floor(s);
-        const m = Math.floor(s/60), ss = String(s%60).padStart(2,"0");
-        return m+":"+ss;
-    }
+(function(){
+    const overlay = document.getElementById('addTracksModal');
+    const listEl = document.getElementById('addTracksList');
+    const filterInput = document.getElementById('addTrackFilter');
+    const selectAllBtn = document.getElementById('selectAllAddTracksBtn');
+    const clearBtn = document.getElementById('clearAddTracksBtn');
+    const countEl = document.getElementById('selectedAddCount');
+    const confirmBtn = document.getElementById('confirmAddTracksBtn');
 
-    const listEl = document.getElementById('trackList');
-    const audio = document.getElementById('audio');
-    const mini  = document.getElementById('miniPlayer');
+    function openAddTracksModal(){ if(!overlay) return; overlay.classList.add('active'); overlay.style.display='flex'; document.body.style.overflow='hidden'; setTimeout(()=>filterInput?.focus(),80); }
+    function closeAddTracksModal(){ if(!overlay) return; overlay.classList.remove('active'); overlay.style.display='none'; document.body.style.overflow=''; resetModalState(); }
+    window.openAddTracksModal = openAddTracksModal; window.closeAddTracksModal = closeAddTracksModal;
 
-    const nowTitle = document.getElementById('nowTitle');
-    const nowArtist = document.getElementById('nowArtist');
-    const fpTime = document.getElementById('fpTime');
-    const fpPlay = document.getElementById('fpPlay');
-    const fpPause = document.getElementById('fpPause');
-    const openInPlayer = document.getElementById('openInPlayer');
+    function updateHighlight(chk){ const li=chk.closest('li.track-choice'); if(li) li.classList.toggle('track-choice--selected', chk.checked); }
+    function updateCount(){ const sel=listEl?listEl.querySelectorAll('input[type="checkbox"]:checked').length:0; if(countEl) countEl.textContent=sel; if(confirmBtn) confirmBtn.disabled = sel===0; }
 
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const toggleBtn = document.getElementById('toggleBtn');
+    function applyFilter(){ if(!filterInput||!listEl) return; const term=filterInput.value.trim().toLowerCase(); let visible=0; listEl.querySelectorAll('li.track-choice').forEach(li=>{ const txt=(li.textContent||'').toLowerCase(); const show=!term||txt.includes(term); li.style.display=show?'':'none'; if(show) visible++; }); if(selectAllBtn) selectAllBtn.disabled = (visible===0); }
+    function selectAllVisible(){ if(!listEl) return; listEl.querySelectorAll('li.track-choice').forEach(li=>{ if(li.style.display==='none') return; const chk=li.querySelector('input[type="checkbox"]'); if(chk && !chk.checked){ chk.checked=true; updateHighlight(chk);} }); updateCount(); }
+    function clearAll(){ if(!listEl) return; listEl.querySelectorAll('input[type="checkbox"]').forEach(ch=>{ if(ch.checked){ ch.checked=false; updateHighlight(ch);} }); updateCount(); }
+    function resetModalState(){ clearAll(); if(filterInput){ filterInput.value=''; applyFilter(); } }
 
-    let tracks = [];
-    let current = -1;
-
-    function collectTracks(){
-        tracks = Array.from(listEl.querySelectorAll('.track')).map((li)=>({
-            li,
-            id: li.dataset.id,
-            audio: li.dataset.audio,
-            title: li.dataset.title,
-            artist: li.dataset.artist,
-            playBtn: li.querySelector('.play-btn'),
-            icoPlay: li.querySelector('.ico-play'),
-            icoPause: li.querySelector('.ico-pause'),
-            openLink: li.querySelector('.open-player')
-        }));
-    }
-
-    function setRowPlaying(idx, playing){
-        const t = tracks[idx];
-        if(!t) return;
-        t.icoPlay.style.display = playing ? 'none' : '';
-        t.icoPause.style.display = playing ? '' : 'none';
-        t.li.classList.toggle('playing', playing);
-    }
-
-    function loadTrack(idx){
-        const t = tracks[idx];
-        if(!t) return;
-        current = idx;
-        audio.src = t.audio;
-        nowTitle.textContent = t.title || '—';
-        nowArtist.textContent = t.artist || '—';
-        openInPlayer.href = 'player.html?id=' + encodeURIComponent(t.id);
-        mini.hidden = false;
-        tracks.forEach((_,i)=>setRowPlaying(i,false));
-    }
-
-    function playIdx(idx){
-        if(idx<0 || idx>=tracks.length) return;
-        if(current!==idx){
-            loadTrack(idx);
-            audio.play();
-        }else{
-            audio.paused ? audio.play() : audio.pause();
-        }
-    }
-
-    function next(){ if(tracks.length) playIdx((current+1)%tracks.length); }
-    function prev(){ if(tracks.length) playIdx((current-1+tracks.length)%tracks.length); }
-
-    document.addEventListener('DOMContentLoaded', ()=>{
-        collectTracks();
-
-        // Play/Pausa per ogni riga
-        tracks.forEach((t,idx)=>{
-            t.playBtn.addEventListener('click', ()=> playIdx(idx));
-        });
-
-        // Mini-player controls
-        nextBtn.addEventListener('click', next);
-        prevBtn.addEventListener('click', prev);
-        toggleBtn.addEventListener('click', ()=> playIdx(current>=0?current:0));
-
-        // Placeholder "Aggiungi tracce"
-        document.getElementById('addTracksBtn').addEventListener('click', ()=>{
-            alert('TODO: Apri dialog/redirect per aggiungere tracce alla playlist.');
-        });
-    });
-
-    // Aggiorna tempi/icona
-    audio.addEventListener('loadedmetadata', ()=>{
-        fpTime.textContent = '0:00 / ' + fmt(audio.duration);
-    });
-    audio.addEventListener('timeupdate', ()=>{
-        fpTime.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
-    });
-    audio.addEventListener('play', ()=>{
-        fpPlay.style.display='none'; fpPause.style.display='';
-        if(current>=0) setRowPlaying(current,true);
-    });
-    audio.addEventListener('pause', ()=>{
-        fpPlay.style.display=''; fpPause.style.display='none';
-        if(current>=0) setRowPlaying(current,false);
-    });
-    audio.addEventListener('ended', next);
+    function init(){ if(!overlay) return; overlay.addEventListener('click',e=>{ if(e.target===overlay) closeAddTracksModal(); }); document.addEventListener('keydown',e=>{ if(e.key==='Escape' && overlay.classList.contains('active')) closeAddTracksModal(); }); listEl?.addEventListener('change',e=>{ const t=e.target; if(t && t.matches('input[type="checkbox"]')){ updateHighlight(t); updateCount(); }}); filterInput?.addEventListener('input',applyFilter); selectAllBtn?.addEventListener('click',selectAllVisible); clearBtn?.addEventListener('click',clearAll); updateCount(); }
+    document.addEventListener('DOMContentLoaded', init);
+})();
 </script>
 </body>
 </html>

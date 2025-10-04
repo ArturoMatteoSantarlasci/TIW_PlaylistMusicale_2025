@@ -90,7 +90,17 @@ public class PlaylistController extends HttpServlet {
             return;
         }
 
+        boolean hasPrev = trackGroup > 0;
+        boolean hasNext = false;
+        try {
+            hasNext = playlistDAO.hasNextGroup(playlistId, trackGroup);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         context.setVariable("trackGroup", trackGroup);
+        context.setVariable("hasPrev", hasPrev);
+        context.setVariable("hasNext", hasNext);
         context.setVariable("playlistId", playlistId);
         context.setVariable("playlistTitle", playlistTitle);
         context.setVariable("addableTracks", addableTracks);

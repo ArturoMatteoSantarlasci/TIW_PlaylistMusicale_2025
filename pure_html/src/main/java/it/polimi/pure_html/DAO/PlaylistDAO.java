@@ -394,6 +394,24 @@ public class PlaylistDAO implements DAO {
         return result;
     }
 
+    public boolean hasNextGroup(int playlistId, int currentGroup) throws SQLException {
+        // Controlla se esiste almeno una traccia nel gruppo successivo
+        PreparedStatement ps = connection.prepareStatement("""
+                 SELECT track_id
+                 FROM track a NATURAL JOIN playlist_tracks b
+                 WHERE b.playlist_id = ?
+                 ORDER BY artist ASC, YEAR ASC, a.track_id ASC
+                 OFFSET ? ROWS
+                 FETCH NEXT 1 ROWS ONLY
+                """);
+        ps.setInt(1, playlistId);
+        ps.setInt(2, (currentGroup + 1) * 5);
+        ResultSet rs = ps.executeQuery();
+        boolean exists = rs.isBeforeFirst();
+        closeQuery(rs, ps);
+        return exists;
+    }
+
     public record PlaylistSummary(int id, String title, Date creationDate, int tracksCount) {
     }
 }
