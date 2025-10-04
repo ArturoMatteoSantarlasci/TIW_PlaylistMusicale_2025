@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.io.Serial;
 import java.sql.Connection;
 
-@MultipartConfig
 @WebServlet("/Register")//no redirect, chiamata ajax
+@MultipartConfig
 public class RegisterController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -37,8 +37,8 @@ public class RegisterController extends HttpServlet {
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
         String nickname = req.getParameter("nickname");
         String password = req.getParameter("password");
-        String name = req.getParameter("name");
-        String surname = req.getParameter("surname");
+        String name = req.getParameter("nome");
+        String surname = req.getParameter("cognome");
 //logica controllo
         if (nickname == null || nickname.isEmpty() || password == null || password.isEmpty() || name == null || name.isEmpty() || surname == null || surname.isEmpty()) {
             res.sendError(HttpServletResponse.SC_BAD_REQUEST, "parametri invalidi");

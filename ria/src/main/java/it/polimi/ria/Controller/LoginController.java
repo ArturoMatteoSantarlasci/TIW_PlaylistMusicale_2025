@@ -16,8 +16,8 @@ import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-@MultipartConfig
 @WebServlet("/Login") // nome servlet per accesso via js
+@MultipartConfig
 public class LoginController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;

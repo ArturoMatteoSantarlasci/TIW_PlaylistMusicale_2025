@@ -10,7 +10,7 @@
     <!--Database connection parameters-->
     <context-param>
         <param-name>dbUrl</param-name>
-        <param-value>jdbc:mariadb://localhost:3307/tiw?serverTimezone=UTC</param-value>
+        <param-value>jdbc:mariadb://localhost:3307/tiw2025?serverTimezone=UTC</param-value>
     </context-param>
     <context-param>
         <param-name>dbUser</param-name>
@@ -29,10 +29,7 @@
     <welcome-file-list>
         <welcome-file>Login</welcome-file>
     </welcome-file-list>
-    <context-param>
-        <param-name>outputPath</param-name>
-        <param-value>uploads</param-value>
-    </context-param>
+    <!-- File uploads now saved directly to webapp/media/ -->
     <filter>
         <filter-name>InvalidUserChecker</filter-name>
         <filter-class>it.polimi.ria.filters.InvalidUserChecker</filter-class>
@@ -42,14 +39,16 @@
         <filter-name>InvalidUserChecker</filter-name>
         <!-- Servlets and URLs on which to invoke the check -->
         <url-pattern>/HomePage</url-pattern>
+        <url-pattern>/home_page.html</url-pattern>
         <url-pattern>/Playlist</url-pattern>
         <url-pattern>/Track</url-pattern>
         <url-pattern>/AddTracks</url-pattern>
         <url-pattern>/CreatePlaylist</url-pattern>
+        <url-pattern>/GetTracksNotInPlaylist</url-pattern>
+        <url-pattern>/GetUserTracks</url-pattern>
+        <url-pattern>/TrackReorder</url-pattern>
         <url-pattern>/UploadTrack</url-pattern>
         <url-pattern>/Logout</url-pattern>
-        <url-pattern>/TrackReorder</url-pattern>
-        <url-pattern>/GetTracksNotInPlaylist</url-pattern>
     </filter-mapping>
     <filter>
         <filter-name>UserChecker</filter-name>
@@ -58,7 +57,9 @@
     <filter-mapping>
         <filter-name>UserChecker</filter-name>
         <url-pattern>/Login</url-pattern>
-        <url-pattern>/Register</url-pattern>
+        <url-pattern>/login.html</url-pattern>
+        <!--        <url-pattern>/Register</url-pattern>-->
+        <!--        <url-pattern>/register.html</url-pattern>-->
     </filter-mapping>
     <filter>
         <filter-name>PlaylistChecker</filter-name>
@@ -86,5 +87,4 @@
         <filter-name>TrackChecker</filter-name>
         <url-pattern>/Track</url-pattern>
     </filter-mapping>
-
 </web-app>

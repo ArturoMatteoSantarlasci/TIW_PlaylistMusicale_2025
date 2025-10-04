@@ -38,6 +38,12 @@ public class GetTracksNotInPlaylist extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         HttpSession s = req.getSession();
         User user = (User) s.getAttribute("user");
+
+        if (user == null) {
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "User not logged in");
+            return;
+        }
+
         String playlistTitle = req.getParameter("playlistTitle");
 //logica controllo
         if (playlistTitle == null || playlistTitle.isEmpty()) {

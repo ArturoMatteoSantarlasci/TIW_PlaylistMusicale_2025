@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Home page</title>
+    <link rel="stylesheet" href="CSS/colors.css">
+    <link rel="stylesheet" href="CSS/components.css">
+    <link rel="stylesheet" href="CSS/home_page.css">
+    <link rel="icon" type="image/x-icon" href="img/icon.ico">
+    <script src="utils.js" charset="UTF-8" defer></script>
+    <script src="homepage.js" charset="UTF-8" defer></script>
+</head>
+<body>
+<div class="nav-bar">
+    <div class="main-label">All Playlists</div>
+    <div class="spacer"></div>
+    <button id="upload-track-modal-button" class="button">Upload Track</button>
+    <button id="track-selector-modal-button" class="button">Add Playlist</button>
+    <button id="logout-button" type="submit" class="button logout">Logout</button>
+    <button id="homepage-button" class="icon-only floating-home" title="Homepage">
+        <img class="icon" src="img/side-bar/home.svg" alt="home">
+    </button>
+</div>
+<div class="below-bar">
+    <button id="back-button" class="icon-only" title="Indietro" disabled>
+        <img class="icon" src="img/side-bar/back.svg" alt="back">
+    </button>
+</div>
+<div id="main" class="main"></div>
+<div id="modals"></div>
+</body>
+</html>

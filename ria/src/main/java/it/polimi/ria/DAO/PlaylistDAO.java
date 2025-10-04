@@ -177,7 +177,7 @@ public class PlaylistDAO implements DAO {
                         image_checksum
                  FROM track
                  WHERE user_id = ? AND track_id not in (
-                    SELECT t.track_id
+                    SELECT pt.track_id
                     FROM playlist p NATURAL JOIN playlist_tracks pt
                     WHERE p.playlist_title= ? AND p.user_id = ?
                  )

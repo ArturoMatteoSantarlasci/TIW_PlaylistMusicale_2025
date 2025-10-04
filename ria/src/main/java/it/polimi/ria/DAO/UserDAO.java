@@ -2,10 +2,7 @@ package it.polimi.ria.DAO;
 
 import it.polimi.ria.entities.User;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class UserDAO implements DAO {
     private final Connection connection;
@@ -75,7 +72,7 @@ public class UserDAO implements DAO {
             if (query != null) {
                 closeQuery(query);
             }
-            return true;
         }
+        return true;
     }
 }
