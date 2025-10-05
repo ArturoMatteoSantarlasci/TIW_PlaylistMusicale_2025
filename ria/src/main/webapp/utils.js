@@ -51,48 +51,47 @@ function clearModals() {
  * @param buttonText text of the button
  */
 function createModal(id, titleText, buttonId, buttonText) {
-    let modal = document.createElement("div");
-    modal.id = id;
-    modal.className = "modal-window";
+    // Pure_html modal markup: overlay -> modal -> header + content + actions
+    const overlay = document.createElement("div");
+    overlay.id = id;
+    overlay.className = "modal-overlay hidden"; // hidden until showModal
 
-    let container = document.createElement("div"),
-        topNavbar = document.createElement("div");
-    topNavbar.className = "nav-bar";
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    overlay.appendChild(modal);
 
-    let title = document.createElement("div");
-    title.className = "modal-title";
-    title.textContent = titleText;
+    const header = document.createElement("div");
+    header.className = "modal-header";
+    const h2 = document.createElement("h2");
+    h2.className = "modal-title";
+    h2.textContent = titleText;
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "modal-close";
+    closeBtn.setAttribute("aria-label", "Chiudi");
+    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+    closeBtn.addEventListener("click", () => closeModal(overlay));
+    header.appendChild(h2);
+    header.appendChild(closeBtn);
+    modal.appendChild(header);
 
-    let spacer = document.createElement("div");
-    spacer.className = "spacer";
+    const content = document.createElement("div");
+    content.className = "modal-content";
+    const form = document.createElement("form");
+    // Le azioni devono stare DENTRO il form per consentire closest('form') sul bottone
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+    const primary = document.createElement("button");
+    primary.id = buttonId;
+    primary.type = "button"; // lasciamo button (non submit) perché gestiamo noi la validazione
+    primary.className = "btn";
+    primary.textContent = buttonText;
+    actions.appendChild(primary);
+    form.appendChild(actions);
+    content.appendChild(form);
+    modal.appendChild(content);
 
-    let close = document.createElement("div");
-    close.className = "modal-close";
-    close.textContent = "Close";
-    close.addEventListener("click", () => {
-        closeModal(modal);
-    });
-
-    let form = document.createElement("form");
-    topNavbar.appendChild(title);
-    topNavbar.appendChild(spacer);
-    topNavbar.appendChild(close);
-    container.appendChild(topNavbar);
-    container.appendChild(form);
-    modal.appendChild(container);
-
-    let bottomNavbar = document.createElement("div"),
-        button = document.createElement("button");
-
-    bottomNavbar.className = "nav-bar";
-    button.id = buttonId;
-    button.type = "button";
-    button.className = "button";
-    button.textContent = buttonText;
-    bottomNavbar.appendChild(button);
-    form.appendChild(bottomNavbar);
-
-    return modal;
+    return overlay;
 }
 
 /**
@@ -101,10 +100,9 @@ function createModal(id, titleText, buttonId, buttonText) {
  * @param modal modal to make visible
  */
 function showModal(modal) {
-    console.log("Showing modal:", modal);
     modal.classList.remove("hidden");
-    modal.style.visibility = "";
-    modal.style.pointerEvents = "";
+    modal.classList.add("active");
+    modal.style.display = "flex";
 }
 
 /**
@@ -114,8 +112,8 @@ function showModal(modal) {
  */
 function closeModal(modal) {
     modal.classList.add("hidden");
-    modal.style.visibility = "hidden";
-    modal.style.pointerEvents = "none";
+    modal.classList.remove("active");
+    modal.style.display = "none";
 }
 
 /**

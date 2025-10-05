@@ -1,38 +1,40 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrazione </title>
-    <link rel="stylesheet" href="CSS/register.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registrazione</title>
+    <link rel="stylesheet" href="CSS/app.css" />
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png">
 </head>
 <body>
-    <div class="register-container">
-        <div class="logo">♪</div>
-        <h1>Registrati a Playlist Musicale</h1>
-        <form action="register" method="post">
-            <div class="form-group">
-                <label for="nickname">Nickname</label>
-                <input type="text" id="nickname" name="nickname" required>
+<div class="wrap">
+    <h1 class="title">Registrati</h1>
+    <div class="panel">
+        <div class="alert" id="error" style="display:none"><p></p></div>
+        <form action="Register" method="post" autocomplete="on" class="stack">
+            <div class="field pad-left">
+                <span class="badge left" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>
+                <input type="text" id="nickname" name="nickname" placeholder="Nickname" required />
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+            <div class="field pad-left">
+                <span class="badge left" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0Z"/></svg></span>
+                <input type="password" id="password" name="password" placeholder="Password" minlength="6" required />
             </div>
-            <div class="form-group">
-                <label for="nome">Nome</label>
-                <input type="text" id="nome" name="nome" required>
+            <div class="field pad-left">
+                <span class="badge left" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>
+                <input type="text" id="nome" name="nome" placeholder="Nome" required />
             </div>
-            <div class="form-group">
-                <label for="cognome">Cognome</label>
-                <input type="text" id="cognome" name="cognome" required>
+            <div class="field pad-left">
+                <span class="badge left" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/></svg></span>
+                <input type="text" id="cognome" name="cognome" placeholder="Cognome" required />
             </div>
-            <button type="submit" class="register-btn" id="create-account-button">Registrati</button>
+            <button class="btn" id="create-account-button" type="submit">Registrati</button>
+            <a class="btn secondary" id="login-button" href="login.html">Hai già un account? Accedi</a>
         </form>
-        <button class="login-btn" id="login-button" onclick="window.location.href='login.html'">Hai già un account? Accedi</button>
-        <div id="error"><p></p></div>
     </div>
-    <script src="utils.js" charset="UTF-8" defer></script>
-    <script src="register.js" charset="UTF-8" defer></script>
+</div>
+<script src="utils.js" charset="UTF-8" defer></script>
+<script src="register.js" charset="UTF-8" defer></script>
 </body>
 </html>
