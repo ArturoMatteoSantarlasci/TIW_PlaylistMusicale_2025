@@ -303,7 +303,7 @@
                             // Visualizza solo dati utente (titolo, artista, anno) senza ID globale
                             li.dataset.trackId = track.id; // conserva ID reale per salvataggio ordine
                             li.textContent = track.artist + " - " + track.title + " (" + track.year + ")";
-                            li.title = "ID DB: " + track.id; // tooltip debug opzionale
+                           // li.title = "ID DB: " + track.id; // tooltip debug opzionale
                             trackSelector.appendChild(li);
                         });
                     } else alert("Impossibile recuperare i dati. Forse la sessione è scaduta.");
