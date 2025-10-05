@@ -43,11 +43,11 @@
 
     // =================== HOME VIEW ===================
     function HomeView() {
-    const HOMEPAGE_LABEL = "Le mie Playlist"; // tradotto in italiano
+        const HOMEPAGE_LABEL = "Le mie Playlist"; // tradotto in italiano
         const HOMEPAGE_ID = "homepage";
 
         this.show = function () {
-        // Reset semplice (stack rimosso)
+            // Reset semplice (stack rimosso)
             clearModals();
             clearBottomNavbar();
             loadCreatePlaylistModal();
@@ -77,6 +77,7 @@
         }
 
         function loadButtons() {
+            // Rimpiazzo per rimuovere vecchi event listener
             let modalButton = document.getElementById("track-selector-modal-button");
             let newButton = modalButton.cloneNode(true);
             modalButton.parentNode.replaceChild(newButton, modalButton);
@@ -87,6 +88,7 @@
                 showModal(document.getElementById("create-playlist"));
             });
 
+            // rimosso bottone chiudi globale
 
             // Evita invio implicito con Enter (playlist form)
             document.getElementById("create-playlist").getElementsByTagName("form").item(0)
@@ -163,7 +165,7 @@
             // Mostra pulsanti principali
             document.getElementById("upload-track-modal-button").className = "button";
             document.getElementById("track-selector-modal-button").className = "button";
-                // Bottone indietro rimosso definitivamente: nessuna creazione
+            // Bottone indietro rimosso definitivamente: nessuna creazione
         }
 
         function playlistGrid(playlists) {
@@ -298,7 +300,10 @@
                         tracks.forEach(track => {
                             let li = document.createElement("li");
                             li.draggable = true; li.addEventListener("dragstart", dragStart); li.addEventListener("dragover", dragOver); li.addEventListener("dragleave", dragLeave); li.addEventListener("drop", drop);
-                            li.value = track.id; li.textContent = track.artist + " - " + track.title + " (" + track.year + ")";
+                            // Visualizza solo dati utente (titolo, artista, anno) senza ID globale
+                            li.dataset.trackId = track.id; // conserva ID reale per salvataggio ordine
+                            li.textContent = track.artist + " - " + track.title + " (" + track.year + ")";
+                            li.title = "ID DB: " + track.id; // tooltip debug opzionale
                             trackSelector.appendChild(li);
                         });
                     } else alert("Impossibile recuperare i dati. Forse la sessione è scaduta.");
@@ -307,7 +312,8 @@
         }
         function saveOrder(e, _playlistId) {
             let songsContainer = document.getElementById("track-reorder");
-            let _trackIds = Array.from(songsContainer.querySelectorAll("li")).map(li => li.value);
+            // Estrae gli ID reali nell'ordine corrente
+            let _trackIds = Array.from(songsContainer.querySelectorAll("li")).map(li => parseInt(li.dataset.trackId));
             let req = new XMLHttpRequest();
             let target = e.target;
             req.onreadystatechange = function () {
