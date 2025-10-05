@@ -1,174 +1,150 @@
-// Helper methods
 
 /**
- * Make an asynchronous call to the server by specifying method, URL, form to send,
- * the function to execute and whether to reset the given form.
- *
- * @param method method of the request (usually GET, POST)
- * @param url URL to call
- * @param formElement form
- * @param callback function to execute upon received data
- * @param reset whether to reset the given form
+ * Esegue una chiamata asincrona al server usando XMLHttpRequest.
+ *  - method: 'GET' | 'POST' ...
+ *  - url: endpoint servlet (senza context path aggiuntivo)
+ *  - formElement: se presente, i suoi campi vengono inviati (FormData)
+ *  - callback: funzione chiamata ad ogni cambiamento di stato (readyState)
+ *  - reset: se true (default) il form viene svuotato dopo l'invio
  */
 function makeCall(method, url, formElement, callback, reset = true) {
-    let req = new XMLHttpRequest();
-    req.onreadystatechange = function () {
-        callback(req);
-    };
+    const req = new XMLHttpRequest();
+    req.onreadystatechange = () => callback(req);
     req.open(method, url);
     if (formElement == null) {
         req.send();
     } else {
-        let formData = new FormData(formElement)
+        const formData = new FormData(formElement);
         req.send(formData);
     }
-    if (formElement != null && reset === true) {
-        formElement.reset();
-    }
+    if (formElement != null && reset) formElement.reset();
 }
 
-/**
- * Delete everything from main div.
- */
+/** Pulisce completamente il contenuto del main. */
 function cleanMain() {
-    let main_div = document.getElementById("main");
-    main_div.innerHTML = "";
+    const main = document.getElementById("main");
+    if (main) main.innerHTML = "";
 }
 
-/**
- * Delete everything from modals div.
- */
+/** Rimuove tutte le modali create dinamicamente. */
 function clearModals() {
-    document.getElementById("modals").innerHTML = "";
+    const m = document.getElementById("modals");
+    if (m) m.innerHTML = "";
 }
 
 /**
- * Create basic modal element; used as a building block for creating modals.
- *
- * @param id id of this modal
- * @param titleText title of this modal
- * @param buttonId ID of the button
- * @param buttonText text of the button
+ * Crea una modale.
+ * Struttura:
+ * <div id=... class="modal-window hidden">  (aggiungiamo anche 'hidden' per compatibilità con codice esistente)
+ *   <div>
+ *     <div class="nav-bar"> [titolo] [spacer] [close] </div>
+ *     <form> ... <div class="nav-bar">[bottone]</div> </form>
+ *   </div>
+ * </div>
  */
 function createModal(id, titleText, buttonId, buttonText) {
-    // Pure_html modal markup: overlay -> modal -> header + content + actions
-    const overlay = document.createElement("div");
-    overlay.id = id;
-    overlay.className = "modal-overlay hidden"; // hidden until showModal
-
     const modal = document.createElement("div");
-    modal.className = "modal";
-    overlay.appendChild(modal);
+    modal.id = id;
+    // Manteniamo sia la vecchia classe sia 'hidden' per riuso della logica show/hide esistente
+    modal.className = "modal-window hidden";
 
-    const header = document.createElement("div");
-    header.className = "modal-header";
-    const h2 = document.createElement("h2");
-    h2.className = "modal-title";
-    h2.textContent = titleText;
-    const closeBtn = document.createElement("button");
-    closeBtn.type = "button";
-    closeBtn.className = "modal-close";
-    closeBtn.setAttribute("aria-label", "Chiudi");
-    closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
-    closeBtn.addEventListener("click", () => closeModal(overlay));
-    header.appendChild(h2);
-    header.appendChild(closeBtn);
-    modal.appendChild(header);
+    const container = document.createElement("div");
+    const topNavbar = document.createElement("div");
+    topNavbar.className = "nav-bar";
 
-    const content = document.createElement("div");
-    content.className = "modal-content";
+    const title = document.createElement("div");
+    title.className = "modal-title";
+    title.textContent = titleText;
+
+    const spacer = document.createElement("div");
+    spacer.className = "spacer";
+
+    // Pulsante chiusura modale (prima era <div>, ora <button> per corretto comportamento e cursore)
+    const close = document.createElement("button");
+    close.type = "button";
+    close.className = "modal-close";
+    close.setAttribute("aria-label", "Chiudi modale");
+    close.textContent = "Close"; // testo legacy mantenuto
+    close.addEventListener("click", () => closeModal(modal));
+
     const form = document.createElement("form");
-    // Le azioni devono stare DENTRO il form per consentire closest('form') sul bottone
-    const actions = document.createElement("div");
-    actions.className = "modal-actions";
-    const primary = document.createElement("button");
-    primary.id = buttonId;
-    primary.type = "button"; // lasciamo button (non submit) perché gestiamo noi la validazione
-    primary.className = "btn";
-    primary.textContent = buttonText;
-    actions.appendChild(primary);
-    form.appendChild(actions);
-    content.appendChild(form);
-    modal.appendChild(content);
 
-    return overlay;
+    topNavbar.appendChild(title);
+    topNavbar.appendChild(spacer);
+    topNavbar.appendChild(close);
+    container.appendChild(topNavbar);
+    container.appendChild(form);
+    modal.appendChild(container);
+
+    // Bottom navbar con bottone primario
+    const bottomNavbar = document.createElement("div");
+    bottomNavbar.className = "nav-bar";
+    const button = document.createElement("button");
+    button.id = buttonId;
+    button.type = "button"; // non submit: la logica di validazione e invio è nel JS
+    button.className = "button";
+    button.textContent = buttonText;
+    bottomNavbar.appendChild(button);
+    form.appendChild(bottomNavbar);
+
+    return modal;
 }
 
-/**
- * Make the modal visible.
- *
- * @param modal modal to make visible
- */
 function showModal(modal) {
+    // Rimuoviamo eventuale classe hidden e usiamo visibility per compatibilità con vecchio stile
     modal.classList.remove("hidden");
-    modal.classList.add("active");
-    modal.style.display = "flex";
+    modal.style.visibility = "visible";
+    modal.style.pointerEvents = "auto";
 }
 
-/**
- * Make the modal hidden.
- *
- * @param modal modal to hide
- */
+/** Nasconde la modale. */
 function closeModal(modal) {
     modal.classList.add("hidden");
-    modal.classList.remove("active");
-    modal.style.display = "none";
+    modal.style.visibility = "hidden";
+    modal.style.pointerEvents = "none";
 }
 
-/**
- * Delete the bottom navbar if present.
- */
+/** Elimina la bottom navbar se presente (usata nella vista playlist per i pulsanti prev/next). */
 function clearBottomNavbar() {
-    let navbar = document.getElementById("bottom-nav-bar");
-    if (navbar != null)
-        navbar.remove();
+    const navbar = document.getElementById("bottom-nav-bar");
+    if (navbar) navbar.remove();
 }
 
 /**
- * Get user tracks and add them to the track selector parameter.
- *
- * @param trackSelector HTML element to append the loaded user tracks
- * @param playlist optional parameter used for just loading tracks not present in the specified playlist
+ * Carica le tracce dell'utente (o quelle non ancora in una playlist) dentro un <select> passato.
+ *  - trackSelector: elemento <select>
+ *  - playlist (opzionale): se presente carica solo tracce NON incluse in quella playlist
  */
 function loadUserTracks(trackSelector, playlist = null) {
     trackSelector.innerHTML = "";
-    let url;
-    if (playlist == null) {
-        url = "GetUserTracks";
-    } else {
-        url = "GetTracksNotInPlaylist?playlistTitle=" + encodeURIComponent(playlist.title);
-    }
+    const url = playlist == null ? "GetUserTracks" : "GetTracksNotInPlaylist?playlistTitle=" + encodeURIComponent(playlist.title);
 
-    makeCall("GET", url, null, function (req) {
-        if (req.readyState == XMLHttpRequest.DONE) {
-            let message = req.responseText;
-            if (req.status == 200) {
-                let tracks = JSON.parse(message);
-                if (tracks.length === 0) {
-                    let option = document.createElement("option");
-                    option.value = "";
-                    option.textContent = "There are no available tracks to be added."
-                    trackSelector.setAttribute("size", "1");
-                    trackSelector.appendChild(option);
-                    return;
-                } else if (tracks.length < 10) {
-                    trackSelector.setAttribute("size", tracks.length.toString());
-                } else {
-                    trackSelector.setAttribute("size", "10");
-                }
-                tracks.forEach(function (track) {
-                    let option = document.createElement("option");
-                    option.value = track.id.toString();
-                    option.textContent = track.artist + " - " + track.title + " (" + track.year + ")"
-                    trackSelector.appendChild(option);
-                });
-            } else if (req.status == 401) {
-                alert("Session expired. Please log in again.");
-                window.location.href = "login.html";
-            } else {
-                alert("Cannot recover data.");
+    makeCall("GET", url, null, (req) => {
+        if (req.readyState !== XMLHttpRequest.DONE) return;
+        const message = req.responseText;
+        if (req.status === 200) {
+            let tracks = [];
+            try { tracks = JSON.parse(message) || []; } catch (_) { tracks = []; }
+            if (tracks.length === 0) {
+                const option = document.createElement("option");
+                option.value = "";
+                option.textContent = "Nessuna traccia disponibile da aggiungere";
+                trackSelector.setAttribute("size", "1");
+                trackSelector.appendChild(option);
+                return;
             }
+            trackSelector.setAttribute("size", tracks.length < 10 ? tracks.length.toString() : "10");
+            tracks.forEach(track => {
+                const option = document.createElement("option");
+                option.value = track.id.toString();
+                option.textContent = track.artist + " - " + track.title + " (" + track.year + ")";
+                trackSelector.appendChild(option);
+            });
+        } else if (req.status === 401) {
+            alert("Sessione scaduta. Effettua di nuovo il login.");
+            window.location.href = "login.html";
+        } else {
+            alert("Impossibile recuperare i dati.");
         }
-    });
+    }, false); // false => non resettiamo il form chiamante (qui non c'è)
 }
