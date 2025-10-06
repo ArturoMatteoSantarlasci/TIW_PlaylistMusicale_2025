@@ -109,6 +109,7 @@ public class UploadTrack extends HttpServlet {
 
             FileDetails fileDetails;
 
+            // Salva file: immagini in /media/img, audio in /media/audio
             fileDetails = processPart(req.getPart("image"), "image");
             String imagePath = fileDetails.path();
             String imageHash = fileDetails.hash();
@@ -176,61 +177,94 @@ public class UploadTrack extends HttpServlet {
         TrackDAO trackDAO = new TrackDAO(connection);
 
         hash = getSHA256Hash(part.getInputStream().readAllBytes());
-        pathFileRelative = switch (mimeType) {// se già c'è lo ritorno con hash
+        pathFileRelative = switch (mimeType) { // se già c'è lo ritorno con hash
             case "audio" -> trackDAO.isTrackFileAlreadyPresent(hash);
             case "image" -> trackDAO.isImageFileAlreadyPresent(hash);
             default -> null;
         };
 
         if (pathFileRelative != null) {
+            // Correzione legacy: audio duplicato salvato in passato in /media/img
+            if ("audio".equals(mimeType) && pathFileRelative.startsWith("/media/img/") && pathFileRelative.toLowerCase().matches(".*\\.(mp3|wav|ogg|m4a)$")) {
+                String legacyName = pathFileRelative.substring(pathFileRelative.lastIndexOf('/') + 1);
+                String corrected = "/media/audio/" + legacyName;
+                System.out.println("[UploadTrack RIA] Legacy audio duplicate detected. Old=" + pathFileRelative + " New=" + corrected);
+                try {
+                    String legacyAbs = context.getRealPath(pathFileRelative);
+                    String audioDirAbs = context.getRealPath("/media/audio/");
+                    if (legacyAbs != null && audioDirAbs != null) {
+                        File legacyFile = new File(legacyAbs);
+                        File audioDir = new File(audioDirAbs);
+                        if (!audioDir.exists()) audioDir.mkdirs();
+                        File newFile = new File(audioDir, legacyName);
+                        if (legacyFile.exists() && !newFile.exists()) {
+                            Files.copy(legacyFile.toPath(), newFile.toPath());
+                            System.out.println("[UploadTrack RIA] Copied legacy audio to " + newFile.getAbsolutePath());
+                        }
+                        pathFileRelative = corrected;
+                    }
+                } catch (Exception ex) {
+                    System.err.println("[UploadTrack RIA] Errore correzione legacy audio: " + ex.getMessage());
+                }
+            }
             return new FileDetails(pathFileRelative, hash);
         }
-//prendi percorso filesisttem+media, poi prendi file name dall'input , lo rendi unico con uuid random, componi path assoluto , ci crei cartella, ci crei file,
-// copi file input nel file, e crei percorso relativo con media+name di file
-        String absoluteOutputFolderPath = context.getRealPath("media") + File.separator + mimeType + File.separator;
+
+        // Cartella target distinta per tipo: image -> img, audio -> audio
+        final String targetFolderName = switch (mimeType) {
+            case "audio" -> "audio";
+            case "image" -> "img";
+            default -> "misc"; // fallback improbabile
+        };
+        String baseReal = context.getRealPath("media");
+        System.out.println("[UploadTrack RIA] Part type=" + mimeType + " contentType=" + part.getContentType() + " baseRealPath=" + baseReal + " -> folder=" + targetFolderName);
+
+        if (baseReal == null) {
+            // Caso raro: il container non fornisce real path (deploy non exploded). Usiamo temp dir applicativa.
+            File tempRoot = (File) context.getAttribute("javax.servlet.context.tempdir");
+            baseReal = new File(tempRoot, "media").getAbsolutePath();
+            System.out.println("[UploadTrack RIA] baseReal era null. Fallback tempdir=" + baseReal);
+        }
+
+        String absoluteOutputFolderPath = baseReal + File.separator + targetFolderName + File.separator;
         String realname = Paths.get(part.getSubmittedFileName()).getFileName().toString();
         String fileName = UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
         String filePathAbsolute = absoluteOutputFolderPath + fileName;
         File outputFile = new File(filePathAbsolute);
 
-        // Crea le cartelle se necessario
-        if (!outputFile.getParentFile().exists()) {
-            boolean created = outputFile.getParentFile().mkdirs();
-            if (!created) {
-                throw new ServerErrorException("Errore durante creazione cartelle", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
+        if (!outputFile.getParentFile().exists() && !outputFile.getParentFile().mkdirs()) {
+            throw new ServerErrorException("Errore durante creazione cartelle", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
 
         try {
             Files.copy(part.getInputStream(), outputFile.toPath());
+            System.out.println("[UploadTrack RIA] Wrote file absolute=" + outputFile.getAbsolutePath() + " exists=" + outputFile.exists() + " size=" + (outputFile.exists()? outputFile.length(): -1));
             newFiles.add(outputFile);
-            // >>> Salva nel DB **il path WEB**, non il path di filesystem
-            pathFileRelative = "/media/" + mimeType + "/" + fileName;
+            pathFileRelative = "/media/" + targetFolderName + "/" + fileName;
+            System.out.println("[UploadTrack RIA] Saved file to " + pathFileRelative);
 
-            // Copia anche nella cartella sorgente per persistenza tra rebuild (src/main/webapp/media/...)
+            // Copia anche nella cartella sorgente per persistenza tra rebuild (src/main/webapp/media/img)
             try {
-                // path della root del progetto: risalgo da context real path (che punta alla cartella war esplosa)
-                // Cerco una cartella che contenga "src" risalendo
                 File warRoot = new File(context.getRealPath("/"));
                 File current = warRoot;
                 File projectRoot = null;
-                int maxLevels = 6; // evita loop infiniti
+                int maxLevels = 6;
                 while (current != null && maxLevels-- > 0) {
                     File srcDir = new File(current, "src");
-                    if (srcDir.exists() && srcDir.isDirectory()) { // trovata root progetto (heuristic)
-                        projectRoot = current;
-                        break;
-                    }
+                    if (srcDir.exists() && srcDir.isDirectory()) { projectRoot = current; break; }
                     current = current.getParentFile();
                 }
                 if (projectRoot != null) {
-                    File sourceMediaDir = new File(projectRoot, "src" + File.separator + "main" + File.separator + "webapp" + File.separator + "media" + File.separator + mimeType);
+                    File sourceMediaDir = new File(projectRoot, "src" + File.separator + "main" + File.separator + "webapp" + File.separator + "media" + File.separator + targetFolderName);
                     if (!sourceMediaDir.exists() && !sourceMediaDir.mkdirs()) {
                         System.err.println("[UploadTrack] Impossibile creare directory sorgente media: " + sourceMediaDir.getAbsolutePath());
                     } else {
                         File sourceCopy = new File(sourceMediaDir, fileName);
                         if (!sourceCopy.exists()) {
                             Files.copy(outputFile.toPath(), sourceCopy.toPath());
+                            System.out.println("[UploadTrack RIA] Copied to source dir: " + sourceCopy.getAbsolutePath());
+                        } else {
+                            System.out.println("[UploadTrack RIA] Source copy already exists: " + sourceCopy.getAbsolutePath());
                         }
                     }
                 } else {
@@ -244,7 +278,6 @@ public class UploadTrack extends HttpServlet {
             e.printStackTrace();
             throw new ServerErrorException("Errore durante salvataggio file", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-
     }
 
     /**

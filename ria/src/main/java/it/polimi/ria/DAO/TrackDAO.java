@@ -141,6 +141,8 @@ public class TrackDAO implements DAO {
         querywithparam.setString(9, track.song_checksum());
         querywithparam.setString(10, track.image_checksum());
 
+    System.out.println("[TrackDAO RIA] INSERT image_path=" + track.image_path() + " song_path=" + track.song_path());
+
         querywithparam.executeUpdate();
         ResultSet res = querywithparam.getGeneratedKeys();//matrice 1x1
 

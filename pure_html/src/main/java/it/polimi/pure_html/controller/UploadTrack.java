@@ -1,14 +1,12 @@
 package it.polimi.pure_html.controller;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.polimi.pure_html.DAO.TrackDAO;
 import it.polimi.pure_html.entities.Track;
 import it.polimi.pure_html.entities.User;
 import it.polimi.pure_html.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.UnavailableException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -31,32 +29,33 @@ import java.time.Year;
 import java.util.*;
 
 @WebServlet("/UploadTrack")
-@MultipartConfig
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024,      // 1MB buffer
+    maxFileSize = 1024 * 1024 * 25,       // 25MB per singolo file (audio + immagine)
+    maxRequestSize = 1024 * 1024 * 30     // 30MB totale request
+)
 public class UploadTrack extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
     private Connection connection = null;
-    private String relativeOutputFolder;
+    // Rimosso outputPath: i file vengono sempre salvati sotto /media/img
     private User user;
     private Track track;
     private List<File> newFiles;
     private ServletContext context;
-    private List<String> genres;
+    private List<String> genres; // lista fissa hardcoded
 
     public void init() throws ServletException {
         context = getServletContext();
         connection = ConnectionHandler.openConnection(context);
         //NOME CARTELLA DOVE SALVARE I FILE NELLA WEBAPP ES. ''uploads''
-        relativeOutputFolder = getServletContext().getInitParameter("outputPath");
         newFiles = new ArrayList<>();
 
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            genres = List.of(objectMapper.readValue(new File(context.getRealPath("genres.json")), String[].class));
-        } catch (IOException e) {
-            e.printStackTrace();
-            throw new UnavailableException("Impossibile caricare i generi");
-        }
+        // Lista hardcoded (niente più json)
+        genres = List.of(
+                "Classical","Rock","Edm","Pop","Hip-hop","R&B","Country","Jazz","Blues",
+                "Metal","Folk","Soul","Funk","Electronic","Indie","Reggae","Disco"
+        );
     }
 
     @Override
@@ -74,8 +73,13 @@ public class UploadTrack extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        user = (User) req.getSession().getAttribute("user");
-
+        // Non creare nuova sessione se scaduta
+        var session = req.getSession(false);
+        if (session == null || (user = (User) session.getAttribute("user")) == null) {
+            // Sessione scaduta: redirect login o 401
+            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Sessione scaduta");
+            return;
+        }
 
         try {
             String title = getRequiredParameter(req, "title");
@@ -104,10 +108,12 @@ public class UploadTrack extends HttpServlet {
 
             FileDetails fileDetails;
 
+            // Immagini in /media/img
             fileDetails = processPart(req.getPart("image"), "image");
             String imagePath = fileDetails.path();
             String imageHash = fileDetails.hash();
 
+            // Audio in /media/audio
             fileDetails = processPart(req.getPart("musicTrack"), "audio");
             String songPath = fileDetails.path();
             String songHash = fileDetails.hash();
@@ -118,6 +124,10 @@ public class UploadTrack extends HttpServlet {
             return;
         } catch (SQLException e) {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
+        } catch (IllegalStateException tooBig) {
+            // File oltre i limiti del @MultipartConfig
+            resp.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "File troppo grande");
             return;
         }
 
@@ -166,40 +176,94 @@ public class UploadTrack extends HttpServlet {
         TrackDAO trackDAO = new TrackDAO(connection);
 
         hash = getSHA256Hash(part.getInputStream().readAllBytes());
-        pathFileRelative = switch (mimeType) {// se già c'è lo ritorno con hash
+        pathFileRelative = switch (mimeType) { // se già c'è lo ritorno con hash
             case "audio" -> trackDAO.isTrackFileAlreadyPresent(hash);
             case "image" -> trackDAO.isImageFileAlreadyPresent(hash);
             default -> null;
         };
 
         if (pathFileRelative != null) {
+            // Fix legacy: audio file salvato in passato sotto /media/img
+            if ("audio".equals(mimeType) && pathFileRelative.startsWith("/media/img/") && pathFileRelative.toLowerCase().matches(".*\\.(mp3|wav|ogg|m4a)$")) {
+                String legacyName = pathFileRelative.substring(pathFileRelative.lastIndexOf('/') + 1);
+                String corrected = "/media/audio/" + legacyName;
+                System.out.println("[UploadTrack PURE_HTML] Legacy audio duplicate detected. Old=" + pathFileRelative + " New=" + corrected);
+                try {
+                    String legacyAbs = context.getRealPath(pathFileRelative);
+                    String audioDirAbs = context.getRealPath("/media/audio/");
+                    if (legacyAbs != null && audioDirAbs != null) {
+                        var legacyFile = new File(legacyAbs);
+                        var audioDir = new File(audioDirAbs);
+                        if (!audioDir.exists()) audioDir.mkdirs();
+                        var newFile = new File(audioDir, legacyName);
+                        if (legacyFile.exists() && !newFile.exists()) {
+                            java.nio.file.Files.copy(legacyFile.toPath(), newFile.toPath());
+                            System.out.println("[UploadTrack PURE_HTML] Copied legacy audio to " + newFile.getAbsolutePath());
+                        }
+                        pathFileRelative = corrected;
+                    }
+                } catch (Exception moveEx) {
+                    System.err.println("[UploadTrack PURE_HTML] Errore correzione legacy audio: " + moveEx.getMessage());
+                }
+            }
             return new FileDetails(pathFileRelative, hash);
         }
 
-        String absoluteOutputFolderPath = context.getRealPath(relativeOutputFolder) + File.separator + mimeType + File.separator;
+        // Cartella specifica per tipo
+        final String targetFolderName = switch (mimeType) {
+            case "audio" -> "audio";
+            case "image" -> "img";
+            default -> "misc";
+        };
+        System.out.println("[UploadTrack PURE_HTML] Part type=" + mimeType + " contentType=" + part.getContentType() + " -> folder=" + targetFolderName);
+        String absoluteOutputFolderPath = context.getRealPath("media") + File.separator + targetFolderName + File.separator;
         String realname = Paths.get(part.getSubmittedFileName()).getFileName().toString();
-        String FilePathAbsolute = absoluteOutputFolderPath + absoluteOutputFolderPath + UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
-        File outputfolder = new File(FilePathAbsolute);
-
-        if (!outputfolder.exists()) {
-            boolean created = outputfolder.mkdirs();
-            if (!created) {
-                throw new ServerErrorException("Errore durante salvataggio file", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            }
+        String fileName = UUID.randomUUID() + realname.substring(realname.lastIndexOf('.'));
+        String filePathAbsolute = absoluteOutputFolderPath + fileName;
+        File outputDir = new File(absoluteOutputFolderPath);
+        if (!outputDir.exists() && !outputDir.mkdirs()) {
+            throw new ServerErrorException("Errore durante salvataggio file", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-
-        File outputFile = new File(FilePathAbsolute);
-
+        File outputFile = new File(filePathAbsolute);
         try {
             Files.copy(part.getInputStream(), outputFile.toPath());
             newFiles.add(outputFile);
-            pathFileRelative = relativeOutputFolder + File.separator + mimeType + File.separator + outputFile.getName();
+            // Path salvato nel DB (leading slash)
+            pathFileRelative = "/media/" + targetFolderName + "/" + outputFile.getName();
+            System.out.println("[UploadTrack PURE_HTML] Saved file to " + pathFileRelative);
+
+            // Copia anche nella sorgente per persistenza (src/main/webapp/media/img)
+            try {
+                File warRoot = new File(context.getRealPath("/"));
+                File current = warRoot;
+                File projectRoot = null;
+                int maxLevels = 6;
+                while (current != null && maxLevels-- > 0) {
+                    File srcDir = new File(current, "src");
+                    if (srcDir.exists() && srcDir.isDirectory()) { projectRoot = current; break; }
+                    current = current.getParentFile();
+                }
+                if (projectRoot != null) {
+                    File sourceMediaDir = new File(projectRoot, "src" + File.separator + "main" + File.separator + "webapp" + File.separator + "media" + File.separator + targetFolderName);
+                    if (!sourceMediaDir.exists() && !sourceMediaDir.mkdirs()) {
+                        System.err.println("[UploadTrack pure_html] Impossibile creare directory sorgente media: " + sourceMediaDir.getAbsolutePath());
+                    } else {
+                        File sourceCopy = new File(sourceMediaDir, outputFile.getName());
+                        if (!sourceCopy.exists()) {
+                            Files.copy(outputFile.toPath(), sourceCopy.toPath());
+                        }
+                    }
+                } else {
+                    System.err.println("[UploadTrack pure_html] Root progetto non trovata per copia sorgente media");
+                }
+            } catch (Exception copyEx) {
+                System.err.println("[UploadTrack pure_html] Errore copia file in sorgente: " + copyEx.getMessage());
+            }
             return new FileDetails(pathFileRelative, hash);
         } catch (Exception e) {
             e.printStackTrace();
             throw new ServerErrorException("Errore durante salvataggio file", HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-
     }
 
     /**

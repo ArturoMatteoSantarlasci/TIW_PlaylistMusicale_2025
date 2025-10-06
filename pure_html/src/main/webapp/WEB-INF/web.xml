@@ -30,10 +30,6 @@
     <welcome-file-list>
         <welcome-file>Login</welcome-file>
     </welcome-file-list>
-    <context-param>
-        <param-name>outputPath</param-name>
-        <param-value>uploads</param-value>
-    </context-param>
     <filter>
         <filter-name>InvalidUserChecker</filter-name>
         <filter-class>it.polimi.pure_html.filters.InvalidUserChecker</filter-class>

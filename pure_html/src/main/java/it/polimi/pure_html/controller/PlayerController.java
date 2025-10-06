@@ -136,8 +136,15 @@ public class PlayerController extends HttpServlet {
         model.put("title", track.title());
         model.put("artist", track.artist());
 
-        String audioUrl = buildUrl(contextPath, track.song_path());
-        String coverUrl = buildUrl(contextPath, track.image_path());
+        // Normalizzazione percorsi legacy: se nel DB è stato salvato solo il nome file
+        String rawSongPath = track.song_path();
+        String rawImagePath = track.image_path();
+
+    rawSongPath = normalizeLegacyPath(rawSongPath, true);
+    rawImagePath = normalizeLegacyPath(rawImagePath, false);
+
+        String audioUrl = buildUrl(contextPath, rawSongPath);
+        String coverUrl = buildUrl(contextPath, rawImagePath);
         if (coverUrl == null || coverUrl.isBlank()) {
             coverUrl = PLACEHOLDER_COVER;
         }
@@ -164,7 +171,7 @@ public class PlayerController extends HttpServlet {
         if (relativePath == null || relativePath.isBlank()) {
             return null;
         }
-        if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
+            if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
             return relativePath;
         }
         if (contextPath == null || contextPath.isBlank()) {
@@ -174,5 +181,42 @@ public class PlayerController extends HttpServlet {
             return contextPath + relativePath;
         }
         return contextPath + '/' + relativePath;
+    }
+
+    /**
+     * Aggiunge automaticamente il prefisso /media/audio o /media/img se il path legacy manca di directory.
+     * Non modifica path che già contengono "/media/".
+     * @param original path dal DB
+     * @param audio true se audio, false se immagine
+     * @return path normalizzato
+     */
+    private String normalizeLegacyPath(String original, boolean audio) {
+        if (original == null || original.isBlank()) return original;
+
+        String o = original.trim();
+        // Aggiungi leading slash se manca ed inizia con media/
+        if (o.startsWith("media/")) {
+            o = '/' + o; // -> /media/...
+        }
+        // Se audio erroneamente in /media/img/ e ha estensione audio -> riscrivi virtualmente
+        String lower = o.toLowerCase();
+        boolean looksAudio = lower.endsWith(".mp3") || lower.endsWith(".wav") || lower.endsWith(".ogg") || lower.endsWith(".m4a");
+        boolean looksImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.endsWith(".gif") || lower.endsWith(".webp");
+
+        if (o.startsWith("/media/img/") && looksAudio) {
+            // Non muove il file qui: solo virtual rewrite (lo spostiamo lato upload per i duplicati futuri)
+            o = o.replaceFirst("/media/img/", "/media/audio/");
+        }
+        if (!o.startsWith("/media/")) {
+            // Path isolato (solo filename) o altra forma non canonica
+            if ((audio || looksAudio)) {
+                return "/media/audio/" + o.replaceAll("^/+", "");
+            }
+            if ((!audio && looksImage)) {
+                return "/media/img/" + o.replaceAll("^/+", "");
+            }
+            return "/media/" + (audio ? "audio" : "img") + '/' + o.replaceAll("^/+", "");
+        }
+        return o;
     }
 }
