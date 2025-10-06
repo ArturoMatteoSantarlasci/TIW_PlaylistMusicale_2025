@@ -179,6 +179,14 @@ body.page-home {
 }
 .iconbtn:hover { background: color-mix(in oklab, var(--am-surface) 92%, var(--am-text)); }
 .iconbtn:active { transform: translateY(1px); }
+/* Specific larger sizing for primary navigation icon buttons (home / back) */
+#homepage-button.iconbtn,
+#back-to-playlist-button.iconbtn {
+    width: 44px;
+    height: 44px;
+}
+#homepage-button.iconbtn svg,
+#back-to-playlist-button.iconbtn svg { width:24px; height:24px; }
 
 /* Form fields */
 .field {
@@ -465,3 +473,13 @@ img.scale-on-hover:hover { transform: scale(1.03); }
     .player-track-info { flex-direction: column; align-items: stretch; }
     .player-cover { max-width: 100%; }
 }
+/* Inline bottom mini player (parity with pure_html) */
+.mini-player { position:fixed; left:0; right:0; bottom:0; z-index:600; display:flex; align-items:center; gap:14px; padding:10px 24px; background:#fff; border-top:2px solid var(--am-accent); box-shadow:0 -4px 18px -4px rgba(0,0,0,.18); font-size:.7rem; letter-spacing:.3px; }
+.mini-player.hidden { display:none; }
+.mini-player .mini-btn { width:38px; height:38px; border-radius:50%; border:2px solid #000; background:#000; color:#fff; display:grid; place-items:center; cursor:pointer; transition:background .2s ease, transform .07s ease, opacity .2s ease; }
+.mini-player .mini-btn:disabled { opacity:.35; cursor:default; }
+.mini-player .mini-btn:hover:not(:disabled) { background:#111; }
+.mini-player .mini-btn:active:not(:disabled) { transform:translateY(1px); }
+.mini-player .mini-meta { flex:1; display:flex; align-items:center; gap:12px; overflow:hidden; white-space:nowrap; }
+.mini-player .mini-meta .t { font-weight:700; color:#000; overflow:hidden; text-overflow:ellipsis; max-width:40%; }
+.mini-player .mini-meta .s { color:var(--am-muted); overflow:hidden; text-overflow:ellipsis; }

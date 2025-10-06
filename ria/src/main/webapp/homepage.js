@@ -38,8 +38,8 @@
         if (show) btn.classList.remove("hidden"); else btn.classList.add("hidden");
     }
 
-    // Avvio pagina
-    window.addEventListener("load", () => {
+    // Avvio pagina (DOMContentLoaded più rapido di load e evita attesa risorse pesanti)
+    document.addEventListener("DOMContentLoaded", () => {
         let mainLoader = new MainLoader();
         mainLoader.start();
         mainLoader.refreshPage();
@@ -113,8 +113,9 @@
                             switch (req.status) {
                                 case 201: {
                                     let newPlaylist = JSON.parse(message);
-                                    let itemsContainer = document.querySelector(".items-container");
-                                    if (itemsContainer) itemsContainer.insertBefore(createPlaylistButton(newPlaylist), itemsContainer.firstChild);
+                                    // Ricarico l'intera vista home per garantire ordine e consistenza (più semplice e sicuro)
+                                    try { homeView.show(); } catch(_){ /* fallback silenzioso */ }
+                                    // Feedback utente (temporaneo: si potrebbe introdurre toast RIA)
                                     self.parentElement.previousElementSibling.setAttribute("class", "success");
                                     self.parentElement.previousElementSibling.textContent = "Playlist creata con successo";
                                     form.reset();
@@ -376,7 +377,31 @@
             const card = document.createElement("div");
             card.className = "track-card";
             card.tabIndex = 0;
-            card.addEventListener("click", () => trackView.show(track));
+            // dataset per mini player
+            if(track.song_path) card.dataset.audio = normalizeMediaPath(track.song_path);
+            // Gestione click / doppio click robusta:
+            // 1) Usiamo nativo dblclick per immediatezza.
+            // 2) Manteniamo fallback timer per utenti che cliccano molto veloce ma il browser non genera dblclick.
+            let singleTimer = null;
+            let lastClickTime = 0;
+            const SINGLE_DELAY = 280; // leggermente più ampio
+            card.addEventListener('dblclick', (e)=> {
+                e.preventDefault();
+                if(singleTimer){ clearTimeout(singleTimer); singleTimer=null; }
+                openMiniFromCard(card);
+            });
+            card.addEventListener('click', (e)=> {
+                const now = Date.now();
+                if(now - lastClickTime < 280){
+                    // È già gestito da dblclick nella maggior parte dei browser, ma fallback:
+                    if(singleTimer){ clearTimeout(singleTimer); singleTimer=null; }
+                    openMiniFromCard(card);
+                    return;
+                }
+                lastClickTime = now;
+                if(singleTimer) clearTimeout(singleTimer);
+                singleTimer = setTimeout(()=> { singleTimer=null; trackView.show(track); }, SINGLE_DELAY);
+            });
             card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); trackView.show(track); }});
 
             // Cover
@@ -677,5 +702,57 @@
             });
         }
     }
+})();
+
+// =================== MINI PLAYER (global) ===================
+function openMiniFromCard(card){
+    const audioEl = document.getElementById('miniAudio');
+    const mp = document.getElementById('miniPlayer');
+    if(!audioEl || !mp) return;
+    const cards = Array.from(document.querySelectorAll('.track-card[data-audio]'));
+    const idx = cards.indexOf(card);
+    const src = card.dataset.audio;
+    const title = card.querySelector('.track-title')?.textContent||'';
+    const artist = (card.querySelector('.track-sub')?.textContent||'').split('•')[0].trim();
+    if(src){ audioEl.src = src; audioEl.play().catch(()=>{}); }
+    document.getElementById('miniTitle').textContent = title;
+    document.getElementById('miniArtist').textContent = artist || '';
+    mp.classList.remove('hidden'); mp.setAttribute('aria-hidden','false');
+    mp.dataset.index = idx.toString();
+    updateMiniPrevNext(idx, cards.length);
+    setMiniPlayIcon(true);
+}
+function updateMiniPrevNext(i,total){
+    const prev = document.getElementById('miniPrev');
+    const next = document.getElementById('miniNext');
+    if(prev) prev.disabled = i<=0; if(next) next.disabled = i>=total-1;
+}
+function setMiniPlayIcon(isPlaying){
+    const btn = document.getElementById('miniPlay');
+    if(!btn) return;
+    btn.innerHTML = isPlaying
+        ? '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5h4v14H8zm6 0h4v14h-4z"/></svg>'
+        : '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+    btn.setAttribute('aria-label', isPlaying? 'Pausa' : 'Riproduci');
+}
+(function miniPlayerLogic(){
+    const audio = document.getElementById('miniAudio');
+    const play = document.getElementById('miniPlay');
+    const prev = document.getElementById('miniPrev');
+    const next = document.getElementById('miniNext');
+    const mp = document.getElementById('miniPlayer');
+    if(!audio || !play) return;
+    play.addEventListener('click', ()=> { if(audio.paused){ audio.play(); } else { audio.pause(); } });
+    audio.addEventListener('play', ()=> setMiniPlayIcon(true));
+    audio.addEventListener('pause', ()=> setMiniPlayIcon(false));
+    function move(dir){
+        const cards = Array.from(document.querySelectorAll('.track-card[data-audio]'));
+        if(!mp.dataset.index) return; let i = parseInt(mp.dataset.index,10);
+        const ni = i + dir; if(ni <0 || ni>=cards.length) return;
+        openMiniFromCard(cards[ni]);
+    }
+    prev?.addEventListener('click', ()=> move(-1));
+    next?.addEventListener('click', ()=> move(1));
+    audio.addEventListener('ended', ()=> move(1));
 })();
 

@@ -33,5 +33,19 @@
 
 <!-- Container per modali dinamiche -->
 <div id="modals"></div>
+<!-- Mini player bottom (iniettato staticamente) -->
+<div id="miniPlayer" class="mini-player hidden" aria-hidden="true">
+    <button type="button" class="mini-btn prev" id="miniPrev" aria-label="Precedente" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10 12L18 6v12l-8-6zm-4 6V6h2v12H6z"/></svg>
+    </button>
+    <button type="button" class="mini-btn play" id="miniPlay" aria-label="Riproduci">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button type="button" class="mini-btn next" id="miniNext" aria-label="Successiva" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 12L6 6v12l8-6zm4 6V6h-2v12h2z"/></svg>
+    </button>
+    <div class="mini-meta"><span class="t" id="miniTitle">—</span><span class="s" id="miniArtist">—</span></div>
+    <audio id="miniAudio" preload="metadata"></audio>
+</div>
 </body>
 </html>

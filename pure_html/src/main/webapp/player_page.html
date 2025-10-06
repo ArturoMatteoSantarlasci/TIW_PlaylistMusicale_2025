@@ -7,69 +7,79 @@
     <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
 </head>
 <body class="page-home">
-    <header class="header">
-        <div></div>
-        <h1 class="header-title">Player</h1>
-        <div style="text-align:right">
-            <a class="btn secondary" th:href="${tracksUrl}" href="All_Tracks.html">Tutte le tracce</a>
-        </div>
-    </header>
-
-    <div class="player-track-info">
-        <div class="player-cover">
-            <img src="https://via.placeholder.com/640x640?text=Cover" th:src="${track.coverUrl}" alt="Copertina" />
-        </div>
-        <div class="player-text">
-            <div class="player-title" th:text="${track.title}">Titolo</div>
-            <div class="player-artist" th:text="${track.artist}">Artista</div>
-            <div class="player-album" th:if="${track.albumLine != null}" th:text="${track.albumLine}">Album · 2025 · Genere</div>
-            <div style="display:flex; gap:10px; align-items:center; margin-top:6px; flex-wrap:wrap;">
-                <span th:if="${prevTrack == null}" class="iconbtn" style="opacity:.35;pointer-events:none;" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </span>
-                <a th:if="${prevTrack != null}" class="iconbtn" th:href="@{/player(trackId=${prevTrack.trackId})}" title="Precedente">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </a>
-                <a th:if="${nextTrack != null}" class="iconbtn" th:href="@{/player(trackId=${nextTrack.trackId})}" title="Successivo">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </a>
-                <span th:if="${nextTrack == null}" class="iconbtn" style="opacity:.35;pointer-events:none;" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </span>
-            </div>
-            <audio id="audio" controls preload="metadata" th:src="${track.audioUrl}" style="margin-top:10px;"></audio>
-            <div class="time-row" style="margin-top:4px;">
-                <span id="elapsed">0:00</span>
-                <span id="duration">0:00</span>
-            </div>
-        </div>
+<header class="header">
+    <div class="header-left"></div>
+    <div class="actions-row" style="gap:34px;justify-content:center;">
+        <button type="button" class="iconbtn" style="width:44px;height:44px;" title="Homepage" aria-label="Homepage" onclick="window.location.href=this.getAttribute('data-href')" th:attr="data-href=@{/HomePage}">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+        </button>
+        <a class="btn secondary logout" th:href="@{/Logout}" href="Logout">Logout</a>
+        <!-- Back to playlist (only player page) -->
+        <button type="button" id="backToPlaylistBtn" class="iconbtn" style="width:44px;height:44px;" title="Torna alla playlist" aria-label="Torna alla playlist">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.5 3.5a1 1 0 0 1 0 1.4L9.4 11l6.1 6.1a1 1 0 1 1-1.4 1.4l-6.8-6.8a1 1 0 0 1 0-1.4l6.8-6.8a1 1 0 0 1 1.4 0z"/></svg>
+        </button>
     </div>
+    <div class="header-right"></div>
+</header>
 
+<div class="player-track-info">
+    <div class="player-cover" style="max-width:220px;">
+        <img th:if="${track.coverUrl != null and !#strings.isEmpty(track.coverUrl)}" th:src="${track.coverUrl}" th:alt="${'Copertina di ' + track.title}" alt="Cover" />
+        <img th:if="${track.coverUrl == null or #strings.isEmpty(track.coverUrl)}" th:src="@{/img/placeholder_cover.svg}" alt="Placeholder" />
+    </div>
+    <!-- Pulsante Play personalizzato -->
+    <div class="player-controls" style="display:flex;align-items:center;justify-content:center;">
+        <button type="button" id="play-btn" class="player-playbtn" aria-label="Riproduci" title="Riproduci">
+            <!-- Icona Play -->
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+    </div>
+    <div class="player-text" style="gap:8px;">
+        <div class="player-title" th:text="${track.title}">Titolo</div>
+        <div class="player-artist" th:text="${track.artist}">Artista</div>
+        <div class="player-album" th:if="${track.albumLine != null}" th:text="${track.albumLine}">Album · Anno · Genere</div>
+        <!-- Audio element nascosto (controllato dal bottone custom) -->
+        <audio id="player-audio" preload="metadata" th:src="${track.audioUrl}" style="margin-top:24px;width:0;height:0;opacity:0;position:absolute;left:-9999px;" aria-hidden="true"></audio>
+    </div>
+</div>
 <script>
-    // Aggiorna i tempi (passati/totali) in mm:ss
-    document.addEventListener("DOMContentLoaded", () => {
-        const audio = document.getElementById("audio");
-        const elapsed = document.getElementById("elapsed");
-        const duration = document.getElementById("duration");
-
-        const fmt = (s) => {
-            if (!isFinite(s) || s < 0) return "0:00";
-            s = Math.floor(s);
-            const m = Math.floor(s / 60);
-            const ss = String(s % 60).padStart(2, "0");
-            return `${m}:${ss}`;
-        };
-
-        const setDuration = () => {
-            if (!isNaN(audio.duration)) duration.textContent = fmt(audio.duration);
-        };
-
-        audio.addEventListener("loadedmetadata", setDuration);
-        audio.addEventListener("durationchange", setDuration);
-        audio.addEventListener("timeupdate", () => {
-            elapsed.textContent = fmt(audio.currentTime);
+    // Toggle play/pause custom
+    (function(){
+        const btn = document.getElementById('play-btn');
+        const audio = document.getElementById('player-audio');
+        if(!btn || !audio) return;
+        function setPlaying(isPlaying){
+            btn.innerHTML = isPlaying
+                ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5h4v14H8zm6 0h4v14h-4z"/></svg>'
+                : '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
+            btn.setAttribute('aria-label', isPlaying ? 'Pausa' : 'Riproduci');
+            btn.title = isPlaying ? 'Pausa' : 'Riproduci';
+        }
+        btn.addEventListener('click', () => {
+            if(audio.paused){ audio.play(); } else { audio.pause(); }
         });
-    });
+        audio.addEventListener('play', () => setPlaying(true));
+        audio.addEventListener('pause', () => setPlaying(false));
+    })();
+    // Back button logic: prefer redirect to specific playlist if params present
+    (function(){
+        const backBtn = document.getElementById('backToPlaylistBtn');
+        if(!backBtn) return;
+        // Estrae parametri dalla query string (playlistId e gr)
+        const params = new URLSearchParams(window.location.search);
+        const pid = params.get('playlistId') || params.get('playlist_id') || params.get('pid');
+        const gr = params.get('gr');
+        backBtn.addEventListener('click', () => {
+            if(pid){
+                let target = 'Playlist?playlistId=' + encodeURIComponent(pid);
+                if(gr !== null && gr !== undefined && gr !== '') target += '&gr=' + encodeURIComponent(gr);
+                window.location.href = target;
+            } else {
+                // Fallback: history.back()
+                history.back();
+            }
+        });
+    })();
 </script>
-    </body>
+</body>
 </html>

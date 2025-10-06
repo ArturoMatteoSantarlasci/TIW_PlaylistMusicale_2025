@@ -135,7 +135,8 @@ public class UploadTrack extends HttpServlet {
         TrackDAO trackDAO = new TrackDAO(connection);
         try {
             trackDAO.addTrack(track, user);
-            resp.sendRedirect(getServletContext().getContextPath() + "/HomePage");
+            String qp = "?uploadedTrack=true&trkTitle=" + java.net.URLEncoder.encode(track.title(), java.nio.charset.StandardCharsets.UTF_8) + "#upload-track";
+            resp.sendRedirect(getServletContext().getContextPath() + "/HomePage" + qp);
 
 
         } catch (SQLIntegrityConstraintViolationException e) {

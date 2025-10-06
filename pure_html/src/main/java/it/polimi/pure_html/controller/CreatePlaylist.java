@@ -61,9 +61,13 @@ public class CreatePlaylist extends HttpServlet {
         try {
             Integer playlistId = null;
             playlistId = playlistDAO.createPlaylist(playlist);
-            if (!selectedCreationTracksIds.isEmpty())
+            int added = 0;
+            if (!selectedCreationTracksIds.isEmpty()) {
                 playlistDAO.addTracksToPlaylist(selectedCreationTracksIds, playlistId);
-            resp.sendRedirect(getServletContext().getContextPath() + "/HomePage");
+                added = selectedCreationTracksIds.size();
+            }
+            String qp = "?createdPlaylist=true&plTitle=" + java.net.URLEncoder.encode(playlistTitle, java.nio.charset.StandardCharsets.UTF_8) + (added>0?"&plAdded="+added:"");
+            resp.sendRedirect(getServletContext().getContextPath() + "/HomePage" + qp + "#create-playlist");
 
         } catch (SQLIntegrityConstraintViolationException e) {
             resp.sendRedirect(getServletContext().getContextPath() + "/HomePage?duplicatePlaylist=true#create-playlist");
