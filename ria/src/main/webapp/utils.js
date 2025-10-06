@@ -53,7 +53,7 @@ function createModal(id, titleText, buttonId, buttonText) {
     topNavbar.className = "nav-bar";
 
     const title = document.createElement("div");
-    title.className = "modal-title";
+    title.className = "modal-title"; // now styled as pill in CSS
     title.textContent = titleText;
 
     const spacer = document.createElement("div");
@@ -68,6 +68,8 @@ function createModal(id, titleText, buttonId, buttonText) {
     close.addEventListener("click", () => closeModal(modal));
 
     const form = document.createElement("form");
+    // Usa layout a griglia con gap per spaziatura verticale tra i campi
+    form.className = "stack";
 
     topNavbar.appendChild(title);
     topNavbar.appendChild(spacer);

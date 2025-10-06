@@ -62,10 +62,14 @@
         };
 
         function loadPlaylists() {
-            cleanMain();
-            let mainLabel = document.getElementsByClassName("main-label").item(0);
+            const main = document.getElementById("main");
+            // Inserisce un box titolo standalone + contenitore playlist subito sotto
+            main.innerHTML = `<div class=\"title-strip\"><div class=\"title-strip-inner\">${HOMEPAGE_LABEL}</div></div><div class=\"playlists-wrapper\"><section class=\"playlists-vertical\" id=\"playlistsGrid\"></section></div>`;
+            // Ripristina h1 solo accessibile nascosto
+            const mainLabel = document.getElementsByClassName("main-label").item(0);
             mainLabel.id = HOMEPAGE_ID;
             mainLabel.textContent = HOMEPAGE_LABEL;
+            mainLabel.classList.remove("title-box");
 
             makeCall("GET", "HomePage", null, (req) => {
                 if (req.readyState == XMLHttpRequest.DONE) {
@@ -173,17 +177,16 @@
         }
 
         function playlistGrid(playlists) {
-            const main = document.getElementById("main");
-            const container = document.createElement("div");
-            container.className = "playlists-vertical"; // nuova lista verticale
-            main.appendChild(container);
+            const container = document.getElementById("playlistsGrid");
+            if (!container) return;
+            container.innerHTML = "";
             playlists.forEach(p => container.appendChild(createPlaylistCard(p)));
         }
 
         function createPlaylistCard(playlist) {
             // Wrapper card stile pure_html adattato e reso a colonna singola
             const card = document.createElement("div");
-            card.className = "pl-card playlist-card-row";
+            card.className = "playlist-card-row";
             card.addEventListener("click", () => { playlistView.show(playlist); currentGroup = 0; });
 
             const title = document.createElement("h3");
@@ -211,15 +214,14 @@
             let modalContainer = document.getElementById("modals"),
                 modal = createModal("create-playlist", "Crea nuova playlist", "create-playlist-btn", "Crea playlist"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
+            form.classList.add("modal-form-grid");
             let titleInput = document.createElement("input");
-            titleInput.type = "text"; titleInput.className = "text-field"; titleInput.name = "playlistTitle"; titleInput.placeholder = "Title"; titleInput.required = true;
+            titleInput.type = "text"; titleInput.className = "field"; titleInput.name = "playlistTitle"; titleInput.placeholder = "Titolo"; titleInput.required = true;
             form.insertBefore(titleInput, navbar);
-            form.insertBefore(document.createElement("br"), navbar);
-            form.insertBefore(document.createElement("br"), navbar);
             // Backend avanzato: id = track-selector-create, name = selectedTrackIds
-            let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-create"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar); form.insertBefore(document.createElement("br"), navbar);
+            let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-create"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar);
             let selector = document.createElement("select");
-            selector.className = "text-field";
+            selector.className = "field";
             selector.id = "track-selector-create";
             selector.name = "selectedTrackIds"; // backend avanzato si aspetta selectedTrackIds per la creazione
             selector.multiple = true;
@@ -232,18 +234,19 @@
             let modalContainer = document.getElementById("modals"),
                 modal = createModal("upload-track", "Carica Brano", "upload-track-btn", "Aggiungi brano"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
+            form.classList.add("modal-form-grid");
             // Campi base
-            const addInput = (name, placeholder) => { let i = document.createElement("input"); i.type = "text"; i.className = "text-field"; i.name = name; i.placeholder = placeholder; i.required = true; form.insertBefore(i, navbar); form.insertBefore(document.createElement("br"), navbar); };
+            const addInput = (name, placeholder) => { let i = document.createElement("input"); i.type = "text"; i.className = "field"; i.name = name; i.placeholder = placeholder; i.required = true; form.insertBefore(i, navbar); };
             addInput("title", "Titolo");
             addInput("artist", "Artista");
             addInput("album", "Album");
             // Select Year
-            let yearSel = document.createElement("select"); yearSel.className = "text-field"; yearSel.id = "year-selection"; yearSel.name = "year"; yearSel.required = true; form.insertBefore(yearSel, navbar); form.insertBefore(document.createElement("br"), navbar);
+            let yearSel = document.createElement("select"); yearSel.className = "field"; yearSel.id = "year-selection"; yearSel.name = "year"; yearSel.required = true; form.insertBefore(yearSel, navbar);
             // Select Genre
-            let genreSel = document.createElement("select"); genreSel.className = "text-field"; genreSel.id = "genre-selection"; genreSel.name = "genre"; genreSel.required = true; form.insertBefore(genreSel, navbar); form.insertBefore(document.createElement("br"), navbar);
+            let genreSel = document.createElement("select"); genreSel.className = "field"; genreSel.id = "genre-selection"; genreSel.name = "genre"; genreSel.required = true; form.insertBefore(genreSel, navbar);
             // File track
             let trackLabel = document.createElement("label"); trackLabel.className = "label"; trackLabel.htmlFor = "musicTrack"; trackLabel.textContent = "Brano:"; form.insertBefore(trackLabel, navbar);
-            let trackInput = document.createElement("input"); trackInput.type = "file"; trackInput.name = "musicTrack"; trackInput.id = "musicTrack"; trackInput.required = true; form.insertBefore(trackInput, navbar); form.insertBefore(document.createElement("br"), navbar);
+            let trackInput = document.createElement("input"); trackInput.type = "file"; trackInput.name = "musicTrack"; trackInput.id = "musicTrack"; trackInput.required = true; form.insertBefore(trackInput, navbar);
             // File image
             let imageLabel = document.createElement("label"); imageLabel.className = "label"; imageLabel.htmlFor = "image"; imageLabel.textContent = "Immagine album:"; form.insertBefore(imageLabel, navbar);
             let imageInput = document.createElement("input"); imageInput.type = "file"; imageInput.name = "image"; imageInput.id = "image"; imageInput.required = true; form.insertBefore(imageInput, navbar);
@@ -261,11 +264,11 @@
             let top_nav_bar = document.createElement("div"); top_nav_bar.className = "nav-bar";
             let title_div = document.createElement("div"); title_div.className = "modal-title"; title_div.textContent = "Riordina brani in " + playlist.title.toString();
             let spacer = document.createElement("div"); spacer.className = "spacer";
-            let modal_close = document.createElement("button"); modal_close.type = "button"; modal_close.title = "Close"; modal_close.className = "modal-close"; modal_close.textContent = "Close"; modal_close.addEventListener("click", () => closeReorderModal());
+            let modal_close = document.createElement("button"); modal_close.type = "button"; modal_close.title = "Chiudi"; modal_close.className = "modal-close"; modal_close.textContent = "Chiudi"; modal_close.addEventListener("click", () => closeReorderModal());
             top_nav_bar.appendChild(title_div); top_nav_bar.appendChild(spacer); top_nav_bar.appendChild(modal_close);
             let main_form = document.createElement("form");
             let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-reorder"; label.textContent = "Trascina i brani per riordinarli:";
-            let ordered_list = document.createElement("ol"); ordered_list.name = "reorderingTracks"; ordered_list.id = "track-reorder"; ordered_list.className = "text-field";
+            let ordered_list = document.createElement("ol"); ordered_list.name = "reorderingTracks"; ordered_list.id = "track-reorder";
             loadUserTracksOl(ordered_list, playlist);
             let bottom_div = document.createElement("div"); bottom_div.className = "nav-bar";
             let reorder_track_btn = document.createElement("button"); reorder_track_btn.id = "track-reorder-btn"; reorder_track_btn.className = "button"; reorder_track_btn.type = "button"; reorder_track_btn.textContent = "Salva ordine"; reorder_track_btn.addEventListener("click", (e) => saveOrder(e, playlist.id.toString()));
@@ -355,12 +358,11 @@
             showBackToPlaylist(false); // non serve in lista tracce
         };
 
-        function renderTrackPage(tracksPage) {
-            const main = document.getElementById("main");
-            cleanMain();
+        function renderTrackPage(tracksPage, wrapper) {
+            // wrapper è già stato creato con classe tracks-wrapper
             const container = document.createElement("div");
             container.className = "tracks-vertical";
-            main.appendChild(container);
+            wrapper.appendChild(container);
             tracksPage.forEach(t => container.appendChild(buildTrackCard(t)));
             if (tracksPage.length === 0) {
                 const empty = document.createElement("div");
@@ -421,14 +423,19 @@
             let mainLabel = document.getElementsByClassName("main-label").item(0);
             mainLabel.id = PLAYLIST_PAGE_ID; mainLabel.textContent = playlist.title;
             lastPlaylist = playlist;
+            // Wrapper per tracce (per margini coerenti con playlist)
+            const tracksWrapper = document.createElement("div");
+            tracksWrapper.className = "tracks-wrapper";
+            const mainEl = document.getElementById("main");
+            mainEl.appendChild(tracksWrapper);
             makeCall("GET", `PlaylistGroup?playlistId=${playlist.id}&group=${group}`, null, (req) => {
                 if (req.readyState === XMLHttpRequest.DONE) {
                     if (req.status === 200) {
                         const payload = JSON.parse(req.responseText);
                         currentGroup = payload.group; // in caso di clamp lato server
                         totalGroups = payload.totalGroups;
-                        renderTrackPage(payload.tracks);
-                        renderPagination();
+                        renderTrackPage(payload.tracks, tracksWrapper);
+                        renderPagination(tracksWrapper);
                     } else {
                         alert("Errore nel recupero della pagina tracce");
                     }
@@ -478,18 +485,17 @@
                 } else form.reportValidity();
             });
 
-            let bottomNavbar = document.createElement("div");
-            bottomNavbar.id = "bottom-nav-bar"; bottomNavbar.className = "nav-bar";
-            document.getElementById("main").after(bottomNavbar);
+            // bottom navbar legacy rimossa: usiamo pagination dentro wrapper
         }
 
         function loadAddTracksModal() {
             let modalContainer = document.getElementById("modals"),
                 modal = createModal("add-tracks", "Aggiungi brani alla playlist", "add-tracks-btn", "Aggiungi brani"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
-            let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-add"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar); form.insertBefore(document.createElement("br"), navbar);
+            form.classList.add("modal-form-grid");
+            let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-add"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar);
             let selector = document.createElement("select");
-            selector.className = "text-field";
+            selector.className = "field";
             selector.id = "track-selector-add";
             selector.name = "selectedTracksIds"; // backend avanzato per add tracks
             selector.multiple = true;
@@ -498,9 +504,10 @@
             modalContainer.appendChild(modal);
         }
 
-        function renderPagination() {
-            const navbar = document.getElementById("bottom-nav-bar");
-            navbar.innerHTML = "";
+        function renderPagination(wrapper) {
+            let nav = document.createElement("div");
+            nav.className = "tracks-pagination";
+            wrapper.appendChild(nav);
 
             // area messaggi feedback
             let feedback = document.createElement("span");
@@ -516,33 +523,32 @@
 
             // Prev button sempre visibile
             const prev = document.createElement("button");
-            prev.type = "button"; prev.className = "button"; prev.textContent = "Precedente";
+            prev.type = "button"; prev.className = "button left"; prev.textContent = "Precedente";
             prev.addEventListener("click", () => {
                 if (totalGroups === 0) { showMsg("Playlist vuota"); return; }
                 if (currentGroup === 0) { showMsg("Sei al primo gruppo"); return; }
                 loadPlaylistGroup({id: currentPlaylistId, title: lastPlaylist.title}, currentGroup - 1);
                 feedback.textContent = "";
             });
-            navbar.appendChild(prev);
+            nav.appendChild(prev);
 
             // Indicator
             const indicator = document.createElement("span");
-            indicator.style.margin = "0 12px";
+            indicator.className = "center";
             indicator.textContent = totalGroups > 0 ? `Pagina ${currentGroup + 1} / ${totalGroups}` : "Nessun brano";
-            navbar.appendChild(indicator);
+            nav.appendChild(indicator);
 
             // Next button sempre visibile
             const next = document.createElement("button");
-            next.type = "button"; next.className = "button"; next.textContent = "Successivo";
+            next.type = "button"; next.className = "button right"; next.textContent = "Successivo";
             next.addEventListener("click", () => {
                 if (totalGroups === 0) { showMsg("Playlist vuota"); return; }
                 if (currentGroup >= totalGroups - 1) { showMsg("Sei all'ultimo gruppo"); return; }
                 loadPlaylistGroup({id: currentPlaylistId, title: lastPlaylist.title}, currentGroup + 1);
                 feedback.textContent = "";
             });
-            navbar.appendChild(next);
-
-            navbar.appendChild(feedback);
+            nav.appendChild(next);
+            nav.appendChild(feedback);
         }
     }
 
@@ -557,9 +563,9 @@
         };
         function trackPlayer(container, track) {
             container.innerHTML = "";
-            // Wrapper principale del player
+            // Wrapper principale (ora direttamente con bordo rosa)
             const playerWrapper = document.createElement("div");
-            playerWrapper.className = "player-track-info"; // nuovo layout flessibile
+            playerWrapper.className = "player-track-info"; // layout flessibile e box principale
 
             // Colonna immagine (se presente)
             if (track.image_path) {
