@@ -99,6 +99,24 @@ public class PlaylistDAO implements DAO {
         return tracks;
     }
 
+
+    /**
+     * Conta il numero totale di tracce associate ad una playlist.
+     * @param playlistId playlist id
+     * @return numero tracce (0 se nessuna)
+     * @throws SQLException propagata al chiamante
+     */
+    public int countPlaylistTracks(int playlistId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM playlist_tracks WHERE playlist_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, playlistId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
+
     /**
      * ritorna tutte le tracce di una playlist dato id playlist
      *

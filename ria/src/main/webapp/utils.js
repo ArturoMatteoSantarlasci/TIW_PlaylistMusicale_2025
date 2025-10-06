@@ -64,7 +64,7 @@ function createModal(id, titleText, buttonId, buttonText) {
     close.type = "button";
     close.className = "modal-close";
     close.setAttribute("aria-label", "Chiudi modale");
-    close.textContent = "Close"; // testo legacy mantenuto
+    close.textContent = "Chiudi"; // tradotto in italiano
     close.addEventListener("click", () => closeModal(modal));
 
     const form = document.createElement("form");
