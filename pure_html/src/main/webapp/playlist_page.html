@@ -4,209 +4,119 @@
 <!DOCTYPE html>
 <html lang="it" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Playlist • Playlist Manager</title>
-    <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
-    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title th:text="${playlistTitle} + ' • Playlist'">Playlist</title>
+  <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
+  <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
 </head>
-<body class="page-has-top-center">
-<!-- Home -->
-<a class="iconbtn corner corner-center"
-   href="HomePage.html" th:href="@{/HomePage}" aria-label="Vai alla Home">
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-        <path d="M12 3l9 8h-3v10H6V11H3z"/>
-    </svg>
-</a>
-
-<div class="wrap wide">
-    <h1 class="title" th:text="${playlist != null ? playlist.name : 'La mia Playlist'}">
-        La mia Playlist
-    </h1>
-
-    <!-- Azioni -->
-    <div class="actions-row">
-        <button class="btn" type="button" id="addTracksBtn">Aggiungi tracce</button>
+<body class="page-home">
+  <header class="header">
+    <div></div>
+    <h1 class="header-title" th:text="${playlistTitle}">Playlist</h1>
+    <div style="text-align:right">
+      <a class="btn secondary" href="HomePage.html" th:href="@{/HomePage}">Home</a>
     </div>
+  </header>
 
-    <!-- Lista brani -->
-    <ol class="tracks" id="trackList">
-        <!-- Template riga: funziona sia statico che con Thymeleaf -->
-        <li class="track"
-            data-id="1"
-            data-audio="media/track1.mp3"
-            data-title="Titolo 1"
-            data-artist="Artista 1"
-            th:each="t,iter : ${tracks}"
-            th:attr="data-id=${t.id},data-audio=${t.audioUrl},data-title=${t.title},data-artist=${t.artist}">
-            <div class="idx" th:text="${iter.index + 1}">1</div>
+  <div class="title-strip">
+    <div class="title-strip-inner" th:text="${playlistTitle}">La mia Playlist</div>
+  </div>
 
-            <div class="info">
-                <div class="t" th:text="${t.title}">Titolo 1</div>
-                <div class="a" th:text="${t.artist}">Artista 1</div>
+  <main class="main">
+    <div class="tracks-wrapper">
+      <div class="actions-row" style="margin-bottom:12px;">
+        <form th:action="@{/AddTracks}" method="get" style="display:inline;">
+          <input type="hidden" name="playlistId" th:value="${playlistId}" />
+          <button type="submit" class="btn">Aggiungi tracce</button>
+        </form>
+      </div>
+
+      <div th:if="${#lists.isEmpty(playlistTracks)}" style="color:var(--am-muted);text-align:center;padding:30px 0;">Nessun brano in questa playlist.</div>
+      <div class="tracks-vertical" th:if="${!#lists.isEmpty(playlistTracks)}" id="playlistTracks">
+        <div class="track-card"
+             th:each="t,iter : ${playlistTracks}"
+             th:data-id="${t.track_id}"
+             th:data-audio="${t.song_path}"
+             th:data-title="${t.title}"
+             th:data-artist="${t.artist}"
+             th:data-album="${t.album_title}"
+             th:data-image="${t.image_path}"
+             data-id="1" data-audio="#" data-title="Titolo" data-artist="Artista" data-album="Album" data-image="">
+          <div class="track-cover">
+            <img th:if="${t.image_path != null}" th:src="${t.image_path}" th:alt="${'Copertina di ' + t.title}" alt="Copertina" />
+            <span class="track-cover--placeholder" th:if="${t.image_path == null}">♪</span>
+          </div>
+          <div class="track-info">
+            <div class="track-title" th:text="${t.title}">Titolo</div>
+            <div class="track-sub">
+              <span th:text="${t.artist}">Artista</span>
             </div>
+            <div class="track-sub" style="font-size:.7rem;" th:if="${t.album_title != null}" th:text="${t.album_title}">Album</div>
+          </div>
+        </div>
+      </div>
 
-            <div class="dur" th:text="${t.durationFormatted}">3:45</div>
-
-            <div class="row-actions">
-                <!-- Play/Pausa inline della riga -->
-                <button class="iconbtn tiny play-btn" type="button" aria-label="Riproduci/Pausa">
-                    <svg class="ico-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-                    <svg class="ico-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-                </button>
-
-                <!-- Vai al player completo del brano -->
-                <a class="iconbtn tiny open-player"
-                   href="player.html"
-                   th:href="@{/player(id=${t.id})}"
-                   aria-label="Apri nel player">
-                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h7v7h-2V6.41l-8.29 8.3-1.42-1.42 8.3-8.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
-                </a>
-            </div>
-        </li>
-    </ol>
-</div>
-
-<!-- Mini-player flottante -->
-<div class="floating-player" id="miniPlayer" hidden>
-    <div class="fp-left">
-        <button class="iconbtn tiny" id="prevBtn" aria-label="Brano precedente">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM20 6v12L9 12z"/></svg>
-        </button>
-        <button class="iconbtn tiny" id="toggleBtn" aria-label="Play/Pausa">
-            <svg id="fpPlay" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <svg id="fpPause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
-        </button>
-        <button class="iconbtn tiny" id="nextBtn" aria-label="Brano successivo">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM4 6v12l11-6z"/></svg>
-        </button>
+      <!-- Paginazione gruppi -->
+      <div class="tracks-pagination" th:if="${totalGroups > 1}">
+        <a class="btn secondary left" th:classappend="${trackGroup == 0} ? ' disabled'" th:href="@{/Playlist(playlistId=${playlistId}, gr=${trackGroup - 1})}" th:if="${trackGroup > 0}">Precedente</a>
+        <span class="btn secondary center" style="pointer-events:none;">Gruppo <span th:text="${trackGroup + 1}">1</span>/<span th:text="${totalGroups}">1</span></span>
+        <a class="btn secondary right" th:classappend="${trackGroup + 1 == totalGroups} ? ' disabled'" th:href="@{/Playlist(playlistId=${playlistId}, gr=${trackGroup + 1})}" th:if="${trackGroup + 1 < totalGroups}">Successivo</a>
+      </div>
+      <!-- Mini player flottante -->
+      <div class="floating-player" id="miniPlayer" hidden>
+        <div class="fp-left">
+          <button class="iconbtn tiny js-prev" title="Precedente" aria-label="Traccia precedente">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+          <button class="iconbtn tiny js-toggle" title="Play/Pausa" aria-pressed="false" id="toggleBtn">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>
+          </button>
+          <button class="iconbtn tiny js-next" title="Successivo" aria-label="Traccia successiva">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <div class="fp-center">
+          <div class="fp-title" id="fpTitle">—</div>
+          <div class="fp-sub" id="fpSub">—</div>
+        </div>
+        <div class="fp-right">
+          <div class="fp-time"><span id="fpCur">0:00</span> / <span id="fpDur">0:00</span></div>
+        </div>
+        <audio id="audio" preload="metadata"></audio>
+      </div>
     </div>
-
-    <div class="fp-center">
-        <div class="fp-title" id="nowTitle">—</div>
-        <div class="fp-sub" id="nowArtist">—</div>
-    </div>
-
-    <div class="fp-right">
-        <span class="fp-time" id="fpTime">0:00 / 0:00</span>
-        <a class="iconbtn tiny" id="openInPlayer" href="player.html" aria-label="Apri nel player completo">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 3h7v7h-2V6.41l-8.29 8.3-1.42-1.42 8.3-8.29H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
-        </a>
-    </div>
-</div>
-
-<!-- Audio condiviso -->
-<audio id="audio" preload="metadata"></audio>
-
-<script>
-    // Utility: mm:ss
-    function fmt(s){
-        if(!isFinite(s)||s<0) return "0:00";
-        s = Math.floor(s);
-        const m = Math.floor(s/60), ss = String(s%60).padStart(2,"0");
-        return m+":"+ss;
-    }
-
-    const listEl = document.getElementById('trackList');
-    const audio = document.getElementById('audio');
-    const mini  = document.getElementById('miniPlayer');
-
-    const nowTitle = document.getElementById('nowTitle');
-    const nowArtist = document.getElementById('nowArtist');
-    const fpTime = document.getElementById('fpTime');
-    const fpPlay = document.getElementById('fpPlay');
-    const fpPause = document.getElementById('fpPause');
-    const openInPlayer = document.getElementById('openInPlayer');
-
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const toggleBtn = document.getElementById('toggleBtn');
-
-    let tracks = [];
-    let current = -1;
-
-    function collectTracks(){
-        tracks = Array.from(listEl.querySelectorAll('.track')).map((li)=>({
-            li,
-            id: li.dataset.id,
-            audio: li.dataset.audio,
-            title: li.dataset.title,
-            artist: li.dataset.artist,
-            playBtn: li.querySelector('.play-btn'),
-            icoPlay: li.querySelector('.ico-play'),
-            icoPause: li.querySelector('.ico-pause'),
-            openLink: li.querySelector('.open-player')
-        }));
-    }
-
-    function setRowPlaying(idx, playing){
-        const t = tracks[idx];
-        if(!t) return;
-        t.icoPlay.style.display = playing ? 'none' : '';
-        t.icoPause.style.display = playing ? '' : 'none';
-        t.li.classList.toggle('playing', playing);
-    }
-
-    function loadTrack(idx){
-        const t = tracks[idx];
-        if(!t) return;
-        current = idx;
-        audio.src = t.audio;
-        nowTitle.textContent = t.title || '—';
-        nowArtist.textContent = t.artist || '—';
-        openInPlayer.href = 'player.html?id=' + encodeURIComponent(t.id);
-        mini.hidden = false;
-        tracks.forEach((_,i)=>setRowPlaying(i,false));
-    }
-
-    function playIdx(idx){
-        if(idx<0 || idx>=tracks.length) return;
-        if(current!==idx){
-            loadTrack(idx);
-            audio.play();
-        }else{
-            audio.paused ? audio.play() : audio.pause();
-        }
-    }
-
-    function next(){ if(tracks.length) playIdx((current+1)%tracks.length); }
-    function prev(){ if(tracks.length) playIdx((current-1+tracks.length)%tracks.length); }
-
-    document.addEventListener('DOMContentLoaded', ()=>{
-        collectTracks();
-
-        // Play/Pausa per ogni riga
-        tracks.forEach((t,idx)=>{
-            t.playBtn.addEventListener('click', ()=> playIdx(idx));
-        });
-
-        // Mini-player controls
-        nextBtn.addEventListener('click', next);
-        prevBtn.addEventListener('click', prev);
-        toggleBtn.addEventListener('click', ()=> playIdx(current>=0?current:0));
-
-        // Placeholder "Aggiungi tracce"
-        document.getElementById('addTracksBtn').addEventListener('click', ()=>{
-            alert('TODO: Apri dialog/redirect per aggiungere tracce alla playlist.');
-        });
-    });
-
-    // Aggiorna tempi/icona
-    audio.addEventListener('loadedmetadata', ()=>{
-        fpTime.textContent = '0:00 / ' + fmt(audio.duration);
-    });
-    audio.addEventListener('timeupdate', ()=>{
-        fpTime.textContent = fmt(audio.currentTime) + ' / ' + fmt(audio.duration);
-    });
-    audio.addEventListener('play', ()=>{
-        fpPlay.style.display='none'; fpPause.style.display='';
-        if(current>=0) setRowPlaying(current,true);
-    });
-    audio.addEventListener('pause', ()=>{
-        fpPlay.style.display=''; fpPause.style.display='none';
-        if(current>=0) setRowPlaying(current,false);
-    });
-    audio.addEventListener('ended', next);
-</script>
+  </main>
+  <script>
+    (function(){
+      const listRoot = document.getElementById('playlistTracks');
+      if(!listRoot) return;
+      const cards = () => Array.from(listRoot.querySelectorAll('.track-card'));
+      const audio = document.getElementById('audio');
+      const mini = document.getElementById('miniPlayer');
+      const fpTitle = document.getElementById('fpTitle');
+      const fpSub = document.getElementById('fpSub');
+      const fpCur = document.getElementById('fpCur');
+      const fpDur = document.getElementById('fpDur');
+      const toggleBtn = document.getElementById('toggleBtn');
+      const iconPlay = '<svg viewBox="0 0 24 24" fill="none"><path d="M8 5v14l11-7-11-7z" fill="currentColor"/></svg>';
+      const iconPause= '<svg viewBox="0 0 24 24" fill="none"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/></svg>';
+      let current = -1;
+      function fmt(s){ if(!isFinite(s)) return '0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return m+':'+String(sec).padStart(2,'0'); }
+      function highlight(){ cards().forEach((c,i)=> c.classList.toggle('playing', i===current && !audio.paused)); }
+      function load(i,autoplay=true){ const c=cards()[i]; if(!c) return; current=i; audio.src=c.dataset.audio||''; fpTitle.textContent=c.dataset.title||'—'; const parts=[c.dataset.artist,c.dataset.album].filter(Boolean); fpSub.textContent=parts.join(' • ')||'—'; mini.hidden=false; if(autoplay) audio.play().catch(()=>{}); requestAnimationFrame(updateToggle); highlight(); }
+      function playPause(){ if(!audio.src){ load(0,true); return;} if(audio.paused) audio.play().catch(()=>{}); else audio.pause(); }
+      function next(){ if(cards().length===0) return; load((current+1)%cards().length,true); }
+      function prev(){ if(cards().length===0) return; load((current-1+cards().length)%cards().length,true); }
+      function updateToggle(){ toggleBtn.innerHTML = audio.paused?iconPlay:iconPause; toggleBtn.setAttribute('aria-pressed', String(!audio.paused)); highlight(); }
+      audio.addEventListener('timeupdate',()=> fpCur.textContent = fmt(audio.currentTime));
+      audio.addEventListener('loadedmetadata',()=> fpDur.textContent = fmt(audio.duration));
+      audio.addEventListener('play',updateToggle); audio.addEventListener('pause',updateToggle); audio.addEventListener('ended',next);
+      listRoot.addEventListener('click',e=>{ const card=e.target.closest('.track-card'); if(!card) return; const idx=cards().indexOf(card); load(idx,true); });
+      document.querySelector('.js-prev')?.addEventListener('click',prev);
+      document.querySelector('.js-next')?.addEventListener('click',next);
+      document.querySelector('.js-toggle')?.addEventListener('click',playPause);
+    })();
+  </script>
 </body>
 </html>

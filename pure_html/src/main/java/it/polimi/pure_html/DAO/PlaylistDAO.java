@@ -279,6 +279,23 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return tracks;
     }
+
+    /**
+     * Conta il numero totale di tracce nella playlist (usato per calcolare i gruppi di paginazione).
+     * @param playlistId id playlist
+     * @return numero tracce (0 se vuota)
+     * @throws SQLException propagata al chiamante
+     */
+    public int countPlaylistTracks(int playlistId) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM playlist_tracks WHERE playlist_id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, playlistId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt(1);
+            }
+        }
+        return 0;
+    }
    /**
      * Ritorna il titolo della playlist dato l'id
      *

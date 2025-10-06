@@ -73,8 +73,18 @@ public class PlaylistController extends HttpServlet {
         }
 
         List<Track> playlistTracks;
+        int totalGroups = 1;
         try {
             playlistTracks = playlistDAO.getTrackGroup(playlistId, trackGroup);
+            int totalTracks = playlistDAO.countPlaylistTracks(playlistId);
+            int groupSize = 5;
+            totalGroups = (int) Math.ceil(totalTracks / (double) groupSize);
+            if (totalGroups < 1) totalGroups = 1;
+            if (trackGroup >= totalGroups) {
+                // gruppo richiesto fuori range -> vai all'ultimo valido
+                resp.sendRedirect(req.getContextPath() + "/Playlist?playlistId=" + playlistId + "&gr=" + Math.max(0, totalGroups - 1));
+                return;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -94,7 +104,8 @@ public class PlaylistController extends HttpServlet {
         context.setVariable("playlistId", playlistId);
         context.setVariable("playlistTitle", playlistTitle);
         context.setVariable("addableTracks", addableTracks);
-        context.setVariable("playlistTracks", playlistTracks);
+    context.setVariable("playlistTracks", playlistTracks);
+    context.setVariable("totalGroups", totalGroups);
         String path = "playlist_page";
         templateEngine.process(path, context, resp.getWriter());
     }

@@ -13,54 +13,33 @@
   <!-- Toolbar con titolo, ricerca e logout -->
 
   <header class="header">
-    <!-- Bottone cerca -->
-    <div class="header-left">
-      <div class="field pad-left search">
-        <span class="badge left" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zM10 15a5 5 0 110-10 5 5 0 010 10z"/></svg>
-        </span>
-        <label for="q" class="sr-only">Cerca playlist</label>
-        <input type="search" id="q" placeholder="Cerca playlist..." />
-      </div>
-    </div>
-
-    <!-- Titolo -->
-    <h1 class="header-title">Le mie Playlist</h1>
-
-    <!-- Logout -->
-    <div class="header-right">
-      <a class="btn secondary logout" href="Logout" th:href="@{/Logout}">Logout</a>
-    </div>
+    <div></div>
+    <h1 class="header-title">Home</h1>
+    <div style="text-align:right"><a class="btn secondary logout" href="Logout" th:href="@{/Logout}">Logout</a></div>
   </header>
 
-  <!-- Sezione centrale -->
+  <div class="title-strip">
+    <div class="title-strip-inner">Le mie Playlist</div>
+  </div>
+
   <main class="main">
-    <div class="actions-row top-actions">
+    <div class="actions-row">
       <button type="button" class="btn" onclick="openPlaylistModal()">Aggiungi playlist</button>
-      <button type="button" class="btn ghost" onclick="openTrackModal()">Carica brano</button>
-      <a class="btn ghost" href="All_Tracks.html" th:href="@{/All_Tracks}">Tutte le tracce</a>
+      <button type="button" class="btn" onclick="openTrackModal()">Carica brano</button>
+      <a class="btn" href="All_Tracks.html" th:href="@{/All_Tracks}">Tutte le tracce</a>
     </div>
 
-    <div class="board">
-      <!-- Sostituito layout: da rail orizzontale a griglia 3x3 con scroll verticale -->
-      <section class="playlists-grid" id="playlistsRail">
-        <div class="pl-empty" th:if="${!hasPlaylists}">
-          <p>Non hai ancora creato una playlist.</p>
-        </div>
-        <!-- Loop Thymeleaf -->
-        <a class="pl-card"
-           href="#"
-           th:each="p : ${playlists}"
-           th:href="@{/Playlist(playlistId=${p.id})}">
-          <div class="pl-meta">
-            <h3 class="pl-name" th:text="${p.title}">Playlist di esempio</h3>
-            <p class="pl-sub">
-              <span th:text="${p.tracksCount}">0</span> brani
-            </p>
-            <p class="pl-sub" th:if="${p.creationDate != null}" th:text="${#temporals.format(p.creationDate, 'dd/MM/yyyy')}">01/01/2025</p>
+    <div class="playlists-wrapper">
+      <div th:if="${!hasPlaylists}" style="padding:14px 0 6px;color:var(--am-muted);text-align:center;">Nessuna playlist ancora.</div>
+      <div class="playlists-vertical" th:if="${hasPlaylists}">
+        <a class="playlist-card-row" th:each="p : ${playlists}" th:href="@{/Playlist(playlistId=${p.id})}">
+          <h3 class="pl-name" th:text="${p.title}">Nome Playlist</h3>
+          <div style="font-size:.75rem;color:var(--am-muted);letter-spacing:.3px;">
+            <span th:text="${p.tracksCount}">0</span> brani
+            <span th:if="${p.creationDate != null}"> · <span th:text="${#temporals.format(p.creationDate,'dd/MM/yyyy')}">01/01/2025</span></span>
           </div>
         </a>
-      </section>
+      </div>
     </div>
   </main>
 </div>
