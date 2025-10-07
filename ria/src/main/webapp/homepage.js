@@ -44,9 +44,13 @@
         if(!m) return;
         // Modali createModal hanno classe modal-window
         if(m.classList.contains('modal-window')){
-            m.remove();
+            // Prima veniva rimossa (remove) e non poteva più essere riaperta.
+            // Ora la nascondiamo soltanto così il bottone può riaprirla.
+            m.classList.add('hidden');
+            m.style.visibility = 'hidden';
+            m.style.pointerEvents = 'none';
         } else {
-            // fallback: hide
+            // fallback: hide generico
             m.style.display='none';
         }
     }
