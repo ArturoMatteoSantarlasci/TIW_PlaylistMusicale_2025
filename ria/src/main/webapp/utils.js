@@ -49,6 +49,8 @@ function createModal(id, titleText, buttonId, buttonText) {
     modal.className = "modal-window hidden";
 
     const container = document.createElement("div");
+    // Panel vero della modale: assegniamo la classe per avere sfondo bianco e bordo rosa
+    container.className = "modal-content";
     const topNavbar = document.createElement("div");
     topNavbar.className = "nav-bar";
 

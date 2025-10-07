@@ -6,14 +6,14 @@
     <meta charset="UTF-8" />
     <title>Registrati</title>
     <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
-    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
 <body>
 <!-- Contenitore centrale, usa wrap, che sono delle regole definite in css-->
 <div class="wrap">
-    <h1 class="title-box">Registrati</h1>
+    <h1 class="title-box">REGISTRATI</h1>
 
-    <div class="panel">
+  <div class="auth-box">
         <!-- Messaggi solo in cas di errore
         span è un contenitore inline (a differenza di div che è block);
         alert per lo stile grafico;
@@ -71,9 +71,9 @@
             </div>
 
             <!-- Azione POST -->
-            <button class="btn" type="submit">Registrati</button>
-            <!-- GET per tornare alla pagina di login -->
-            <a class="btn secondary" href="/Login" th:href="@{/Login}" aria-label="Torna al login">Hai già un account? Accedi</a>
+      <button class="btn" type="submit">REGISTRATI</button>
+      <!-- GET per tornare alla pagina di login -->
+      <a class="btn auth-secondary" href="/Login" th:href="@{/Login}" aria-label="Torna al login">HAI UN ACCOUNT ? ACCEDI</a>
         </form>
     </div>
 </div>

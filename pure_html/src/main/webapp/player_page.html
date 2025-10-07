@@ -4,63 +4,37 @@
     <meta charset="UTF-8" />
     <title>Player • Playlist Manager</title>
     <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
-    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
 <body class="page-home">
 <header class="header">
     <div class="header-left"></div>
-    <div class="actions-row" style="gap:34px;justify-content:center;">
-        <button type="button" class="iconbtn" style="width:44px;height:44px;" title="Homepage" aria-label="Homepage" onclick="window.location.href=this.getAttribute('data-href')" th:attr="data-href=@{/HomePage}">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+    <div class="header-right actions-row" style="gap:14px;">
+        <button type="button" class="iconbtn" title="Homepage" aria-label="Homepage" onclick="window.location.href=this.getAttribute('data-href')" th:attr="data-href=@{/HomePage}">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
         </button>
         <a class="btn secondary logout" th:href="@{/Logout}" href="Logout">Logout</a>
         <!-- Back to playlist (only player page) -->
-        <button type="button" id="backToPlaylistBtn" class="iconbtn" style="width:44px;height:44px;" title="Torna alla playlist" aria-label="Torna alla playlist">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24"><path d="M15.5 3.5a1 1 0 0 1 0 1.4L9.4 11l6.1 6.1a1 1 0 1 1-1.4 1.4l-6.8-6.8a1 1 0 0 1 0-1.4l6.8-6.8a1 1 0 0 1 1.4 0z"/></svg>
+        <button type="button" id="backToPlaylistBtn" class="iconbtn" title="Torna alla playlist" aria-label="Torna alla playlist">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M15.5 3.5a1 1 0 0 1 0 1.4L9.4 11l6.1 6.1a1 1 0 1 1-1.4 1.4l-6.8-6.8a1 1 0 0 1 0-1.4l6.8-6.8a1 1 0 0 1 1.4 0z"/></svg>
         </button>
     </div>
-    <div class="header-right"></div>
 </header>
 
 <div class="player-track-info">
-    <div class="player-cover" style="max-width:220px;">
+    <div class="player-cover">
         <img th:if="${track.coverUrl != null and !#strings.isEmpty(track.coverUrl)}" th:src="${track.coverUrl}" th:alt="${'Copertina di ' + track.title}" alt="Cover" />
         <img th:if="${track.coverUrl == null or #strings.isEmpty(track.coverUrl)}" th:src="@{/img/placeholder_cover.svg}" alt="Placeholder" />
     </div>
-    <!-- Pulsante Play personalizzato -->
-    <div class="player-controls" style="display:flex;align-items:center;justify-content:center;">
-        <button type="button" id="play-btn" class="player-playbtn" aria-label="Riproduci" title="Riproduci">
-            <!-- Icona Play -->
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-    </div>
-    <div class="player-text" style="gap:8px;">
+    <div class="player-text">
         <div class="player-title" th:text="${track.title}">Titolo</div>
         <div class="player-artist" th:text="${track.artist}">Artista</div>
         <div class="player-album" th:if="${track.albumLine != null}" th:text="${track.albumLine}">Album · Anno · Genere</div>
-        <!-- Audio element nascosto (controllato dal bottone custom) -->
-        <audio id="player-audio" preload="metadata" th:src="${track.audioUrl}" style="margin-top:24px;width:0;height:0;opacity:0;position:absolute;left:-9999px;" aria-hidden="true"></audio>
+        <!-- Audio element visibile con controlli (pill) -->
+        <audio id="player-audio" controls preload="metadata" th:src="${track.audioUrl}" aria-label="Player traccia"></audio>
     </div>
 </div>
 <script>
-    // Toggle play/pause custom
-    (function(){
-        const btn = document.getElementById('play-btn');
-        const audio = document.getElementById('player-audio');
-        if(!btn || !audio) return;
-        function setPlaying(isPlaying){
-            btn.innerHTML = isPlaying
-                ? '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5h4v14H8zm6 0h4v14h-4z"/></svg>'
-                : '<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
-            btn.setAttribute('aria-label', isPlaying ? 'Pausa' : 'Riproduci');
-            btn.title = isPlaying ? 'Pausa' : 'Riproduci';
-        }
-        btn.addEventListener('click', () => {
-            if(audio.paused){ audio.play(); } else { audio.pause(); }
-        });
-        audio.addEventListener('play', () => setPlaying(true));
-        audio.addEventListener('pause', () => setPlaying(false));
-    })();
     // Back button logic: prefer redirect to specific playlist if params present
     (function(){
         const backBtn = document.getElementById('backToPlaylistBtn');

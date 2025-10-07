@@ -1,6 +1,14 @@
 (function () {
     // =================== VARIABILI GLOBALI ===================
     let lastPlaylist = null, lastTrack = null;
+    // Toast util: mostra messaggio temporaneo (simile a pure_html)
+    function showToast(msg, duration=3000){
+        const t = document.getElementById('toast');
+        if(!t) return; // fallback silenzioso
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(t._h); t._h = setTimeout(()=>{ t.classList.remove('show'); }, duration);
+    }
     // Determina (best-effort) il context path (es: /ria) se l'app è deployata non in root
     const CONTEXT_PATH = (function() {
         // Se la pagina è ad es. http://host/ria/homepage.html -> estrae "/ria"
@@ -30,6 +38,18 @@
     let totalGroups = 0; // totale gruppi disponibili
     const PAGE_SIZE = 5;
     let homeView = new HomeView(), playlistView = new PlaylistView(), trackView = new TrackView();
+
+    function closeModalById(id){
+        const m = document.getElementById(id);
+        if(!m) return;
+        // Modali createModal hanno classe modal-window
+        if(m.classList.contains('modal-window')){
+            m.remove();
+        } else {
+            // fallback: hide
+            m.style.display='none';
+        }
+    }
 
     // Gestione bottone indietro solo per vista traccia -> playlist
     function showBackToPlaylist(show) {
@@ -115,22 +135,19 @@
                                     let newPlaylist = JSON.parse(message);
                                     // Ricarico l'intera vista home per garantire ordine e consistenza (più semplice e sicuro)
                                     try { homeView.show(); } catch(_){ /* fallback silenzioso */ }
-                                    // Feedback utente (temporaneo: si potrebbe introdurre toast RIA)
-                                    self.parentElement.previousElementSibling.setAttribute("class", "success");
-                                    self.parentElement.previousElementSibling.textContent = "Playlist creata con successo";
+                                    showToast('Playlist creata con successo');
+                                    // Chiudo modal
+                                    closeModalById('create-playlist');
                                     form.reset();
                                     break; }
                                 case 409:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "error");
-                                    self.parentElement.previousElementSibling.textContent = message || "Playlist già esistente";
+                                    showToast(message || 'Playlist già esistente');
                                     break;
                                 case 400:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "error");
-                                    self.parentElement.previousElementSibling.textContent = message || "Dati non validi";
+                                    showToast(message || 'Dati non validi');
                                     break;
                                 case 500:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "error");
-                                    self.parentElement.previousElementSibling.textContent = message || "Errore interno";
+                                    showToast(message || 'Errore interno');
                                     break;
                             }
                         }
@@ -148,22 +165,19 @@
                             let message = req.responseText;
                             switch (req.status) {
                                 case 201:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "success");
-                                    self.parentElement.previousElementSibling.textContent = "Brano caricato con successo";
+                                    showToast('Brano caricato con successo');
+                                    closeModalById('upload-track');
                                     form.getElementsByTagName("input").item(0).value = "";
                                     document.getElementById("musicTrack").value = "";
                                     break;
                                 case 409:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "error");
-                                    self.parentElement.previousElementSibling.textContent = message || "File già presente";
+                                    showToast(message || 'File già presente');
                                     break;
                                 case 400:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "error");
-                                    self.parentElement.previousElementSibling.textContent = message || "Dati mancanti o non validi";
+                                    showToast(message || 'Dati mancanti o non validi');
                                     break;
                                 case 500:
-                                    self.parentElement.previousElementSibling.setAttribute("class", "error");
-                                    self.parentElement.previousElementSibling.textContent = message || "Errore interno";
+                                    showToast(message || 'Errore interno');
                                     break;
                             }
                         }
@@ -262,6 +276,7 @@
             modal_div.setAttribute("id", "reorder-tracks-modal");
             modal_div.setAttribute("class", "modal-window");
             let inner_div = document.createElement("div");
+            inner_div.className = "modal-content"; // assegna stile pannello bianco con bordo rosa
             let top_nav_bar = document.createElement("div"); top_nav_bar.className = "nav-bar";
             let title_div = document.createElement("div"); title_div.className = "modal-title"; title_div.textContent = "Riordina brani in " + playlist.title.toString();
             let spacer = document.createElement("div"); spacer.className = "spacer";
@@ -492,17 +507,16 @@
                                 // dopo aggiunta tracce ricarico la pagina corrente (potrebbe creare nuovo gruppo in fondo)
                                 loadPlaylistGroup(playlist, currentGroup);
                                 loadUserTracks(document.getElementById("track-selector-add"), playlist);
-                                self.parentElement.previousElementSibling.className = "success";
-                                self.parentElement.previousElementSibling.textContent = "Tracce aggiunte con successo";
+                                showToast('Tracce aggiunte con successo');
+                                closeModalById('add-tracks');
                                 form.reset();
                             } else {
-                                self.parentElement.previousElementSibling.className = "error";
                                 if (req.status === 409) {
-                                    self.parentElement.previousElementSibling.textContent = req.responseText || "Alcune tracce sono già presenti";
+                                    showToast(req.responseText || 'Alcune tracce sono già presenti');
                                 } else if (req.status === 400) {
-                                    self.parentElement.previousElementSibling.textContent = req.responseText || "Richiesta non valida";
+                                    showToast(req.responseText || 'Richiesta non valida');
                                 } else {
-                                    self.parentElement.previousElementSibling.textContent = req.responseText || "Errore";
+                                    showToast(req.responseText || 'Errore');
                                 }
                             }
                         }
@@ -741,18 +755,40 @@ function setMiniPlayIcon(isPlaying){
     const prev = document.getElementById('miniPrev');
     const next = document.getElementById('miniNext');
     const mp = document.getElementById('miniPlayer');
-    if(!audio || !play) return;
-    play.addEventListener('click', ()=> { if(audio.paused){ audio.play(); } else { audio.pause(); } });
-    audio.addEventListener('play', ()=> setMiniPlayIcon(true));
-    audio.addEventListener('pause', ()=> setMiniPlayIcon(false));
+    const closeBtn = document.getElementById('miniClose');
+    if(!audio || !play){ console.warn('[miniPlayer] abort init: missing audio or play'); return; }
+    if(!closeBtn){ console.warn('[miniPlayer] close button NOT found in DOM'); }
+    play.addEventListener('click', ()=> {
+        if(audio.paused){
+            audio.play();
+        }
+        else {
+            audio.pause();
+        }
+    });
+    audio.addEventListener('play', ()=> { setMiniPlayIcon(true); });
+    audio.addEventListener('pause', ()=> { setMiniPlayIcon(false);  });
     function move(dir){
         const cards = Array.from(document.querySelectorAll('.track-card[data-audio]'));
-        if(!mp.dataset.index) return; let i = parseInt(mp.dataset.index,10);
-        const ni = i + dir; if(ni <0 || ni>=cards.length) return;
+        if(!mp.dataset.index){ return; }
+        let i = parseInt(mp.dataset.index,10);
+        const ni = i + dir;
+        if(ni <0 || ni>=cards.length){ return; }
         openMiniFromCard(cards[ni]);
     }
     prev?.addEventListener('click', ()=> move(-1));
     next?.addEventListener('click', ()=> move(1));
     audio.addEventListener('ended', ()=> move(1));
+    // Close mini player: pause audio, hide container, clear src
+    closeBtn?.addEventListener('click', ()=>{
+        try{ audio.pause(); }catch(e){ console.warn('[miniPlayer] pause error', e); }
+        audio.removeAttribute('src');
+        mp.classList.add('hidden');
+        mp.setAttribute('aria-hidden','true');
+        mp.removeAttribute('data-index');
+        // Return focus to play button of last used track if possible
+        const last = document.querySelector('.track-card[data-audio]');
+        if(last && last.focus){ last.focus(); }
+    });
 })();
 

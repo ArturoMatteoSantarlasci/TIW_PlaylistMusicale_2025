@@ -1,4 +1,3 @@
-
 <!-- TODO: da rivedere e provare con dati effettivi -->
 
 <!DOCTYPE html>
@@ -8,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title th:text="${playlistTitle} + ' • Playlist'">Playlist</title>
   <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
-  <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
+  <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
 <body class="page-home">
   <header class="header">
@@ -69,6 +68,9 @@
   </main>
   <!-- Mini player bottom -->
   <div id="miniPlayer" class="mini-player hidden" aria-hidden="true">
+    <button type="button" class="mini-btn mini-close" id="miniClose" aria-label="Chiudi mini player" title="Chiudi">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
     <button type="button" class="mini-btn prev" id="miniPrev" aria-label="Precedente" disabled>
       <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M10 12L18 6v12l-8-6zm-4 6V6h2v12H6z"/></svg>
     </button>
@@ -261,7 +263,7 @@
       function close(){ overlay.classList.remove('active'); overlay.style.display='none'; document.body.style.overflow=''; }
       window.openAddTracksModal = open;
       window.closeAddTracksModal = close;
-      overlay.addEventListener('click',e=>{ if(e.target===overlay) close(); });
+      overlay.addEventListener('click', e=>{ if(e.target===overlay) close(); });
       filter?.addEventListener('input',()=>{
         const q = filter.value.trim().toLowerCase();
         if(!list) return;
@@ -274,6 +276,19 @@
       selectAllBtn?.addEventListener('click',()=>{ list?.querySelectorAll('input[type="checkbox"]').forEach(cb=>{ if(cb.offsetParent!==null) cb.checked=true;}); updateCount(); });
       clearBtn?.addEventListener('click',()=>{ list?.querySelectorAll('input[type="checkbox"]').forEach(cb=> cb.checked=false); updateCount(); });
     })();
+  // Mini player close support (pure_html variant)
+  (function(){
+    const mp = document.getElementById('miniPlayer');
+    const closeBtn = document.getElementById('miniClose');
+    const audio = document.getElementById('miniAudio');
+    if(closeBtn && mp){
+      closeBtn.addEventListener('click', ()=>{
+        try{ audio?.pause(); }catch(e){}
+        if(audio){ audio.removeAttribute('src'); }
+        mp.classList.add('hidden'); mp.setAttribute('aria-hidden','true'); mp.removeAttribute('data-index');
+      });
+    }
+  })();
   </script>
 </body>
 </html>
