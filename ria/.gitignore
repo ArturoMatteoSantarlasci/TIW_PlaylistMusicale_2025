@@ -11,3 +11,19 @@ out/
 # Log e runtime
 *.log
 uploads/
+
+# media locali
+/media/
+/*_media/
+/*media_progettoweb/
+/*.mp3
+*.wav
+*.ogg
+*.m4a
+*.jpg
+*.jpeg
+*.png
+*.webp
+
+# config locali
+config/local.properties
