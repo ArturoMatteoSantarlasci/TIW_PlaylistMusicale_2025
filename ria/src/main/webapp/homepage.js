@@ -508,8 +508,9 @@
                     makeCall("POST", "AddTracks?playlistId=" + playlist.id, form, function (req) {
                         if (req.readyState == XMLHttpRequest.DONE) {
                             if (req.status == 201) {
-                                // dopo aggiunta tracce ricarico la pagina corrente (potrebbe creare nuovo gruppo in fondo)
-                                loadPlaylistGroup(playlist, currentGroup);
+                                // Dopo aggiunta tracce riparti sempre dal primo gruppo (group=0)
+                                currentGroup = 0;
+                                loadPlaylistGroup(playlist, 0);
                                 loadUserTracks(document.getElementById("track-selector-add"), playlist);
                                 showToast('Tracce aggiunte con successo');
                                 closeModalById('add-tracks');
@@ -552,46 +553,29 @@
             nav.className = "tracks-pagination";
             wrapper.appendChild(nav);
 
-            // area messaggi feedback
-            let feedback = document.createElement("span");
-            feedback.id = "pagination-feedback";
-            feedback.style.marginLeft = "12px";
-
-            function showMsg(msg) {
-                feedback.textContent = msg;
-                // auto clear dopo qualche secondo
-                clearTimeout(feedback._t);
-                feedback._t = setTimeout(() => { feedback.textContent = ""; }, 2500);
+            // Prev (solo se non primo gruppo)
+            if(currentGroup > 0){
+                const prev = document.createElement("button");
+                prev.type = "button"; prev.className = "button left"; prev.textContent = "Precedenti";
+                prev.addEventListener("click", () => {
+                    loadPlaylistGroup({id: currentPlaylistId, title: lastPlaylist.title}, currentGroup - 1);
+                });
+                nav.appendChild(prev);
             }
-
-            // Prev button sempre visibile
-            const prev = document.createElement("button");
-            prev.type = "button"; prev.className = "button left"; prev.textContent = "Precedente";
-            prev.addEventListener("click", () => {
-                if (totalGroups === 0) { showMsg("Playlist vuota"); return; }
-                if (currentGroup === 0) { showMsg("Sei al primo gruppo"); return; }
-                loadPlaylistGroup({id: currentPlaylistId, title: lastPlaylist.title}, currentGroup - 1);
-                feedback.textContent = "";
-            });
-            nav.appendChild(prev);
-
-            // Indicator
+            // Indicatore centrale
             const indicator = document.createElement("span");
             indicator.className = "center";
             indicator.textContent = totalGroups > 0 ? `Pagina ${currentGroup + 1} / ${totalGroups}` : "Nessun brano";
             nav.appendChild(indicator);
-
-            // Next button sempre visibile
-            const next = document.createElement("button");
-            next.type = "button"; next.className = "button right"; next.textContent = "Successivo";
-            next.addEventListener("click", () => {
-                if (totalGroups === 0) { showMsg("Playlist vuota"); return; }
-                if (currentGroup >= totalGroups - 1) { showMsg("Sei all'ultimo gruppo"); return; }
-                loadPlaylistGroup({id: currentPlaylistId, title: lastPlaylist.title}, currentGroup + 1);
-                feedback.textContent = "";
-            });
-            nav.appendChild(next);
-            nav.appendChild(feedback);
+            // Next (solo se esiste gruppo successivo)
+            if(currentGroup + 1 < totalGroups){
+                const next = document.createElement("button");
+                next.type = "button"; next.className = "button right"; next.textContent = "Successivi";
+                next.addEventListener("click", () => {
+                    loadPlaylistGroup({id: currentPlaylistId, title: lastPlaylist.title}, currentGroup + 1);
+                });
+                nav.appendChild(next);
+            }
         }
     }
 
@@ -737,6 +721,7 @@ function openMiniFromCard(card){
     document.getElementById('miniArtist').textContent = artist || '';
     mp.classList.remove('hidden'); mp.setAttribute('aria-hidden','false');
     mp.dataset.index = idx.toString();
+    document.body.classList.add('has-mini-player');
     updateMiniPrevNext(idx, cards.length);
     setMiniPlayIcon(true);
 }
@@ -790,6 +775,7 @@ function setMiniPlayIcon(isPlaying){
         mp.classList.add('hidden');
         mp.setAttribute('aria-hidden','true');
         mp.removeAttribute('data-index');
+        document.body.classList.remove('has-mini-player');
         // Return focus to play button of last used track if possible
         const last = document.querySelector('.track-card[data-audio]');
         if(last && last.focus){ last.focus(); }

@@ -55,13 +55,11 @@
 
       <!-- Paginazione gruppi -->
     <div class="pagination-row" th:if="${totalGroups > 0}" style="display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:32px;">
-      <a id="prevBtn" class="btn secondary"
-        th:classappend="${totalGroups == 1} ? '' : (trackGroup == 0 ? ' disabled' : '')"
-        th:href="@{/Playlist(playlistId=${playlistId}, gr=${trackGroup == 0 ? 0 : trackGroup - 1})}">Precedente</a>
-      <div class="pagination-label" style="font-size:.85rem;font-weight:600;color:var(--am-accent);flex:1;text-align:center;letter-spacing:.3px;">Pagina <span id="pageIndex" th:text="${trackGroup + 1}">1</span> / <span id="pageTotal" th:text="${totalGroups}">1</span></div>
-      <a id="nextBtn" class="btn secondary"
-        th:classappend="${totalGroups == 1} ? '' : (trackGroup + 1 == totalGroups ? ' disabled' : '')"
-        th:href="@{/Playlist(playlistId=${playlistId}, gr=${trackGroup + 1 >= totalGroups ? trackGroup : trackGroup + 1})}">Successivo</a>
+      <a id="prevBtn" class="btn secondary" th:if="${trackGroup > 0}" th:href="@{/Playlist(playlistId=${playlistId}, gr=${trackGroup - 1})}">Precedenti</a>
+      <div class="pagination-label" style="font-size:.85rem;font-weight:600;color:var(--am-accent);flex:1;text-align:center;letter-spacing:.3px;">
+        Pagina <span id="pageIndex" th:text="${trackGroup + 1}">1</span> / <span id="pageTotal" th:text="${totalGroups}">1</span>
+      </div>
+      <a id="nextBtn" class="btn secondary" th:if="${trackGroup + 1 < totalGroups}" th:href="@{/Playlist(playlistId=${playlistId}, gr=${trackGroup + 1})}">Successivi</a>
     </div>
     <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
@@ -189,6 +187,7 @@
       mp.classList.remove('hidden');
       mp.setAttribute('aria-hidden','false');
       mp.dataset.index = idx.toString();
+      document.body.classList.add('has-mini-player');
       updatePrevNext(idx, cards.length);
       setPlayIcon(true);
     }
@@ -226,26 +225,7 @@
       next?.addEventListener('click',()=> move(1));
       audio.addEventListener('ended', ()=> move(1));
     })();
-    // Messaggi paginazione ai limiti
-    (function(){
-      const prev = document.getElementById('prevBtn');
-      const next = document.getElementById('nextBtn');
-      const toast = document.getElementById('toast');
-      if(!prev || !next || !toast) return;
-      const pageIndex = parseInt(document.getElementById('pageIndex')?.textContent||'1',10);
-      const pageTotal = parseInt(document.getElementById('pageTotal')?.textContent||'1',10);
-      function show(msg){
-        toast.textContent = msg;toast.classList.add('show');
-        clearTimeout(window.__toastTimer);
-        window.__toastTimer = setTimeout(()=> toast.classList.remove('show'), 2200);
-      }
-      prev.addEventListener('click', function(e){
-        if(pageTotal===1 || pageIndex===1){ e.preventDefault(); show('Non ci sono pagine precedenti'); }
-      });
-      next.addEventListener('click', function(e){
-        if(pageTotal===1 || pageIndex===pageTotal){ e.preventDefault(); show('Non ci sono pagine successive'); }
-      });
-    })();
+    // Paginazione: bottoni nascosti ai limiti già gestiti server-side via th:if
   // Gestione modal aggiungi tracce
     (function(){
       const overlay = document.getElementById('addTracksModal');
@@ -286,6 +266,7 @@
         try{ audio?.pause(); }catch(e){}
         if(audio){ audio.removeAttribute('src'); }
         mp.classList.add('hidden'); mp.setAttribute('aria-hidden','true'); mp.removeAttribute('data-index');
+        document.body.classList.remove('has-mini-player');
       });
     }
   })();

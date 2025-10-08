@@ -55,7 +55,10 @@ public class AddTracksToPlaylist extends HttpServlet {
         try {
             playlistDAO.addTracksToPlaylist(clientTracksIds, playlistId);
             int added = clientTracksIds.size();
-            resp.sendRedirect(getServletContext().getContextPath() + "/Playlist?playlistId=" + playlistId + (added>0?"&added="+added:""));
+        resp.sendRedirect(
+            getServletContext().getContextPath() + 
+                "/Playlist?playlistId=" + playlistId + "&gr=0" + (added>0?"&added="+added:"")
+        );
 
         } catch (SQLIntegrityConstraintViolationException e) {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "una o più tracce già presenti nella playlist");

@@ -15,7 +15,7 @@
                     let message = req.responseText;
                     switch (req.status) {
                         case 201:
-                            window.location.href = "login.html";
+                            window.location.href = "login.html?reg=1";
                             break;
                         case 400:
                         case 409:

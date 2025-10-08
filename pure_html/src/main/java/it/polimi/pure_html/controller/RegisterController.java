@@ -72,7 +72,8 @@ public class RegisterController extends HttpServlet {
         boolean isUserAdded = userDAO.addUser(user);
 
         if (isUserAdded) {
-            res.sendRedirect(getServletContext().getContextPath() + "/Login");
+            // Redirect con parametro per mostrare toast di successo su Login
+            res.sendRedirect(getServletContext().getContextPath() + "/Login?reg=1");
         } else {
             res.sendRedirect(
                     getServletContext().getContextPath() + "/Register?isUserAdded=" + false
