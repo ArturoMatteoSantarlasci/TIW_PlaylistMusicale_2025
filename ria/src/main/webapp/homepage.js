@@ -240,11 +240,21 @@
             // Backend avanzato: id = track-selector-create, name = selectedTrackIds
             let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-create"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar);
             let selector = document.createElement("select");
-            selector.className = "field";
+            selector.className = "track-multi-select";
             selector.id = "track-selector-create";
-            selector.name = "selectedTrackIds"; // backend avanzato si aspetta selectedTrackIds per la creazione
+            selector.name = "selectedTrackIds";
             selector.multiple = true;
-            form.insertBefore(selector, navbar);
+            // wrapper custom scrollbar
+            const wrap = document.createElement("div");
+            wrap.className = "track-multi-wrapper";
+            wrap.appendChild(selector);
+            const sb = document.createElement("div"); sb.className = "track-multi-scrollbar";
+            const track = document.createElement("div"); track.className = "track-multi-scrollbar-track";
+            const thumb = document.createElement("div"); thumb.className = "track-multi-scrollbar-thumb";
+            track.appendChild(thumb); sb.appendChild(track); wrap.appendChild(sb);
+            form.insertBefore(wrap, navbar);
+            // setup custom scrollbar sync
+            initCustomScrollbar(wrap, selector);
             form.insertBefore(document.createElement("div"), navbar); // area messaggi
             modalContainer.appendChild(modal);
         }
@@ -539,11 +549,19 @@
             form.classList.add("modal-form-grid");
             let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-add"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar);
             let selector = document.createElement("select");
-            selector.className = "field";
+            selector.className = "track-multi-select";
             selector.id = "track-selector-add";
             selector.name = "selectedTracksIds"; // backend avanzato per add tracks
             selector.multiple = true;
-            form.insertBefore(selector, navbar);
+            const wrap = document.createElement("div");
+            wrap.className = "track-multi-wrapper";
+            wrap.appendChild(selector);
+            const sb = document.createElement("div"); sb.className = "track-multi-scrollbar";
+            const track = document.createElement("div"); track.className = "track-multi-scrollbar-track";
+            const thumb = document.createElement("div"); thumb.className = "track-multi-scrollbar-thumb";
+            track.appendChild(thumb); sb.appendChild(track); wrap.appendChild(sb);
+            form.insertBefore(wrap, navbar);
+            initCustomScrollbar(wrap, selector);
             form.insertBefore(document.createElement("div"), navbar);
             modalContainer.appendChild(modal);
         }
@@ -577,6 +595,41 @@
                 nav.appendChild(next);
             }
         }
+    }
+
+    // =================== CUSTOM SCROLLBAR LOGIC ===================
+    function initCustomScrollbar(wrapper, selectEl){
+        const thumb = wrapper.querySelector('.track-multi-scrollbar-thumb');
+        if(!thumb) return;
+        const trackH = ()=> wrapper.querySelector('.track-multi-scrollbar-track').clientHeight;
+        const thumbH = ()=> thumb.clientHeight;
+        const maxScroll = ()=> selectEl.scrollHeight - selectEl.clientHeight;
+        const maxThumbOffset = ()=> trackH() - thumbH();
+
+        function syncFromSelect(){
+            if(maxScroll()<=0){ thumb.style.top = '0px'; return; }
+            const ratio = selectEl.scrollTop / maxScroll();
+            thumb.style.top = (ratio * maxThumbOffset()) + 'px';
+        }
+        selectEl.addEventListener('scroll', syncFromSelect);
+        window.addEventListener('resize', syncFromSelect);
+        // Drag
+        let dragging=false, startY=0, startTop=0;
+        thumb.addEventListener('mousedown', e=>{
+            dragging=true; startY=e.clientY; startTop=parseFloat(getComputedStyle(thumb).top)||0; wrapper.classList.add('dragging'); e.preventDefault();
+        });
+        document.addEventListener('mousemove', e=>{
+            if(!dragging) return; const dy=e.clientY-startY; let newTop=startTop+dy; if(newTop<0) newTop=0; const limit=maxThumbOffset(); if(newTop>limit) newTop=limit; thumb.style.top=newTop+'px';
+            const ratio = limit>0 ? newTop/limit : 0; selectEl.scrollTop = ratio * maxScroll();
+        });
+        document.addEventListener('mouseup', ()=>{ if(dragging){ dragging=false; wrapper.classList.remove('dragging'); }});
+        // Wheel su barra esterna
+        const ext = wrapper.querySelector('.track-multi-scrollbar');
+        ext.addEventListener('wheel', e=>{ e.preventDefault(); selectEl.scrollTop += e.deltaY; });
+        // Prima sync
+        syncFromSelect();
+        // Osserva cambi numero option (mutations) per risincronizzare
+        const mo = new MutationObserver(syncFromSelect); mo.observe(selectEl,{childList:true});
     }
 
     // =================== TRACK VIEW ===================

@@ -24,6 +24,10 @@
     --am-ctrl-h-sm: 44px;
     --am-icon: 38px;
     --am-focus: 0 0 0 3px rgba(0,113,227,.35);
+    /* Altezza pulsanti scrollbar multi-select (somma top+bottom = riduce la lunghezza utile del track). 52px ~ 20% ciascuno su 260px => track ~60%. */
+    --track-multi-scroll-btn-h:52px;
+    /* Percentuale altezza coperta (top e bottom) per accorciare visivamente la scrollbar: 20% + 20% = 40% nascosta */
+    --track-multi-scroll-mask:20%;
 }
 
 /* ======================= PURE_HTML THEME PORT (Black variant) ======================= */
@@ -172,8 +176,8 @@
 .auth-box .field { background:#fff; }
 /* Secondary link style inside black box: outline variant (white bg optional) */
 .btn.auth-secondary {
-    background:#fff;
-    color:#000;
+    background:#000;
+    color:#fff;
     border:2px solid var(--am-accent);
     font-size:0.95rem;
 }
@@ -329,8 +333,8 @@ body.page-home, body.page-home:after {
     height: var(--am-ctrl-h);
     border-radius: var(--am-radius-pill);
     border: 2px solid var(--am-accent);
-    background: #fff;
-    color: #000;
+    background: #000;
+    color: #fff;
     font-weight: 800;
     letter-spacing: .3px;
     padding: 0 20px;
@@ -563,7 +567,7 @@ a.btn { text-decoration:none; }
 }
 .player-cover img { display:block; width:100%; height:auto; }
 .player-text { flex: 1 1 auto; min-width: 0; display:grid; gap: 6px; }
-.player-title { font-weight: 800; font-size: 1.25rem; letter-spacing: 2px; color:#000; }
+.player-title { font-weight: 800; font-size: 1.25rem; letter-spacing: .2px; color:#000; }
 .player-artist, .player-album, .player-year, .player-genre {
     font-size: .9rem; color: var(--am-muted);
 }
@@ -704,3 +708,24 @@ img.scale-on-hover:hover { transform: scale(1.03); }
 .toast { position:fixed; left:50%; top:84px; transform:translateX(-50%) translateY(-18px); background:color-mix(in oklab, var(--am-accent) 24%, #fff); color:#000; padding:12px 26px; border:2px solid var(--am-accent); border-radius:38px; font-size:.78rem; line-height:1.35; font-weight:700; letter-spacing:.4px; opacity:0; pointer-events:none; z-index:1300; max-width:78vw; display:inline-flex; align-items:center; gap:12px; box-shadow:0 14px 34px -10px rgba(0,0,0,.4); backdrop-filter:saturate(140%) blur(6px); transition:opacity .35s ease, transform .35s ease; }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 @media (prefers-color-scheme: dark){ .toast{ background:color-mix(in oklab, var(--am-accent) 28%, #000); color:#000; } }
+
+/* === Multi select tracks con scrollbar custom (thumb alto ~2cm) === */
+.track-multi-wrapper { position:relative; }
+/* Aggiunto padding-right extra per lasciare 2px di aria prima della barra personalizzata */
+.track-multi-select { min-height:220px; height:260px; width:100%; padding:6px 19px 6px 10px; font-size:.75rem; line-height:1.2; border:2px solid #000; border-radius:30px; background:#fff; color:#000; outline:none; resize:none; overflow-y:scroll; scrollbar-width:none; }
+.track-multi-select::-webkit-scrollbar { display:none; }
+.track-multi-select option { padding:4px 10px; margin:2px 5px 2px 0; border:2px solid #000; background:#fff; border-radius:24px; display:block; font-size:.74rem; line-height:1.1; }
+.track-multi-select option:checked { background:#000; color:#fff; border-color:#000; }
+.track-multi-select:focus { box-shadow:0 0 0 2px #000; }
+/* Barra esterna */
+/* Scrollbar interna distanziata ~4mm (≈16px) dal bordo del riquadro: abbasso e sposto verso sinistra */
+.track-multi-scrollbar { position:absolute; top:16px; right:10px; width:10px; height:100%; display:flex; align-items:flex-start; justify-content:center; }
+.track-multi-scrollbar-track { position:relative; width:100%; background:transparent; height:100%; }
+
+.track-multi-scrollbar-thumb { position:absolute; top:0; left:0; width:100%; height:224px; background:#4a4a4f; border-radius:8px; cursor:pointer; display:block; }
+.track-multi-scrollbar-thumb:hover { background:#2e2e32; }
+/* Ombreggiatura per visibilità su sfondi chiari */
+.track-multi-scrollbar-thumb:after { content:""; position:absolute; inset:0; border:1px solid #fff3; border-radius:inherit; }
+/* Nasconde selezione testo durante drag */
+.track-multi-wrapper.dragging { user-select:none; }
+

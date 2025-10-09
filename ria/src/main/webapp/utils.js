@@ -133,11 +133,10 @@ function loadUserTracks(trackSelector, playlist = null) {
                 const option = document.createElement("option");
                 option.value = "";
                 option.textContent = "Nessuna traccia disponibile da aggiungere";
-                trackSelector.setAttribute("size", "1");
                 trackSelector.appendChild(option);
                 return;
             }
-            trackSelector.setAttribute("size", tracks.length < 10 ? tracks.length.toString() : "10");
+            // Non impostiamo più l'attributo size: lasciamo gestire altezza e scrollbar al CSS (.track-multi-select)
             tracks.forEach(track => {
                 const option = document.createElement("option");
                 option.value = track.id.toString();

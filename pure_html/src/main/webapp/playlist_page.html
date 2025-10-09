@@ -104,7 +104,8 @@
                 </div>
                 <div class="counts"><span id="addSelectedCount">0</span>/<span th:text="${#lists.size(addableTracks)}">0</span> selezionati</div>
               </div>
-              <ul class="playlist-tracks-list" id="addTracksList" style="max-height:320px;overflow:auto;">
+              <div class="custom-scroll-wrapper">
+              <ul class="playlist-tracks-list custom-scroll-hide-native" id="addTracksList">
                 <li class="track-choice" th:each="t : ${addableTracks}" th:data-search="${(t.title + ' ' + t.artist + ' ' + t.album_title).toLowerCase()}">
                   <input type="checkbox" th:id="'addtrk_' + ${t.id}" th:value="${t.id}" name="selectedTracksIds" />
                   <label th:for="'addtrk_' + ${t.id}" class="track-choice-info">
@@ -118,6 +119,8 @@
                   </label>
                 </li>
               </ul>
+              <div class="custom-scrollbar"><div class="custom-scrollbar-track"><span class="custom-scrollbar-thumb"></span></div></div>
+              </div>
               <div class="playlist-tracks-actions" style="margin-top:6px;display:flex;gap:8px;" th:if="${!#lists.isEmpty(addableTracks)}">
                 <button type="button" id="addSelectAllBtn">Seleziona tutti</button>
                 <button type="button" id="addClearBtn">Pulisci</button>
@@ -269,6 +272,35 @@
         document.body.classList.remove('has-mini-player');
       });
     }
+  })();
+  </script>
+  <script>
+  // Scrollbar custom 5cm per addTracksList (sempre visibile anche con pochi elementi)
+  (function(){
+    const wrapper = document.querySelector('#addTracksList')?.closest('.custom-scroll-wrapper');
+    if(!wrapper) return;
+    const list = wrapper.querySelector('.playlist-tracks-list');
+    const thumb = wrapper.querySelector('.custom-scrollbar-thumb');
+    const track = wrapper.querySelector('.custom-scrollbar-track');
+    if(!list||!thumb||!track) return;
+    function enforce(){
+      if(list.scrollHeight <= list.clientHeight){ thumb.style.top='0px'; return; }
+      const maxScroll = list.scrollHeight - list.clientHeight;
+      const trackH = track.clientHeight;
+      const maxTop = trackH - thumb.offsetHeight;
+      const ratio = list.scrollTop / maxScroll;
+      thumb.style.top = (ratio * maxTop) + 'px';
+    }
+    list.addEventListener('scroll', enforce);
+    window.addEventListener('resize', enforce);
+    let dragging=false, startY=0, startTop=0;
+    thumb.addEventListener('mousedown', e=>{ dragging=true; startY=e.clientY; startTop=parseFloat(thumb.style.top)||0; wrapper.classList.add('dragging'); e.preventDefault(); });
+    document.addEventListener('mousemove', e=>{ if(!dragging) return; const dy=e.clientY-startY; const trackH=track.clientHeight; const maxTop=trackH-thumb.offsetHeight; let newTop=Math.min(Math.max(0,startTop+dy),maxTop); thumb.style.top=newTop+'px'; const maxScroll=list.scrollHeight-list.clientHeight; if(maxScroll>0){ list.scrollTop = (newTop/maxTop)*maxScroll; } });
+    document.addEventListener('mouseup', ()=>{ if(dragging){ dragging=false; wrapper.classList.remove('dragging'); }});
+    track.addEventListener('wheel', e=>{ e.preventDefault(); list.scrollTop += e.deltaY; }, {passive:false});
+    const mo = new MutationObserver(()=>{ requestAnimationFrame(enforce); });
+    mo.observe(list,{childList:true,subtree:true});
+    enforce();
   })();
   </script>
 </body>
