@@ -32,12 +32,52 @@
         if (CONTEXT_PATH && p.startsWith('/media/')) return CONTEXT_PATH + p; // server serve le risorse statiche con context prefix
         return p; // fallback
     }
+    // ===== Utility: blurred album cover as page background (inside IIFE) =====
+    function ensurePlayerBgLayer(){
+        let el = document.getElementById('playerCoverBg');
+        if(!el){
+            el = document.createElement('div');
+            el.id = 'playerCoverBg';
+            el.className = 'player-bg';
+            document.body.prepend(el);
+        }
+        // Helper: refresh global playlists and re-render playlist grid (used after reorder/save)
+        function refreshHomePlaylists(callback) {
+            makeCall('GET', 'HomePage', null, (req) => {
+                if (req.readyState !== XMLHttpRequest.DONE) return;
+                if (req.status === 200) {
+                    try { playlists = JSON.parse(req.responseText); } catch(_) { playlists = playlists || []; }
+                    try { playlistGrid(playlists); } catch(_) {}
+                    if (typeof callback === 'function') callback(null, playlists);
+                } else {
+                    if (typeof callback === 'function') callback(new Error('Failed to refresh playlists'), null);
+                }
+            }, false);
+        }
+        return el;
+    }
+    function setPlayerBackground(imgPath){
+        try{
+            const url = imgPath ? (imgPath.startsWith('http')? imgPath : normalizeMediaPath(imgPath)) : null;
+            const layer = ensurePlayerBgLayer();
+            if(url){ layer.style.backgroundImage = `url('${url}')`; document.body.classList.add('has-player-bg'); }
+            else { clearPlayerBackground(); }
+        }catch(_){ /* no-op */ }
+    }
+    function clearPlayerBackground(){
+        try{
+            const layer = document.getElementById('playerCoverBg');
+            if(layer){ layer.remove(); }
+            document.body.classList.remove('has-player-bg');
+        }catch(_){ /* no-op */ }
+    }
     let tracklist, trackGroup = 0; // tracklist completa (solo per reorder/modal), trackGroup usato ancora per calcolo locale finché sostituito da currentGroupPlaylist
     let currentPlaylistId = null; // id playlist corrente per paginazione
     let currentGroup = 0; // indice gruppo 0-based per nuova paginazione server
     let totalGroups = 0; // totale gruppi disponibili
     const PAGE_SIZE = 5;
     let homeView = new HomeView(), playlistView = new PlaylistView(), trackView = new TrackView();
+    let playlists = []; // global playlists array
 
     function closeModalById(id){
         const m = document.getElementById(id);
@@ -99,7 +139,7 @@
                 if (req.readyState == XMLHttpRequest.DONE) {
                     let message = req.responseText;
                     if (req.status == 200) {
-                        let playlists = JSON.parse(message);
+                        playlists = JSON.parse(message);
                         playlistGrid(playlists);
                     } else {
                         alert("Cannot recover data. Maybe the User has been logged out.");
@@ -206,7 +246,8 @@
             // Wrapper card stile pure_html adattato e reso a colonna singola
             const card = document.createElement("div");
             card.className = "playlist-card-row";
-            card.addEventListener("click", () => { playlistView.show(playlist); currentGroup = 0; });
+            card.setAttribute('data-playlist-id', playlist.id);
+            card.addEventListener("click", (e) => { playlistView.show(playlist); currentGroup = 0; });
 
             const title = document.createElement("h3");
             title.className = "pl-name";
@@ -219,19 +260,23 @@
             reorderBtn.className = "playlist-reorder-inline";
             reorderBtn.setAttribute("aria-label", "Riordina " + playlist.title);
             reorderBtn.innerHTML = '<img src="img/reorder/reorder.svg" width="20" height="20" alt="Reorder" />';
-            reorderBtn.addEventListener("click", (e) => {
+            reorderBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                // ensure any previous modal removed to avoid stale state
+                const existing = document.getElementById('reorder-tracks-modal'); if (existing) existing.remove();
                 loadReorderModal(playlist);
-                showModal(document.getElementById("reorder-tracks-modal"));
+                const modal = document.getElementById('reorder-tracks-modal');
+                if (modal) showModal(modal);
             });
             card.appendChild(reorderBtn);
+            console.log("Reorder button created and appended for playlist:", playlist.title);
             return card;
         }
 
         // ===== Modali =====
         function loadCreatePlaylistModal() {
             let modalContainer = document.getElementById("modals"),
-                modal = createModal("create-playlist", "Crea nuova playlist", "create-playlist-btn", "Crea playlist"),
+                modal = createModal("create-playlist", "Crea nuova playlist", "create-playlist-btn", "Crea"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
             form.classList.add("modal-form-grid");
             let titleInput = document.createElement("input");
@@ -239,12 +284,13 @@
             form.insertBefore(titleInput, navbar);
             // Backend avanzato: id = track-selector-create, name = selectedTrackIds
             let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-create"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar);
-            let selector = document.createElement("select");
-            selector.className = "track-multi-select";
-            selector.id = "track-selector-create";
-            selector.name = "selectedTrackIds";
-            selector.multiple = true;
-            // wrapper custom scrollbar
+            // Instead of a <select multiple>, render a scrollable list of checkboxes so the user
+            // can pick non-contiguous tracks. Backend expects form fields named "selectedTrackIds"
+            // (multiple values) so we create inputs with that name.
+            const selector = document.createElement("div");
+            selector.className = "track-multi-checkbox-list";
+            selector.id = "track-selector-create"; // preserved id for existing callers
+            // wrapper custom scrollbar (same wrapper class used elsewhere so CSS applies)
             const wrap = document.createElement("div");
             wrap.className = "track-multi-wrapper";
             wrap.appendChild(selector);
@@ -261,7 +307,7 @@
 
         function loadUploadTrackModal() {
             let modalContainer = document.getElementById("modals"),
-                modal = createModal("upload-track", "Carica Brano", "upload-track-btn", "Aggiungi brano"),
+                modal = createModal("upload-track", "Carica Brano", "upload-track-btn", "Carica"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
             form.classList.add("modal-form-grid");
             // Campi base
@@ -306,11 +352,13 @@
             main_form.appendChild(label); main_form.appendChild(ordered_list); main_form.appendChild(document.createElement("div")); main_form.appendChild(bottom_div);
             inner_div.appendChild(top_nav_bar); inner_div.appendChild(main_form); modal_div.appendChild(inner_div); modalContainer.appendChild(modal_div);
         }
+        window.loadReorderModal = loadReorderModal;
 
         function closeReorderModal() {
             let modal_div = document.getElementById("reorder-tracks-modal");
             if (modal_div) modal_div.remove();
         }
+        window.closeReorderModal = closeReorderModal;
 
         // Drag & Drop per riordino
         let startElement; // elemento trascinato
@@ -353,16 +401,33 @@
             let _trackIds = Array.from(songsContainer.querySelectorAll("li")).map(li => parseInt(li.dataset.trackId));
             let req = new XMLHttpRequest();
             let target = e.target;
+            // attempt to disable save button to prevent duplicates
+            try { const btn = document.getElementById('track-reorder-btn'); if (btn) btn.disabled = true; } catch(_){}
             req.onreadystatechange = function () {
                 if (req.readyState == XMLHttpRequest.DONE) {
                     let message = req.responseText;
                     switch (req.status) {
                         case 200:
-                            target.parentElement.previousElementSibling.setAttribute("class", "success");
-                            target.parentElement.previousElementSibling.textContent = message; break;
+                            showToast('Ordine riordinato con successo');
+                            closeReorderModal();
+                            try {
+                                    // Try to open the playlist from memory
+                                    const pid = parseInt(_playlistId);
+                                    let found = playlists.find(p => p.id == pid || p.id === _playlistId || p.id === String(pid));
+                                    if (found) {
+                                        try { playlistView.show(found); } catch(_){ }
+                                    }
+                                    // refresh home playlists list visually
+                                    refreshHomePlaylists();
+                            } catch(_){}
+                            // re-enable save button
+                            try { const btn = document.getElementById('track-reorder-btn'); if (btn) btn.disabled = false; } catch(_){}
+                            break;
                         case 500:
-                            target.parentElement.previousElementSibling.setAttribute("class", "error");
-                            target.parentElement.previousElementSibling.textContent = message; break;
+                            showToast(message || 'Errore nel salvataggio dell\'ordine');
+                            closeReorderModal();
+                            try { const btn = document.getElementById('track-reorder-btn'); if (btn) btn.disabled = false; } catch(_){}
+                            break;
                     }
                 }
             };
@@ -544,15 +609,14 @@
 
         function loadAddTracksModal() {
             let modalContainer = document.getElementById("modals"),
-                modal = createModal("add-tracks", "Aggiungi brani alla playlist", "add-tracks-btn", "Aggiungi brani"),
+                modal = createModal("add-tracks", "Aggiungi brani alla playlist", "add-tracks-btn", "Aggiungi"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
             form.classList.add("modal-form-grid");
             let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-selector-add"; label.textContent = "Seleziona i brani da aggiungere:"; form.insertBefore(label, navbar);
-            let selector = document.createElement("select");
-            selector.className = "track-multi-select";
-            selector.id = "track-selector-add";
-            selector.name = "selectedTracksIds"; // backend avanzato per add tracks
-            selector.multiple = true;
+            // Checkbox list for add-tracks modal. Inputs will carry name selectedTracksIds.
+            const selector = document.createElement("div");
+            selector.className = "track-multi-checkbox-list";
+            selector.id = "track-selector-add"; // preserved id
             const wrap = document.createElement("div");
             wrap.className = "track-multi-wrapper";
             wrap.appendChild(selector);
@@ -640,6 +704,8 @@
             clearBottomNavbar();
             loadSingleTrack(track);
             showBackToPlaylist(true); // in player mostra il bottone indietro
+            // Imposta sfondo blur con cover (se disponibile)
+            try { setPlayerBackground(track?.image_path); } catch(_) {}
         };
         function trackPlayer(container, track) {
             container.innerHTML = "";
@@ -668,7 +734,8 @@
                 const d = document.createElement("div");
                 d.className = cls + " ellipsis-1"; // applica ellipsis una riga
                 d.textContent = txt;
-                d.title = txt; // hover mostra completo
+                // rimosso: niente attributo title per evitare tooltip nativo su hover
+                // se serve accessibilità senza tooltip, valutare: d.setAttribute('aria-label', txt);
                 return d;
             }
 
@@ -708,6 +775,8 @@
                     if (req.status == 200) {
                         let t = JSON.parse(req.responseText); if (!t) { alert("This Track can't be played."); return; }
                         trackPlayer(document.getElementById("main"), t);
+                        // Aggiorna sfondo con eventuale path normalizzato ricevuto dal server
+                        try { setPlayerBackground(t?.image_path); } catch(_) {}
                     } else alert("Cannot recover data. Maybe the User has been logged out.");
                 }
             });
@@ -724,20 +793,19 @@
                     }
                 });
             });
-            document.getElementById("homepage-button").addEventListener("click", () => homeView.show());
+            document.getElementById("homepage-button").addEventListener("click", () => { clearPlayerBackground(); homeView.show(); });
             const backBtn = document.getElementById("back-to-playlist-button");
             if (backBtn) backBtn.addEventListener("click", () => {
-                if (lastPlaylist) {
-                    playlistView.show(lastPlaylist);
-                } else {
-                    homeView.show(); // fallback di sicurezza
-                }
+                clearPlayerBackground();
+                if (lastPlaylist) { playlistView.show(lastPlaylist); }
+                else { homeView.show(); }
             });
             document.getElementById("upload-track-modal-button").addEventListener("click", () => {
                 loadYears();
                 loadGenres();
                 showModal(document.getElementById("upload-track"));
             });
+            // Previous global handler removed. Per-card reorder buttons provide click handlers directly.
         };
         this.refreshPage = function () { homeView.show(); };
         function loadYears() {

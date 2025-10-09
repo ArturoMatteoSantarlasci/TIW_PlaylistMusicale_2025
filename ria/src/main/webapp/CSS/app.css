@@ -54,7 +54,8 @@
 .actions-row .btn,
 .btn,
 .button {
-    box-shadow: 0 0 0 0.01px transparent, 0 0 0 2px #000 inset, var(--am-shadow, 0 0 0 rgba(0,0,0,0));
+    /* remove heavy black inset while preserving the subtle theme shadow */
+    box-shadow: var(--am-shadow, 0 6px 20px rgba(0,0,0,.08));
 }
 
 /* Excluded modals from the global inset shadow; give them their own outer shadow so the pink border stays clean */
@@ -123,6 +124,7 @@
     background:linear-gradient(135deg,#050505 0%,#0b0b0b 55%,#141414 100%) !important;
     color:#fff !important;
     display:flex;
+    position:relative;
     align-items:center;
     justify-content:center;
     padding:22px 16px;
@@ -134,11 +136,10 @@
 .playlist-card-row:focus-visible { outline:2px solid var(--am-accent); outline-offset:3px; box-shadow:0 0 0 3px rgba(250,44,139,.35),0 10px 28px -6px rgba(0,0,0,.55); }
 .playlist-card-row:active { transform:translateY(1px); }
 
-/* Decorative bottom-right icon inline (reuse icon2.png) */
 .playlist-card-row::after {
     content:"";
     position:absolute;
-    right:18px; /* mirror reorder button left margin */
+    left:18px; /* moved to left so decorative note is on the card's left */
     bottom:8px;
     width:34px;
     height:34px;
@@ -234,6 +235,8 @@ body.page-home, body.page-home:after {
     background-image:linear-gradient(rgba(0,0,0,0.01),rgba(0,0,0,0.01)),url('../img/background.jpg') !important;
     background-size:cover !important; background-position:center center !important; background-repeat:no-repeat !important; background-attachment:fixed !important;
 }
+/* When using the player blurred background, hide the global background image */
+body.has-player-bg, body.has-player-bg:after { background-image: none !important; }
 
 /* Auth & general title boxed variant (compact) */
 /* (Removed light variant of .title-box; black variant defined at top retains) */
@@ -415,6 +418,10 @@ body.page-home, body.page-home:after {
     color: var(--am-text);
     font-size: 1rem;
 }
+
+/*.field select {*/
+/*    padding-left: 3px !important;*/
+/*}*/
 .badge {
     position: absolute;
     top: 50%; left: 8px;
@@ -466,12 +473,11 @@ a.btn { text-decoration:none; }
 
 .playlist-card-row .pl-name { margin:0; font-weight:800; font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.2px; color:#000; }
 
-/* Inline reorder button (right edge) */
 .playlist-reorder-inline,
 .reorder-btn {
     position: absolute;
     top: 50%;
-    left:18px; /* matches icon2 right offset */
+    right:18px; /* place reorder button on the right edge */
     transform: translateY(-50%);
     width:38px; height:38px;
     display:grid; place-items:center;
@@ -487,7 +493,7 @@ a.btn { text-decoration:none; }
 .playlist-reorder-inline:hover,
 .reorder-btn:hover { background:#f3f3f3; box-shadow:0 4px 12px -3px rgba(0,0,0,.5); }
 .playlist-reorder-inline:active,
-.reorder-btn:active { transform:translate(-1px,-1px); }
+.reorder-btn:active { transform: translateY(-50%) translate(-1px,-1px); }
 .reorder-btn svg { width: 18px; height: 18px; }
 
 /* ------------------------------
@@ -502,7 +508,7 @@ a.btn { text-decoration:none; }
     align-items: center;
     min-height: 76px;
     padding: 12px 14px;
-    background: var(--am-surface);
+    background: #000 !important;
     border: 1px solid var(--am-border);
     border-radius: var(--am-radius);
     cursor: pointer;
@@ -531,7 +537,7 @@ a.btn { text-decoration:none; }
     font-weight: 700;
     font-size: .98rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    color:#000;
+    color:#6E6E73FF;
 }
 .track-sub {
     font-size: .78rem;
@@ -607,16 +613,42 @@ a.btn { text-decoration:none; }
     background: rgba(0,0,0,.55);
     z-index: 9999;
 }
+
+.modal-content .btn, .modal-content .button {
+    background: #000 !important;
+    color: #fff !important;
+}
+
+
 .modal-content {
     width: min(560px, 92vw);
-    max-height: 82vh; overflow: auto;
+    max-height: 82vh; overflow: auto; /* enable internal scrolling but hide scrollbar visuals below */
     background: #fff;
     border: 2px solid var(--am-accent);
     border-radius: 46px;
     padding: 34px 40px 42px;
     box-shadow: 0 24px 54px -14px rgba(0,0,0,.45);
 }
-.modal-title { margin:0 0 14px; font-size:1.05rem; font-weight:800; color:#000; display:inline-block; padding:8px 20px; border:2px solid var(--am-accent); border-radius:999px; background:#fff; }
+.modal-content::-webkit-scrollbar { display: none; }
+.modal-content { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Force modal title visible (override other rules) */
+.modal-window .modal-title, .modal-content .modal-title { color:#fa2c8b !important; background:#fff !important; }
+
+/* Custom select arrow inside modals: replace native arrow and position it 3px left */
+.modal-content select, .modal-window select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-repeat: no-repeat;
+    background-position: calc(100% - 6px) center; /* 3px left shift */
+    background-size: 12px 12px;
+    padding-right: 34px; /* leave space for custom arrow */
+}
+.modal-content select::-ms-expand, .modal-window select::-ms-expand { display:none; }
+.modal-content select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23000' d='M7 10l5 5 5-5z'/></svg>");
+}
+.modal-title { margin:0 0 14px; font-size:1.05rem; font-weight:800; color:#fa2c8b; display:inline-block; padding:8px 20px; border:2px solid var(--am-accent); border-radius:999px; background:#000; }
 .modal-content, .modal-window form, .modal-window label, .modal-window input, .modal-window select, .modal-window div, .modal-window span { color:#000; }
 .modal-close { background:#fff; border:1px solid var(--am-border); color:#000; font-weight:700; cursor:pointer; padding:8px 16px; border-radius:14px; }
 .modal-close:hover { background:#fff; filter:brightness(0.92); }
@@ -633,6 +665,17 @@ a.btn { text-decoration:none; }
 /* Extra spacing at bottom of modal forms so last button not glued */
 .modal-content form { padding-bottom:12px; }
 .modal-content form .btn:last-child, .modal-content form .button:last-child { margin-top:14px; }
+
+/* Push primary modal buttons lower inside specific modals so they appear centered between
+   the black inner box and the bottom of the modal. Adjust values if needed. */
+#create-playlist .modal-content form,
+#add-tracks .modal-content form {
+    padding-bottom: 38px; /* increase bottom padding to move the button lower */
+}
+#create-playlist .modal-content form .nav-bar,
+#add-tracks .modal-content form .nav-bar {
+    margin-top: 18px; /* extra gap above the bottom navbar inside form */
+}
 
 /* ------------------------------
    Labels
@@ -709,25 +752,94 @@ img.scale-on-hover:hover { transform: scale(1.03); }
 .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 @media (prefers-color-scheme: dark){ .toast{ background:color-mix(in oklab, var(--am-accent) 28%, #000); color:#000; } }
 
-/* === Multi select tracks con scrollbar custom (thumb alto ~2cm) === */
 .track-multi-wrapper { position:relative; }
 /* Aggiunto padding-right extra per lasciare 2px di aria prima della barra personalizzata */
-.track-multi-select { min-height:220px; height:260px; width:100%; padding:6px 19px 6px 10px; font-size:.75rem; line-height:1.2; border:2px solid #000; border-radius:30px; background:#fff; color:#000; outline:none; resize:none; overflow-y:scroll; scrollbar-width:none; }
+.track-multi-select { min-height:340px; height:340px; width:100%; padding:6px 19px 6px 10px; font-size:.75rem; line-height:1.2; border:2px solid #000; border-radius:30px; background:#fff; color:#000; outline:none; resize:none; overflow-y:scroll; scrollbar-width:none; }
 .track-multi-select::-webkit-scrollbar { display:none; }
 .track-multi-select option { padding:4px 10px; margin:2px 5px 2px 0; border:2px solid #000; background:#fff; border-radius:24px; display:block; font-size:.74rem; line-height:1.1; }
 .track-multi-select option:checked { background:#000; color:#fff; border-color:#000; }
 .track-multi-select:focus { box-shadow:0 0 0 2px #000; }
 /* Barra esterna */
-/* Scrollbar interna distanziata ~4mm (≈16px) dal bordo del riquadro: abbasso e sposto verso sinistra */
-.track-multi-scrollbar { position:absolute; top:16px; right:10px; width:10px; height:100%; display:flex; align-items:flex-start; justify-content:center; }
-.track-multi-scrollbar-track { position:relative; width:100%; background:transparent; height:100%; }
+.track-multi-scrollbar {
+    position: absolute;
+    top: 16px;    /* leave a top gap so thumb doesn't overlap top rounded corner */
+    bottom: 16px; /* leave a bottom gap so thumb doesn't overlap bottom rounded corner */
+    right: 5px;
+    width: 8px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+.track-multi-scrollbar-track { position: relative; width: 100%; background: transparent; height: 100%; }
 
-.track-multi-scrollbar-thumb { position:absolute; top:0; left:0; width:100%; height:224px; background:#4a4a4f; border-radius:8px; cursor:pointer; display:block; }
+.track-multi-scrollbar-thumb { position:absolute; top:0; left:2px; width:7px; height:130px; background:#4a4a4f; border-radius:8px; cursor:pointer; display:block; }
 .track-multi-scrollbar-thumb:hover { background:#2e2e32; }
 /* Ombreggiatura per visibilità su sfondi chiari */
 .track-multi-scrollbar-thumb:after { content:""; position:absolute; inset:0; border:1px solid #fff3; border-radius:inherit; }
 /* Nasconde selezione testo durante drag */
 .track-multi-wrapper.dragging { user-select:none; }
+
+/* Checkbox-list variant to allow selecting scattered options */
+.track-multi-checkbox-list {
+    min-height:220px;
+    height:260px;
+    width:100%;
+    padding:5px 11px 5px 9px;
+    background:#fff;
+    border:2px solid #000;
+    border-radius:30px;
+    overflow-y:scroll;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.track-multi-checkbox-list::-webkit-scrollbar { display:none; }
+.track-checkbox-row {
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 12px;
+    border-radius:18px;
+    border:2px solid #000; /* rounded box around each option */
+    background: #fff;
+}
+/* visually hide the native checkbox but keep it focusable and operable */
+.track-checkbox-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px; height: 1px;
+    margin: 0; padding: 0;
+    pointer-events: none;
+}
+/* label shows the visible checkbox using ::before; input must be immediately before label in DOM */
+.track-checkbox-label {
+    flex: 1;
+    cursor: pointer;
+    font-size: .95rem;
+    color: #000;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px; /* minor gap to match smaller checkbox */
+}
+.track-checkbox-label::before {
+    content: '';
+    width: 13px; height: 13px; /* ~30% smaller (from 20px) */
+    border: 2px solid #000;
+    border-radius: 5px;
+    background: #fff;
+    display: inline-block;
+    flex: 0 0 auto;
+}
+/* checked state */
+.track-checkbox-input:checked + .track-checkbox-label::before {
+    background: #000;
+}
+/* keyboard focus style */
+.track-checkbox-input:focus + .track-checkbox-label::before {
+    box-shadow: 0 0 0 3px rgba(0,113,227,.18);
+}
+.track-checkbox-row:hover { background: color-mix(in oklab, #fff 94%, var(--am-text)); }
+.no-tracks-msg { padding:10px 14px; color:var(--am-muted); }
 
 /* Pagination centering fix (parity with pure_html): center label absolutely and pin Prev/Next */
 
@@ -736,6 +848,30 @@ img.scale-on-hover:hover { transform: scale(1.03); }
 .tracks-pagination .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:none;max-width:calc(100% - 260px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
 .tracks-pagination .button.right, .tracks-pagination .btn.right{display:flex;margin-left:auto;align-items:center;justify-content:center}
 .tracks-pagination .button.left, .tracks-pagination .btn.left{display:flex;align-items:center;justify-content:center}
+
+/* ===== Player cover as blurred page background ===== */
+body.has-player-bg .page-wrapper{position:relative;z-index:2}
+#playerCoverBg.player-bg{
+    position:fixed;inset:0;z-index:1;pointer-events:none;
+    background-position:center center; background-size:cover; background-repeat:no-repeat;
+    filter:blur(14px) saturate(101%);
+    transform:scale(1.01); /* avoid edge clipping after blur */
+}
+/* subtle dark/tint overlay for readability */
+#playerCoverBg.player-bg::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.45) 100%);
+}
+
+/* Cover (track/playlist) border: 2px solid grey matching muted text color */
+.track-cover, .cover-thumb, .player-cover img {
+    border: 2px solid rgba(110,110,115,0.8); /* same tone as --am-muted */
+}
+
+/* If cover uses rounded corners, keep consistent radius */
+.track-cover, .cover-thumb { border-radius: 8px; }
+
+/* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
 
 
 

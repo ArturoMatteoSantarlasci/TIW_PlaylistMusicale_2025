@@ -77,6 +77,31 @@ body.page-home{display:flex;flex-direction:column;min-height:100vh;background-co
 
 /* Safety re-assert (low-specificity) to guarantee image persists even if earlier rules inject a shorthand elsewhere */
 body{background-image:linear-gradient(rgba(0,0,0,0.01),rgba(0,0,0,0.01)),url('../img/background.jpg') !important;}
+/* Player page background override */
+body.page-player,
+body.page-player::after {
+    background-image: none !important;
+}
+body.page-player .player-track-info {
+    position: relative;
+    z-index: 2;
+}
+#playerCoverBg.player-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-position: center;
+    background-size: cover;
+    filter: blur(14px) saturate(101%);
+    transform: scale(1.01);
+}
+#playerCoverBg.player-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+}
 .title-box{margin:42px auto 18px;text-align:center;font-weight:800;letter-spacing:.5px;font-size:clamp(1.4rem,1.1rem + .9vw,2rem);padding:14px 30px;background:#000;border:2px solid var(--am-accent);border-radius:40px;color:#fff;max-width:760px;box-shadow:0 6px 20px -6px rgba(0,0,0,.55)} /* +30px (~8mm) top gap */
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0)}.hidden{display:none!important}
 .wrap{width:100%;max-width:1220px;margin:0 auto;padding:0 24px}.panel,.stack{display:grid;gap:18px}
@@ -172,12 +197,12 @@ form.stack>.btn,form.stack>.button,form.stack>a.btn{width:100%;display:flex;alig
 .playlist-card-row:hover::after{opacity:1;transform:translateY(-2px);}
 .playlist-card-row:active::after{transform:translateY(0);}
 .tracks-vertical{display:grid;gap:8px;margin-top:8px}
-.track-card{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;min-height:76px;padding:12px 14px;background:var(--am-surface);border:1px solid var(--am-border);border-radius:var(--am-radius);cursor:pointer;transition:background .15s ease,transform .06s ease,box-shadow .15s ease,border-color .15s ease}
+.track-card{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;min-height:76px;padding:12px 14px;background:#000 ;border:1px solid var(--am-border);border-radius:var(--am-radius);cursor:pointer;transition:background .15s ease,transform .06s ease,box-shadow .15s ease,border-color .15s ease}
 .track-card:hover{background:color-mix(in oklab,var(--am-surface) 90%,var(--am-text));box-shadow:0 8px 22px rgba(0,0,0,.08);border-color:color-mix(in oklab,var(--am-border) 70%,var(--am-text))}
 .track-card:active{transform:translateY(1px)}
 .track-cover{width:60px;height:60px;border-radius:12px;overflow:hidden;background:#f0f0f0;border:1px solid var(--am-border);display:grid;place-items:center}
 .track-cover img{width:100%;height:100%;object-fit:cover;display:block}.track-cover--placeholder{background:#f6f6f6;object-fit:cover;filter:saturate(.85);}
-.track-info{min-width:0;display:grid;gap:4px}.track-title{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#000}.track-sub{font-size:.78rem;color:var(--am-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track-info{min-width:0;display:grid;gap:4px}.track-title{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#6E6E73FF}.track-sub{font-size:.78rem;color:var(--am-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .player-track-info{display:flex;gap:28px;align-items:center;flex-wrap:nowrap;margin:26px 4cm 0;padding:30px 46px 40px 46px;background:#000;color:#fff;border:2px solid var(--am-accent);border-radius:46px;box-shadow:0 6px 20px -6px rgba(0,0,0,.55)}
 .player-cover{flex:0 0 auto;max-width:200px;border-radius:26px;overflow:hidden;border:3px solid var(--am-muted);background:#00000012;box-shadow:0 6px 18px rgba(0,0,0,.12)}.player-cover img{display:block;width:100%;height:auto}
 .player-text{flex:1 1 auto;min-width:0;display:grid;gap:6px}.player-title{font-weight:800;font-size:1.25rem;letter-spacing:.2px;color:#000}.player-artist,.player-album,.player-year,.player-genre{font-size:.9rem;color:var(--am-muted)}.player-sep{display:none}
@@ -353,4 +378,14 @@ body.has-mini-player .toast{bottom:88px}
 .pagination-row a#nextBtn{margin-left:auto}
 .pagination-row a#prevBtn{margin-right:0}
 
+
+/* Cover (track/playlist) border: 2px solid grey matching muted text color */
+.track-cover, .cover-thumb, .player-cover img {
+    border: 2px solid rgba(110,110,115,0.8); /* same tone as --am-muted */
+}
+
+/* If cover uses rounded corners, keep consistent radius */
+.track-cover, .cover-thumb { border-radius: 8px; }
+
+/* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
 

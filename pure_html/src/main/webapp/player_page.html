@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
     <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
-<body class="page-home">
+<body class="page-player">
 <header class="header">
     <div class="header-left"></div>
     <div class="header-right actions-row" style="gap:14px;">
@@ -53,6 +53,31 @@
                 history.back();
             }
         });
+    })();
+
+    // Blurred album cover background
+    (function(){
+        const coverImg = document.querySelector('.player-cover img');
+        if(!coverImg) return;
+        const imgSrc = coverImg.src;
+        if(!imgSrc) return;
+
+        // Create layer
+        let layer = document.getElementById('playerCoverBg');
+        if(!layer){
+            layer = document.createElement('div');
+            layer.id = 'playerCoverBg';
+            layer.className = 'player-bg';
+            document.body.appendChild(layer);
+        }
+        layer.style.backgroundImage = `url('${imgSrc}')`;
+        document.body.classList.add('has-player-bg');
+    })();
+
+    // Remove any tooltip on player box
+    (function(){
+        const playerBox = document.querySelector('.player-track-info');
+        if(playerBox) playerBox.removeAttribute('title');
     })();
 </script>
 </body>
