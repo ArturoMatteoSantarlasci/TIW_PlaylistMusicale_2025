@@ -340,3 +340,17 @@ body.has-mini-player .toast{bottom:88px}
 @media (max-width:640px){
     .track{grid-template-columns:30px 46px 1fr 46px 56px;padding:10px 10px}
 }
+
+/* Pagination centering fix: absolute-center the middle label to remain visually centered
+   even when the left button is hidden (server-side). Keep flex:none so it doesn't
+   take available space, and clamp width to avoid overlapping side buttons. */
+.pagination-row{position:relative}
+.pagination-row .pagination-label{position:absolute;left:50%;transform:translateX(-50%);flex:none;max-width:calc(100% - 260px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+/* Keep Prev/Next anchored to left/right even when one is absent.
+    Using margin-left:auto on the next button forces it to the right side.
+    Ensure the buttons render as inline-flex to behave consistently. */
+.pagination-row a#nextBtn, .pagination-row a#prevBtn, .pagination-row .btn, .pagination-row .button{display:inline-flex}
+.pagination-row a#nextBtn{margin-left:auto}
+.pagination-row a#prevBtn{margin-right:0}
+
+

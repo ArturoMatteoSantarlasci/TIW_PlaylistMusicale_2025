@@ -729,3 +729,13 @@ img.scale-on-hover:hover { transform: scale(1.03); }
 /* Nasconde selezione testo durante drag */
 .track-multi-wrapper.dragging { user-select:none; }
 
+/* Pagination centering fix (parity with pure_html): center label absolutely and pin Prev/Next */
+
+/* Also support the JS-rendered RIA pagination markup (.tracks-pagination) */
+.tracks-pagination{position:relative;display:flex;align-items:center;justify-content:space-between}
+.tracks-pagination .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);flex:none;max-width:calc(100% - 260px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.tracks-pagination .button.right, .tracks-pagination .btn.right{display:flex;margin-left:auto;align-items:center;justify-content:center}
+.tracks-pagination .button.left, .tracks-pagination .btn.left{display:flex;align-items:center;justify-content:center}
+
+
+
