@@ -340,7 +340,9 @@
             let top_nav_bar = document.createElement("div"); top_nav_bar.className = "nav-bar";
             let title_div = document.createElement("div"); title_div.className = "modal-title"; title_div.textContent = "Riordina brani in " + playlist.title.toString();
             let spacer = document.createElement("div"); spacer.className = "spacer";
-            let modal_close = document.createElement("button"); modal_close.type = "button";  modal_close.title = "Chiudi"; modal_close.className = "modal-close"; modal_close.textContent = "Chiudi"; modal_close.addEventListener("click", () => closeReorderModal());
+            let modal_close = document.createElement("button"); modal_close.type = "button";  modal_close.title = "Chiudi"; modal_close.className = "modal-close"; modal_close.setAttribute('aria-label','Chiudi');
+            modal_close.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
+            modal_close.addEventListener("click", () => closeReorderModal());
             top_nav_bar.appendChild(title_div); top_nav_bar.appendChild(spacer); top_nav_bar.appendChild(modal_close);
             let main_form = document.createElement("form");
             let label = document.createElement("label"); label.className = "label"; label.htmlFor = "track-reorder"; label.textContent = "Trascina i brani per riordinarli:";

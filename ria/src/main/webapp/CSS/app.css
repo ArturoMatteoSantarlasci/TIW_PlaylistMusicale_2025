@@ -87,6 +87,13 @@
 .header .btn:hover, .header .button:hover, .header .iconbtn:hover { background:#0f0f0f !important; box-shadow:0 6px 18px rgba(0,0,0,.45); }
 .header .btn:active, .header .button:active, .header .iconbtn:active { transform:translateY(1px); }
 
+/* Ensure homepage and back icon buttons show the same active shadow and press feedback */
+#homepage-button.iconbtn:active,
+#back-to-playlist-button.iconbtn:active {
+    transform: translateY(1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.45);
+}
+
 .title-strip-inner {
     background:#000 !important;
     color:#fff !important;
@@ -395,6 +402,19 @@ body.has-player-bg, body.has-player-bg:after { background-image: none !important
 @media (max-width:880px){
     #homepage-button.iconbtn,#back-to-playlist-button.iconbtn{width:44px;height:44px;}
     #homepage-button.iconbtn svg,#back-to-playlist-button.iconbtn svg{width:24px;height:24px;}
+}
+
+/* Hover and smooth shadow for nav icon buttons to match header buttons */
+#homepage-button.iconbtn, #back-to-playlist-button.iconbtn {
+    transition: background .15s ease, transform .05s ease, box-shadow .15s ease;
+}
+#homepage-button.iconbtn:hover, #back-to-playlist-button.iconbtn:hover {
+    background: #0f0f0f; /* match header hover */
+    box-shadow: 0 6px 18px rgba(0,0,0,.45);
+}
+#homepage-button.iconbtn:active, #back-to-playlist-button.iconbtn:active {
+    transform: translateY(1px);
+    box-shadow: 0 6px 18px rgba(0,0,0,.45);
 }
 
 /* Form fields */
@@ -860,7 +880,7 @@ body.has-player-bg .page-wrapper{position:relative;z-index:2}
 #playerCoverBg.player-bg{
     position:fixed;inset:0;z-index:1;pointer-events:none;
     background-position:center center; background-size:cover; background-repeat:no-repeat;
-    filter:blur(14px) saturate(101%);
+    filter:blur(12px) saturate(101%);
     transform:scale(1.01); /* avoid edge clipping after blur */
 }
 /* subtle dark/tint overlay for readability */
