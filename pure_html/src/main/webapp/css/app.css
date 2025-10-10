@@ -126,14 +126,14 @@ body.page-player .player-track-info {
     box-shadow:0 6px 20px -6px rgba(0,0,0,.55) !important;
 }
 .playlists-wrapper{max-width:1220px;margin:0 auto;padding:0 24px 40px}.tracks-wrapper{max-width:1220px;margin:0 auto;padding:0 24px 40px}.tracks-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:34px;gap:8px}.tracks-pagination .left{margin-left:8px}.tracks-pagination .right{margin-right:8px}.tracks-pagination .center{flex:1;text-align:center;font-weight:600}
-.btn,.button{-webkit-tap-highlight-color:transparent;height:var(--am-ctrl-h);border-radius:var(--am-radius-pill);border:2px solid var(--am-accent);background:#000;color:#fff;font-weight:800;letter-spacing:.3px;padding:0 20px;cursor:pointer;transition:transform .05s ease,box-shadow .15s ease,background .15s ease,color .15s ease;box-shadow:0 1px 0 rgba(0,0,0,.4);text-decoration:none;display:flex;align-items:center;justify-content:center}
+.btn,.button{-webkit-tap-highlight-color:transparent;height:var(--am-ctrl-h);border-radius:var(--am-radius-pill);border:2px solid var(--am-accent);background:#000;color:#fff;font-weight:800;font-size:1rem ; letter-spacing:.3px;padding:0 20px;cursor:pointer;transition:transform .05s ease,box-shadow .15s ease,background .15s ease,color .15s ease;box-shadow:0 1px 0 rgba(0,0,0,.4);text-decoration:none;display:flex;align-items:center;justify-content:center}
 .btn:hover,.button:hover{box-shadow:0 6px 18px rgba(0,0,0,.55);background:rgba(250,44,139,0.18);color:#fff}
 .btn:active,.button:active{transform:translateY(1px);background:rgba(250,44,139,0.28);color:#fff}
 /* Keep accent variant visually distinct (filled accent) */
 .btn.accent{background:var(--am-accent);border-color:color-mix(in oklab,var(--am-accent) 85%,#000)}.btn.accent:hover{background:var(--am-accent);box-shadow:0 8px 22px rgba(10,132,255,.35)}.btn.accent:active{background:var(--am-accent-press)}
 /* Disabled adjustments still readable */
 .btn.disabled,.btn[disabled],.button[disabled]{background:#000;color:#fff;opacity:.45;box-shadow:none}
-.btn.auth-secondary{background:#000;color:#fff;border:2px solid var(--am-accent);font-size:.95rem}
+.btn.auth-secondary{background:#000;color:#fff;border:2px solid var(--am-accent);font-size:1rem;font-weight:800}
 .btn.auth-secondary:hover{background:rgba(250,44,139,0.18);color:#fff}
 .btn.auth-secondary:active{background:rgba(250,44,139,0.30);color:#fff}
 .iconbtn{width:var(--am-ctrl-h);height:var(--am-ctrl-h);display:grid;place-items:center;border-radius:50%;border:2px solid var(--am-accent);background:var(--am-surface);cursor:pointer;transition:background .15s ease,transform .05s ease}
@@ -227,9 +227,10 @@ form.stack>.btn,form.stack>.button,form.stack>a.btn{width:100%;display:flex;alig
 .label{display:block;margin-bottom:4px;font-weight:600;font-size:.85rem;color:var(--am-text)}.alert{margin:0 0 6px;padding:10px 14px;border-radius:12px;background:#fff2f2;border:1px solid #ffdada;color:#7a0000}
 @media (prefers-color-scheme: dark){.alert{background:#3a1212;border-color:#5a2020;color:#ffd7d7}}
 .actions-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.actions-row .btn{width:auto;min-width:200px;display:flex;align-items:center;justify-content:center}
+.actions-row .btn{width:auto;min-width:200px;display:flex;align-items:center;justify-content:center;  font-size: 1rem !important;
+    font-weight: 800 !important}
 img.scale-on-hover{transition:transform .25s ease}img.scale-on-hover:hover{transform:scale(1.03)}
-@media (max-width:880px){.wrap{padding:0 16px}.actions-row .btn{min-width:160px}.player-track-info{flex-direction:column;align-items:stretch}.player-cover{max-width:100%}}
+@media (max-width:880px){.wrap{padding:0 16px}.actions-row .btn{min-width:200px}.player-track-info{flex-direction:column;align-items:stretch}.player-cover{max-width:100%}}
 /* Inline bottom mini player */
 .mini-player{position:fixed;left:0;right:0;bottom:0;z-index:500;display:flex;align-items:center;gap:14px;padding:10px 24px;background:#fff;border-top:2px solid var(--am-accent);box-shadow:0 -4px 18px -4px rgba(0,0,0,.18);font-size:.75rem;letter-spacing:.3px}
 .mini-player.hidden{display:none}
@@ -397,4 +398,20 @@ body.has-mini-player .toast{bottom:88px}
 .track-cover, .cover-thumb { border-radius: 8px; }
 
 /* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
+
+/* Force header button font size and layout consistency */
+.header .actions-row .btn,
+.header .actions-row .iconbtn {
+    font-size: 1.17rem !important;
+    font-weight: 800 !important;
+    height: 50px !important;
+    padding: 0 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+.header .actions-row .iconbtn svg {
+    vertical-align: middle !important;
+}
+
 
