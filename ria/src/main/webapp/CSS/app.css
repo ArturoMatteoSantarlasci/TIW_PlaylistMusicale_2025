@@ -14,16 +14,16 @@
     --am-surface: #ffffff;         /* cards */
     --am-text: #fa2c8b;
     --am-muted: #6e6e73;
-    --am-border: #d2d2d7;
+    --am-border: #ffffff;
     --am-accent: #fa2c8b;          /* Apple pink */
-    --am-accent-press: #0062c6;
+    --am-accent-press: #fa2c8b;
     --am-shadow: 0 6px 20px rgba(0,0,0,.08);
     --am-radius: 16px;
     --am-radius-pill: 999px;
     --am-ctrl-h: 52px;
     --am-ctrl-h-sm: 44px;
     --am-icon: 38px;
-    --am-focus: 0 0 0 3px rgba(0,113,227,.35);
+    --am-focus: 0 0 0 3px rgb(250, 44, 139);
     /* Altezza pulsanti scrollbar multi-select (somma top+bottom = riduce la lunghezza utile del track). 52px ~ 20% ciascuno su 260px => track ~60%. */
     --track-multi-scroll-btn-h:52px;
     /* Percentuale altezza coperta (top e bottom) per accorciare visivamente la scrollbar: 20% + 20% = 40% nascosta */
@@ -115,7 +115,7 @@
 
 /* Accent variant unchanged (kept vivid) */
 .btn.accent { background:var(--am-accent); border-color:color-mix(in oklab,var(--am-accent) 85%,#000); }
-.btn.accent:hover { background:var(--am-accent); box-shadow:0 8px 22px rgba(10,132,255,.35); }
+.btn.accent:hover { background:var(--am-accent); box-shadow:0 8px 22px rgb(250, 44, 139); }
 .btn.accent:active { background:var(--am-accent-press); }
 
 /* Black playlist cards with gradient and centered white text */
@@ -194,9 +194,9 @@
         --am-surface: #16161b;
         --am-text: #f5f5f7;
         --am-muted: #a1a1aa;
-        --am-border: #2a2a31;
-        --am-accent: #fa2c8b;
-        --am-accent-press: #0062c6;
+        --am-border: #000000;
+        --am-accent: #000000;
+        --am-accent-press: #fa2c8b;
         --am-shadow: 0 10px 28px rgba(0,0,0,.35);
     }
 }
@@ -363,7 +363,7 @@ body.has-player-bg, body.has-player-bg:after { background-image: none !important
     background: var(--am-accent);
     border-color: color-mix(in oklab, var(--am-accent) 85%, #000);
 }
-.btn.accent:hover { background: var(--am-accent); box-shadow: 0 8px 22px rgba(10,132,255,.35); }
+.btn.accent:hover { background: var(--am-accent); box-shadow: 0 8px 22px rgb(250, 44, 139); }
 .btn.accent:active { background: var(--am-accent-press); }
 
 /* Icon-only circular button */
@@ -431,7 +431,7 @@ body.has-player-bg, body.has-player-bg:after { background-image: none !important
     background: var(--am-accent);
     color: #fff;
     display: grid; place-items: center;
-    box-shadow: 0 6px 16px rgba(10,132,255,.25);
+    box-shadow: 0 6px 16px rgb(250, 44, 139);
 }
 .field.pad-left { padding-left: 64px; }
 
@@ -514,11 +514,11 @@ a.btn { text-decoration:none; }
     cursor: pointer;
     transition: background .15s ease, transform .06s ease, box-shadow .15s ease, border-color .15s ease;
 }
-.track-card:hover {
-    background: color-mix(in oklab, var(--am-surface) 90%, var(--am-text));
-    box-shadow: 0 8px 22px rgba(0,0,0,.08);
-    border-color: color-mix(in oklab, var(--am-border) 70%, var(--am-text));
-}
+/*.track-card:hover {*/
+/*    background: color-mix(in oklab, var(--am-surface) 90%, var(--am-text));*/
+/*    box-shadow: 0 8px 22px rgba(0,0,0,.08);*/
+/*    border-color: color-mix(in oklab, var(--am-border) 70%, var(--am-text));*/
+/*}*/
 .track-card:active { transform: translateY(1px); }
 
 .track-cover {
@@ -537,7 +537,7 @@ a.btn { text-decoration:none; }
     font-weight: 700;
     font-size: .98rem;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    color:#6E6E73FF;
+    color:#fff;
 }
 .track-sub {
     font-size: .78rem;
@@ -633,9 +633,8 @@ a.btn { text-decoration:none; }
 .modal-content { -ms-overflow-style: none; scrollbar-width: none; }
 
 /* Force modal title visible (override other rules) */
-.modal-window .modal-title, .modal-content .modal-title { color:#fa2c8b !important; background:#fff !important; }
+.modal-window .modal-title, .modal-content .modal-title { color:#000 !important; background:#fff !important; }
 
-/* Custom select arrow inside modals: replace native arrow and position it 3px left */
 .modal-content select, .modal-window select {
     -webkit-appearance: none;
     appearance: none;
@@ -648,10 +647,10 @@ a.btn { text-decoration:none; }
 .modal-content select {
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path fill='%23000' d='M7 10l5 5 5-5z'/></svg>");
 }
-.modal-title { margin:0 0 14px; font-size:1.05rem; font-weight:800; color:#fa2c8b; display:inline-block; padding:8px 20px; border:2px solid var(--am-accent); border-radius:999px; background:#000; }
+.modal-title { margin:0 0 14px; font-size:1.05rem; font-weight:800; color:#000; display:inline-block; padding:8px 20px; border:2px solid var(--am-accent); border-radius:999px; background:#000; }
 .modal-content, .modal-window form, .modal-window label, .modal-window input, .modal-window select, .modal-window div, .modal-window span { color:#000; }
-.modal-close { background:#fff; border:1px solid var(--am-border); color:#000; font-weight:700; cursor:pointer; padding:8px 16px; border-radius:14px; }
-.modal-close:hover { background:#fff; filter:brightness(0.92); }
+.modal-close{background:#fff;border:2px solid var(--am-accent);color:#000;position:relative;bottom:6px;font-weight:700;cursor:pointer;border-radius:50%;width:44px;height:44px;display:grid;place-items:center;line-height:1;padding:0;font-size:1rem}
+.modal-close:hover{background:color-mix(in oklab,#fff 94%,var(--am-accent));filter:none}
 
 /* Modal form grid spacing utility */
 .modal-form-grid { display:grid; gap:8px; }
@@ -754,11 +753,17 @@ img.scale-on-hover:hover { transform: scale(1.03); }
 
 .track-multi-wrapper { position:relative; }
 /* Aggiunto padding-right extra per lasciare 2px di aria prima della barra personalizzata */
-.track-multi-select { min-height:340px; height:340px; width:100%; padding:6px 19px 6px 10px; font-size:.75rem; line-height:1.2; border:2px solid #000; border-radius:30px; background:#fff; color:#000; outline:none; resize:none; overflow-y:scroll; scrollbar-width:none; }
+.track-multi-select { min-height:340px; height:340px; width:100%;   padding: 6px calc(10px + var(--track-multi-lane)) 6px 10px;
+    font-size:.75rem; line-height:1.2; border:2px solid #000; border-radius:30px; background:#fff; color:#000; outline:none; resize:none; overflow-y:scroll; scrollbar-width:none; }
 .track-multi-select::-webkit-scrollbar { display:none; }
-.track-multi-select option { padding:4px 10px; margin:2px 5px 2px 0; border:2px solid #000; background:#fff; border-radius:24px; display:block; font-size:.74rem; line-height:1.1; }
+.track-multi-select option { padding:20px 20px; margin:2px var(--track-multi-lane) 10px 0; border:2px solid #000; background:#fff; border-radius:24px; display:block; font-size:.74rem; line-height:1.1; }
 .track-multi-select option:checked { background:#000; color:#fff; border-color:#000; }
-.track-multi-select:focus { box-shadow:0 0 0 2px #000; }
+.track-multi-select:focus { box-shadow:0 0 0 2px #000;}
+
+:root{
+    /* larghezza corsia riservata alla scrollbar + aria */
+    --track-multi-lane: 44px; /* aumentato per lasciare più spazio tra opzioni e scrollbar */
+}
 /* Barra esterna */
 .track-multi-scrollbar {
     position: absolute;
@@ -770,10 +775,10 @@ img.scale-on-hover:hover { transform: scale(1.03); }
     align-items: flex-start;
     justify-content: center;
 }
-.track-multi-scrollbar-track { position: relative; width: 100%; background: transparent; height: 100%; }
+.track-multi-scrollbar-track { position: relative; right:10px; width: 100%; background: transparent; height: 100%; }
 
-.track-multi-scrollbar-thumb { position:absolute; top:0; left:2px; width:7px; height:130px; background:#4a4a4f; border-radius:8px; cursor:pointer; display:block; }
-.track-multi-scrollbar-thumb:hover { background:#2e2e32; }
+.track-multi-scrollbar-thumb { position:absolute; top:0; left:1px; width:11px; height:130px; background: #000; border-radius:8px; cursor:pointer; display:block; }
+.track-multi-scrollbar-thumb:hover { background:#000; }
 /* Ombreggiatura per visibilità su sfondi chiari */
 .track-multi-scrollbar-thumb:after { content:""; position:absolute; inset:0; border:1px solid #fff3; border-radius:inherit; }
 /* Nasconde selezione testo durante drag */
@@ -798,10 +803,10 @@ img.scale-on-hover:hover { transform: scale(1.03); }
     display:flex;
     align-items:center;
     gap:12px;
-    padding:10px 12px;
-    border-radius:18px;
-    border:2px solid #000; /* rounded box around each option */
-    background: #fff;
+    padding:6px 4px; /* meno padding per avvicinare al bordo del contenitore */
+    border-radius:0; /* rimuovo il riquadro tondeggiante */
+    border:0; /* rimuovo bordo nero */
+    background: transparent; /* rimuovo background bianco */
 }
 /* visually hide the native checkbox but keep it focusable and operable */
 .track-checkbox-input {
@@ -819,7 +824,7 @@ img.scale-on-hover:hover { transform: scale(1.03); }
     color: #000;
     display: inline-flex;
     align-items: center;
-    gap: 10px; /* minor gap to match smaller checkbox */
+    gap: 12px; /* spazio tra quadratino e testo */
 }
 .track-checkbox-label::before {
     content: '';
@@ -829,6 +834,7 @@ img.scale-on-hover:hover { transform: scale(1.03); }
     background: #fff;
     display: inline-block;
     flex: 0 0 auto;
+    margin-left: 6px; /* sposta il quadratino verso sinistra rispetto a dove iniziava il riquadro */
 }
 /* checked state */
 .track-checkbox-input:checked + .track-checkbox-label::before {
@@ -836,7 +842,7 @@ img.scale-on-hover:hover { transform: scale(1.03); }
 }
 /* keyboard focus style */
 .track-checkbox-input:focus + .track-checkbox-label::before {
-    box-shadow: 0 0 0 3px rgba(0,113,227,.18);
+    box-shadow: 0 0 0 3px rgb(250, 44, 139);
 }
 .track-checkbox-row:hover { background: color-mix(in oklab, #fff 94%, var(--am-text)); }
 .no-tracks-msg { padding:10px 14px; color:var(--am-muted); }

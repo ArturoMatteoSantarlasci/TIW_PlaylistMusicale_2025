@@ -64,9 +64,11 @@ function createModal(id, titleText, buttonId, buttonText) {
     // Pulsante chiusura modale (prima era <div>, ora <button> per corretto comportamento e cursore)
     const close = document.createElement("button");
     close.type = "button";
+    
     close.className = "modal-close";
     close.setAttribute("aria-label", "Chiudi modale");
-    close.textContent = "Chiudi"; // tradotto in italiano
+    // use an icon for close (keep aria-label for accessibility)
+    close.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>';
     close.addEventListener("click", () => closeModal(modal));
 
     const form = document.createElement("form");
