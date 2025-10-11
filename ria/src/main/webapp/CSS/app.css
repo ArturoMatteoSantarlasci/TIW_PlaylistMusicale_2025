@@ -889,7 +889,7 @@ body.has-player-bg .page-wrapper{position:relative;z-index:2}
 
 /* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
 
-/*attivadisattiva messaggi toast*/
+/*attiva o disattiva messaggi toast*/
 .toast { display: none !important; pointer-events: none !important; }
 
 

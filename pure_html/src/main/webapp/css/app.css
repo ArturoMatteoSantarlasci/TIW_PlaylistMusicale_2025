@@ -428,4 +428,5 @@ body.has-mini-player .toast{bottom:88px}
     height: 29px !important;
 }
 
-
+/*attiva o disattiva messaggi toast*/
+.toast { display: none !important; pointer-events: none !important; }
