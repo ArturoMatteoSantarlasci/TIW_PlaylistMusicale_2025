@@ -315,10 +315,10 @@
             addInput("title", "Titolo");
             addInput("artist", "Artista");
             addInput("album", "Album");
-            // Select Year
-            let yearSel = document.createElement("select"); yearSel.className = "field"; yearSel.id = "year-selection"; yearSel.name = "year"; yearSel.required = true; form.insertBefore(yearSel, navbar);
-            // Select Genre
-            let genreSel = document.createElement("select"); genreSel.className = "field"; genreSel.id = "genre-selection"; genreSel.name = "genre"; genreSel.required = true; form.insertBefore(genreSel, navbar);
+            // Year (free text input instead of select)
+            let yearInput = document.createElement("input"); yearInput.type = "text"; yearInput.className = "field"; yearInput.id = "year-selection"; yearInput.name = "year"; yearInput.placeholder = "Anno (es. 1999)"; yearInput.required = true; form.insertBefore(yearInput, navbar);
+            // Genre (free text input instead of select)
+            let genreInput = document.createElement("input"); genreInput.type = "text"; genreInput.className = "field"; genreInput.id = "genre-selection"; genreInput.name = "genre"; genreInput.placeholder = "Genere (es. Rock)"; genreInput.required = true; form.insertBefore(genreInput, navbar);
             // File track
             let trackLabel = document.createElement("label"); trackLabel.className = "label"; trackLabel.htmlFor = "musicTrack"; trackLabel.textContent = "Brano:"; form.insertBefore(trackLabel, navbar);
             let trackInput = document.createElement("input"); trackInput.type = "file"; trackInput.name = "musicTrack"; trackInput.id = "musicTrack"; trackInput.required = true; form.insertBefore(trackInput, navbar);
@@ -803,29 +803,17 @@
                 else { homeView.show(); }
             });
             document.getElementById("upload-track-modal-button").addEventListener("click", () => {
-                loadYears();
-                loadGenres();
+                // year and genre are free-text now; loaders are no-ops to avoid overwriting user input
+                // loadYears();
+                // loadGenres();
                 showModal(document.getElementById("upload-track"));
             });
             // Previous global handler removed. Per-card reorder buttons provide click handlers directly.
         };
         this.refreshPage = function () { homeView.show(); };
-        function loadYears() {
-            let today = new Date().getFullYear();
-            let sel = document.getElementById("year-selection"); if (!sel) return; sel.innerHTML = "";
-            let opt = document.createElement("option"); opt.value = ""; opt.textContent = "Year"; sel.appendChild(opt);
-            for (let y = today; y >= 1901; y--) { opt = document.createElement("option"); opt.textContent = y.toString(); sel.appendChild(opt); }
-        }
-        function loadGenres() {
-            makeCall("GET", "genres.json", null, (req) => {
-                if (req.readyState == XMLHttpRequest.DONE) {
-                    let genres = (req.status == 200) ? JSON.parse(req.responseText) : [];
-                    let sel = document.getElementById("genre-selection"); if (!sel) return; sel.innerHTML = "";
-                    let opt = document.createElement("option"); opt.value = ""; opt.textContent = "Genre"; sel.appendChild(opt);
-                    genres.forEach(g => { let o = document.createElement("option"); o.textContent = g; sel.appendChild(o); });
-                }
-            });
-        }
+        // Year and genre are entered manually now; keep loader functions as no-ops to avoid changing user input
+        function loadYears() { /* no-op: year is free-text input */ }
+        function loadGenres() { /* no-op: genre is free-text input */ }
     }
 })();
 
