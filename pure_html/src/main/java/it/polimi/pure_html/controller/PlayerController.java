@@ -32,7 +32,7 @@ public class PlayerController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private static final String PLACEHOLDER_COVER = "https://via.placeholder.com/640x640?text=Cover";
+    private static final String PLACEHOLDER_COVER = "/img/placeholder_cover.svg"; // asset locale
 
     private TemplateEngine templateEngine;
     private Connection connection;

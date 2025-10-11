@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Home page</title>
     <link rel="stylesheet" href="CSS/app.css" />
-    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png">
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png">
     <script src="utils.js" charset="UTF-8" defer></script>
     <script src="homepage.js" charset="UTF-8" defer></script>
 </head>
@@ -13,32 +13,47 @@
 <div class="page-wrapper">
     <header class="header">
         <div class="header-left"></div>
-        <h1 class="header-title main-label" id="homepage">Le mie Playlist</h1>
+        <h1 class="header-title main-label sr-only" id="homepage">LE MIE PLAYLIST</h1>
         <div class="header-right actions-row">
-            <button id="track-selector-modal-button" class="btn ghost">Nuova Playlist</button>
+            <button id="homepage-button" class="iconbtn" aria-label="Homepage">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+            </button>
+            <button id="track-selector-modal-button" class="btn secondary">Nuova Playlist</button>
             <button id="upload-track-modal-button" class="btn">Carica Brano</button>
             <button id="logout-button" type="button" class="btn secondary logout">Logout</button>
         </div>
-        <button id="homepage-button" class="iconbtn corner corner-right" title="Homepage" aria-label="Homepage">
-            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
-        </button>
         <!-- Bottone visibile solo nella vista traccia per tornare all'elenco tracce della playlist -->
-        <button id="back-to-playlist-button" class="iconbtn corner corner-left hidden" title="Indietro" aria-label="Torna alla playlist">
+    <button id="back-to-playlist-button" class="iconbtn corner corner-left hidden" aria-label="Torna alla playlist">
             <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M15.5 3.5a1 1 0 0 1 0 1.4L9.4 11l6.1 6.1a1 1 0 1 1-1.4 1.4l-6.8-6.8a1 1 0 0 1 0-1.4l6.8-6.8a1 1 0 0 1 1.4 0z"/></svg>
         </button>
     </header>
 
-    <main class="main" id="main">
-        <div class="actions-row top-actions" id="topActions">
-            <!-- Buttons already in header; placeholder if needed for dynamic insertion -->
-        </div>
-        <div class="board">
-            <section class="playlists-grid" id="playlistsGrid"></section>
-        </div>
-    </main>
+    <main class="main" id="main"></main>
 </div>
+
+<!-- Toast container (transient messages) -->
+<div id="toast" class="toast" role="alert" aria-live="polite" aria-atomic="true"></div>
 
 <!-- Container per modali dinamiche -->
 <div id="modals"></div>
+<!-- Mini player bottom (iniettato staticamente) -->
+<div id="miniPlayer" class="mini-player hidden" aria-hidden="true">
+    <!-- Close button -->
+    <button type="button" class="mini-btn mini-close" id="miniClose" aria-label="Chiudi mini player" title="Chiudi">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+    </button>
+    <!-- existing controls -->
+    <button type="button" class="mini-btn prev" id="miniPrev" aria-label="Precedente" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M10 12L18 6v12l-8-6zm-4 6V6h2v12H6z"/></svg>
+    </button>
+    <button type="button" class="mini-btn play" id="miniPlay" aria-label="Riproduci">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button type="button" class="mini-btn next" id="miniNext" aria-label="Successiva" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M14 12L6 6v12l8-6zm4 6V6h-2v12h2z"/></svg>
+    </button>
+    <div class="mini-meta"><span class="t" id="miniTitle">—</span><span class="s" id="miniArtist">—</span></div>
+    <audio id="miniAudio" preload="metadata"></audio>
+</div>
 </body>
 </html>

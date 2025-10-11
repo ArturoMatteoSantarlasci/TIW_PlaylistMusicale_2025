@@ -79,6 +79,27 @@ public class HomepageController extends HttpServlet {
         context.setVariable("playlists", playlistViews);
         context.setVariable("hasPlaylists", !playlistViews.isEmpty());
 
+        // Messaggi successo / errore
+        String created = req.getParameter("createdPlaylist");
+        if("true".equalsIgnoreCase(created)){
+            context.setVariable("createdPlaylist", true);
+            context.setVariable("createdPlaylistTitle", req.getParameter("plTitle"));
+            String added = req.getParameter("plAdded");
+            if(added != null){
+                try { context.setVariable("createdPlaylistAdded", Integer.parseInt(added)); } catch(NumberFormatException ignore){}
+            }
+        }
+        if("true".equalsIgnoreCase(req.getParameter("uploadedTrack"))){
+            context.setVariable("uploadedTrack", true);
+            context.setVariable("uploadedTrackTitle", req.getParameter("trkTitle"));
+        }
+        if("true".equalsIgnoreCase(req.getParameter("duplicatePlaylist"))){
+            context.setVariable("duplicatePlaylist", true);
+        }
+        if("true".equalsIgnoreCase(req.getParameter("duplicateTrack"))){
+            context.setVariable("duplicateTrack", true);
+        }
+
         templateEngine.process("HomePage.html", context, res.getWriter());
     }
 

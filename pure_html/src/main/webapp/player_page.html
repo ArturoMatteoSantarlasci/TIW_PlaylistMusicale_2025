@@ -4,90 +4,84 @@
     <meta charset="UTF-8" />
     <title>Player • Playlist Manager</title>
     <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
-    <link rel="icon" sizes="32x32" type="image/png" href="img/icon.png" th:href="@{/img/icon.png}">
+    <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
-<body>
-<div class="wrap wide">
-    <!-- Top bar: indietro + home -->
-    <div class="topbar" style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
-        <a class="iconbtn" th:href="${tracksUrl}" href="All_Tracks.html" title="Torna a tutte le tracce">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 6l-6 6 6 6"/></svg>
-        </a>
-        <a class="iconbtn" href="index.html" th:href="@{/}" aria-label="Vai alla Home">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l9 8h-3v10H6V11H3z"/></svg>
-        </a>
+<body class="page-player">
+<header class="header">
+    <div class="header-left"></div>
+    <div class="header-right actions-row" style="gap:14px;">
+        <button type="button" class="iconbtn" title="Homepage" aria-label="Homepage" onclick="window.location.href=this.getAttribute('data-href')" th:attr="data-href=@{/HomePage}">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/></svg>
+        </button>
+        <a class="btn secondary logout"
+           style="font-size:1.17rem !important; font-weight:800 !important; height:50px !important; padding:0 16px !important; display:flex !important; align-items:center !important; justify-content:center !important;"
+
+           th:href="@{/Logout}" href="Logout">Logout</a>
+        <!-- Back to playlist (only player page) -->
+        <button type="button" id="backToPlaylistBtn" class="iconbtn" title="Torna alla playlist" aria-label="Torna alla playlist">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M15.5 3.5a1 1 0 0 1 0 1.4L9.4 11l6.1 6.1a1 1 0 1 1-1.4 1.4l-6.8-6.8a1 1 0 0 1 0-1.4l6.8-6.8a1 1 0 0 1 1.4 0z"/></svg>
+        </button>
     </div>
+</header>
 
-    <article class="media">
-        <!-- Copertina -->
-        <div class="cover">
-            <img
-                    src="https://via.placeholder.com/640x640?text=Cover"
-                    th:src="${track.coverUrl}"
-                    alt="Copertina album" />
-        </div>
-
-        <!-- Metadati -->
-        <div class="meta">
-            <h2 class="song-title" th:text="${track.title}">Titolo del brano</h2>
-            <p class="artist" th:text="${track.artist}">Artista</p>
-            <p class="albumline" th:if="${track.albumLine != null}" th:text="${track.albumLine}">Album · 2025 · Genere</p>
-        </div>
-
-        <!-- Player -->
-        <div class="audio-box">
-            <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-bottom:12px;">
-                <span th:if="${prevTrack == null}" class="iconbtn" style="opacity:.4; pointer-events:none;" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </span>
-                <a th:if="${prevTrack != null}" class="iconbtn" th:href="@{/player(trackId=${prevTrack.trackId})}" title="Traccia precedente">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M6 5v14M18 6l-8 6 8 6V6z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </a>
-
-                <a th:if="${nextTrack != null}" class="iconbtn" th:href="@{/player(trackId=${nextTrack.trackId})}" title="Traccia successiva">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </a>
-                <span th:if="${nextTrack == null}" class="iconbtn" style="opacity:.4; pointer-events:none;" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M18 19V5M6 18l8-6-8-6v12z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                </span>
-            </div>
-            <audio id="audio" controls preload="metadata"
-                   src="sample.mp3" th:src="${track.audioUrl}"></audio>
-
-            <!-- tempi mm:ss -->
-            <div class="time-row">
-                <span id="elapsed">0:00</span>
-                <span id="duration">0:00</span>
-            </div>
-        </div>
-    </article>
+<div class="player-track-info">
+    <div class="player-cover">
+        <img th:if="${track.coverUrl != null and !#strings.isEmpty(track.coverUrl)}" th:src="${track.coverUrl}" th:alt="${'Copertina di ' + track.title}" alt="Cover" />
+        <img th:if="${track.coverUrl == null or #strings.isEmpty(track.coverUrl)}" th:src="@{/img/placeholder_cover.svg}" alt="Placeholder" />
+    </div>
+    <div class="player-text">
+        <div class="player-title" th:text="${track.title}">Titolo</div>
+        <div class="player-artist" th:text="${track.artist}">Artista</div>
+        <div class="player-album" th:if="${track.albumLine != null}" th:text="${track.albumLine}">Album · Anno · Genere</div>
+        <!-- Audio element visibile con controlli (pill) -->
+        <audio id="player-audio" controls preload="metadata" th:src="${track.audioUrl}" aria-label="Player traccia"></audio>
+    </div>
 </div>
-
 <script>
-    // Aggiorna i tempi (passati/totali) in mm:ss
-    document.addEventListener("DOMContentLoaded", () => {
-        const audio = document.getElementById("audio");
-        const elapsed = document.getElementById("elapsed");
-        const duration = document.getElementById("duration");
-
-        const fmt = (s) => {
-            if (!isFinite(s) || s < 0) return "0:00";
-            s = Math.floor(s);
-            const m = Math.floor(s / 60);
-            const ss = String(s % 60).padStart(2, "0");
-            return `${m}:${ss}`;
-        };
-
-        const setDuration = () => {
-            if (!isNaN(audio.duration)) duration.textContent = fmt(audio.duration);
-        };
-
-        audio.addEventListener("loadedmetadata", setDuration);
-        audio.addEventListener("durationchange", setDuration);
-        audio.addEventListener("timeupdate", () => {
-            elapsed.textContent = fmt(audio.currentTime);
+    // Back button logic: prefer redirect to specific playlist if params present
+    (function(){
+        const backBtn = document.getElementById('backToPlaylistBtn');
+        if(!backBtn) return;
+        // Estrae parametri dalla query string (playlistId e gr)
+        const params = new URLSearchParams(window.location.search);
+        const pid = params.get('playlistId') || params.get('playlist_id') || params.get('pid');
+        const gr = params.get('gr');
+        backBtn.addEventListener('click', () => {
+            if(pid){
+                let target = 'Playlist?playlistId=' + encodeURIComponent(pid);
+                if(gr !== null && gr !== undefined && gr !== '') target += '&gr=' + encodeURIComponent(gr);
+                window.location.href = target;
+            } else {
+                // Fallback: history.back()
+                history.back();
+            }
         });
-    });
+    })();
+
+    // Blurred album cover background
+    (function(){
+        const coverImg = document.querySelector('.player-cover img');
+        if(!coverImg) return;
+        const imgSrc = coverImg.src;
+        if(!imgSrc) return;
+
+        // Create layer
+        let layer = document.getElementById('playerCoverBg');
+        if(!layer){
+            layer = document.createElement('div');
+            layer.id = 'playerCoverBg';
+            layer.className = 'player-bg';
+            document.body.appendChild(layer);
+        }
+        layer.style.backgroundImage = `url('${imgSrc}')`;
+        document.body.classList.add('has-player-bg');
+    })();
+
+    // Remove any tooltip on player box
+    (function(){
+        const playerBox = document.querySelector('.player-track-info');
+        if(playerBox) playerBox.removeAttribute('title');
+    })();
 </script>
 </body>
 </html>
