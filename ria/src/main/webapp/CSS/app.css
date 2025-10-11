@@ -99,7 +99,7 @@
     color:#fff;
     border:2px solid var(--am-accent);
     box-shadow:0 1px 0 rgba(0,0,0,.4);
-    font-size:0.95rem; /* unified */
+    font-size:1.15rem; /* unified */
 }
 .btn:hover, .button:hover {
     /* translucent pink hover instead of deeper black */
@@ -180,7 +180,7 @@
     background:#000;
     color:#fff;
     border:2px solid var(--am-accent);
-    font-size:0.95rem;
+    font-size:1.15rem;
 }
 .btn.auth-secondary:hover {
     background:rgba(250,44,139,0.18);
@@ -211,11 +211,12 @@ body {
     margin: 0;
     color: var(--am-text);
     background: var(--am-bg);
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
-    "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    line-height: 1.45;
+
+        font-family: -apple-system,BlinkMacSystemFont,Apple Color Emoji,SF Pro,SF Pro Icons,Helvetica Neue,Helvetica,Arial,sans-serif;
+
+    /*-webkit-font-smoothing: antialiased;*/
+    /*-moz-osx-font-smoothing: grayscale;*/
+    line-height: 1.55;
     /* Global background image with dark mask */
     background-image:linear-gradient(rgba(0,0,0,0.01),rgba(0,0,0,0.01)),url('../img/background.jpg');
     background-size:cover; background-position:center center; background-repeat:no-repeat; background-attachment:fixed;
@@ -381,20 +382,25 @@ body.has-player-bg, body.has-player-bg:after { background-image: none !important
 .iconbtn:hover { background: color-mix(in oklab, var(--am-surface) 92%, var(--am-text)); }
 .iconbtn:active { transform: translateY(1px); }
 /* Uniform primary navigation icon buttons (home/back) to match pill height visually */
+/* Uniform primary navigation icon buttons (home/back) to match pill height visually */
 #homepage-button.iconbtn,
 #back-to-playlist-button.iconbtn {
-    width:52px; /* increase for parity with elongated nav buttons */
-    height:52px;
+    width:53px; /* unified size */
+    height:53px;
     border-radius:var(--am-radius-pill);
     background:#000;
     color:#fff;
     box-shadow:0 1px 0 rgba(0,0,0,.4);
 }
-#homepage-button.iconbtn svg,
-#back-to-playlist-button.iconbtn svg { width:28px; height:28px; }
-@media (max-width:880px){
-    #homepage-button.iconbtn,#back-to-playlist-button.iconbtn{width:44px;height:44px;}
-    #homepage-button.iconbtn svg,#back-to-playlist-button.iconbtn svg{width:24px;height:24px;}
+#homepage-button.iconbtn svg { width:29px; height:29px; }
+
+#back-to-playlist-button.iconbtn svg { width:29px; height:39px; }
+
+/* Add hover shadow consistent with other primary buttons */
+#homepage-button.iconbtn:hover,
+#back-to-playlist-button.iconbtn:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,.55);
+    background: rgba(250,44,139,0.18); /* keep parity with .button:hover */
 }
 
 /* Form fields */
@@ -564,11 +570,10 @@ a.btn { text-decoration:none; }
 }
 .player-cover {
     flex: 0 0 auto;
-    max-width: 200px;
-    border-radius: 26px;
-    overflow: hidden;
-    border: 3px solid var(--am-muted);
-    background: #00000012;
+    max-width: 480px;
+    border-radius: 30px;
+    overflow: visible;
+    
     box-shadow: 0 6px 18px rgba(0,0,0,.12);
 }
 .player-cover img { display:block; width:100%; height:auto; }
@@ -576,6 +581,11 @@ a.btn { text-decoration:none; }
 .player-title { font-weight: 800; font-size: 1.25rem; letter-spacing: .2px; color:#000; }
 .player-artist, .player-album, .player-year, .player-genre {
     font-size: .9rem; color: var(--am-muted);
+}
+
+.player-track-info .player-artist {
+    color: #fff !important;
+    font-weight: 800 !important;
 }
 .player-sep { display:none; }
 .player-text audio {
@@ -878,6 +888,9 @@ body.has-player-bg .page-wrapper{position:relative;z-index:2}
 .track-cover, .cover-thumb { border-radius: 8px; }
 
 /* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
+
+/*attivadisattiva messaggi toast*/
+.toast { display: none !important; pointer-events: none !important; }
 
 
 
