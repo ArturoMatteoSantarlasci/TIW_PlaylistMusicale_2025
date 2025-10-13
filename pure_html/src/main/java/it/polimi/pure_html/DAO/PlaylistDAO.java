@@ -147,7 +147,7 @@ public class PlaylistDAO implements DAO {
                  SELECT track_id,user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
                  FROM track a NATURAL JOIN playlist_tracks b
                  WHERE b.playlist_id = ?
-                 ORDER BY a.artist, a.title, a.track_id
+                 ORDER BY a.artist, a.title, a.title
                 """);
 
         querywithparam.setInt(1, playlistID);
@@ -203,7 +203,7 @@ public class PlaylistDAO implements DAO {
                     FROM playlist p NATURAL JOIN playlist_tracks pt JOIN track t ON t.track_id=pt.track_id
                     WHERE p.playlist_title= ? AND p.user_id = ?
                  )
-                 ORDER BY artist ASC, YEAR ASC, track_id ASC
+                 ORDER BY artist ASC, YEAR ASC, title ASC
                 """);
         querywithparam.setInt(1, userId);
         querywithparam.setString(2, playlistTitle);
@@ -247,7 +247,7 @@ public class PlaylistDAO implements DAO {
                  SELECT track_id, user_id,title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
                  FROM track a NATURAL JOIN playlist_tracks b
                  WHERE b.playlist_id = ?
-                 ORDER BY artist ASC, YEAR ASC, a.track_id ASC
+                 ORDER BY artist ASC, YEAR ASC, a.title ASC
                  OFFSET ? ROWS
                  FETCH NEXT 5 ROWS ONLY
                 """);

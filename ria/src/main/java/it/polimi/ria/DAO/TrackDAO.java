@@ -86,7 +86,7 @@ public class TrackDAO implements DAO {
                         image_checksum
                  FROM track
                  WHERE user_id = ?
-                 ORDER BY artist ASC, YEAR ASC, track_id ASC
+                 ORDER BY artist ASC, YEAR ASC, title ASC
                 """);
         querywithparam.setInt(1, user.id());
         ResultSet res = querywithparam.executeQuery();
