@@ -5,7 +5,7 @@ import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 import it.polimi.ria.DAO.PlaylistDAO;
 import it.polimi.ria.entities.User;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

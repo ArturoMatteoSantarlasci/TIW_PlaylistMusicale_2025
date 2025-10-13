@@ -2,7 +2,7 @@ package it.polimi.ria.Controller;
 
 import it.polimi.ria.DAO.UserDAO;
 import it.polimi.ria.entities.User;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;

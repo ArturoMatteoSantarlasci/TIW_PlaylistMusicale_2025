@@ -163,7 +163,6 @@ public class UploadTrack extends HttpServlet {
         }
     }
 
-
     private FileDetails processPart(Part part, String mimeType) throws IOException, SQLException {
         if (part == null || part.getSize() <= 0) {
             throw new ClientErrorException("Manca " + mimeType, Response.Status.BAD_REQUEST);
@@ -222,24 +221,6 @@ public class UploadTrack extends HttpServlet {
 
         return new FileDetails(pathFileRelative, hash);
     }
-
-
-//    /**
-//     * @param input Array di byte di cui calcolare l'hash
-//     * @return 64 caratteri stringa di hash SHA-256 del contenuto
-//     */
-//    private String getSHA256Hash(byte[] input) {
-//        MessageDigest digest;
-//        HexFormat hex = HexFormat.of();
-//        try {
-//            digest = MessageDigest.getInstance("SHA-256");
-//        } catch (NoSuchAlgorithmException e) {
-//            e.printStackTrace();
-//            throw new ServerErrorException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-//        }
-//        byte[] hash = digest.digest(input);
-//        return hex.formatHex(hash);
-//    }
 
     @Override
     public void destroy() {

@@ -1,10 +1,9 @@
 package it.polimi.ria.Controller;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import it.polimi.ria.DAO.TrackDAO;
 import it.polimi.ria.entities.Track;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -12,7 +11,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.Serial;

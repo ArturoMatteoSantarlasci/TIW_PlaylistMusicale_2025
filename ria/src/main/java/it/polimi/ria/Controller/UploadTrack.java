@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import it.polimi.ria.DAO.TrackDAO;
 import it.polimi.ria.entities.Track;
 import it.polimi.ria.entities.User;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
@@ -24,22 +24,16 @@ import java.io.IOException;
 import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.time.Year;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
-import java.util.UUID;
+
 import it.polimi.ria.Config.MediaConfig;
 import java.nio.file.Path;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-import java.security.NoSuchAlgorithmException;
-import java.security.DigestInputStream;
 
 
 @WebServlet("/UploadTrack")

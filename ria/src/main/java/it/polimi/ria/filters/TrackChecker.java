@@ -2,7 +2,7 @@ package it.polimi.ria.filters;
 
 import it.polimi.ria.DAO.TrackDAO;
 import it.polimi.ria.entities.User;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletContext;

@@ -3,7 +3,7 @@ package it.polimi.ria.Controller;
 import it.polimi.ria.DAO.TrackDAO;
 import it.polimi.ria.entities.Track;
 import it.polimi.ria.entities.User;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;

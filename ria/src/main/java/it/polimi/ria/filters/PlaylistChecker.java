@@ -3,7 +3,7 @@ package it.polimi.ria.filters;
 
 import it.polimi.ria.DAO.PlaylistDAO;
 import it.polimi.ria.entities.User;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 

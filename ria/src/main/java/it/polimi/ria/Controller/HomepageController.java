@@ -1,6 +1,6 @@
 package it.polimi.ria.Controller;
 import it.polimi.ria.DAO.PlaylistDAO;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import it.polimi.ria.entities.Playlist;
 import it.polimi.ria.entities.User;
 import com.google.gson.Gson;

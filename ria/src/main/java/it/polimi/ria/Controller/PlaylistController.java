@@ -2,10 +2,9 @@ package it.polimi.ria.Controller;
 
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import it.polimi.ria.DAO.PlaylistDAO;
 import it.polimi.ria.entities.Track;
-import it.polimi.ria.ConnectionHandler;
+import it.polimi.ria.utils.ConnectionHandler;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
@@ -19,7 +18,6 @@ import java.io.IOException;
 import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 
