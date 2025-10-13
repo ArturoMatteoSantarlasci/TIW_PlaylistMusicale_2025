@@ -208,7 +208,13 @@ form.stack>.btn,form.stack>.button,form.stack>a.btn{width:100%;display:flex;alig
 .track-cover img{width:100%;height:100%;object-fit:cover;display:block}.track-cover--placeholder{background:#f6f6f6;object-fit:cover;filter:saturate(.85);}
 .track-info{min-width:0;display:grid;gap:4px}.track-title{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}.track-sub{font-size:.78rem;color:var(--am-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .player-track-info{display:flex;gap:28px;align-items:center;flex-wrap:nowrap;margin:26px 4cm 0;padding:30px 46px 40px 46px;background:#000;color:#fff;border:2px solid var(--am-accent);border-radius:46px;box-shadow:0 6px 20px -6px rgba(0,0,0,.55)}
-.player-cover{flex:0 0 auto;max-width:200px;border-radius:26px;overflow:hidden;border:3px solid var(--am-muted);background:#00000012;box-shadow:0 6px 18px rgba(0,0,0,.12)}.player-cover img{display:block;width:100%;height:auto}
+.player-cover{flex:0 0 auto;max-width:480px;border-radius:26px;overflow:visible;box-shadow:0 6px 18px rgba(0,0,0,.12)}.player-cover img{display:block;width:100%;height:auto}
+
+
+.player-track-info .player-artist {
+    color: #fff !important;
+    font-weight: 800 !important;
+}
 .player-text{flex:1 1 auto;min-width:0;display:grid;gap:6px}.player-title{font-weight:800;font-size:1.25rem;letter-spacing:.2px;color:#000}.player-artist,.player-album,.player-year,.player-genre{font-size:.9rem;color:var(--am-muted)}.player-sep{display:none}
 .player-text audio{width:100%;max-width:none;background:#fff;border:2px solid var(--am-accent);border-radius:var(--am-radius-pill);padding:10px 20px;display:block;box-sizing:border-box;margin-top:4px}
 /* Removed legacy custom play button; using native audio controls like RIA */
@@ -399,19 +405,28 @@ body.has-mini-player .toast{bottom:88px}
 
 /* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
 
-/* Force header button font size and layout consistency */
-.header .actions-row .btn,
-.header .actions-row .iconbtn {
-    font-size: 1.17rem !important;
-    font-weight: 800 !important;
-    height: 50px !important;
-    padding: 0 16px !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 6px !important;
-}
+/*!* Force header button font size and layout consistency *!*/
+/*.header .actions-row .btn,*/
+/*.header .actions-row .iconbtn {*/
+/*    font-size: 1.17rem !important;*/
+/*    font-weight: 800 !important;*/
+/*    height: 50px !important;*/
+/*    padding: 0 16px !important;*/
+/*    display: flex !important;*/
+/*    align-items: center !important;*/
+/*    gap: 6px !important;*/
+/*}*/
 .header .actions-row .iconbtn svg {
     vertical-align: middle !important;
 }
 
+/* Force primary header icons (homepage & back) svg to 29×29 to avoid other rules shrinking them */
+/* Use high-specificity + !important so these take precedence when loaded last */
+#backToPlaylistBtn.iconbtn svg,
+.header .actions-row .iconbtn svg {
+    width: 29px !important;
+    height: 29px !important;
+}
 
+/*attiva o disattiva messaggi toast*/
+.toast { display: none !important; pointer-events: none !important; }
