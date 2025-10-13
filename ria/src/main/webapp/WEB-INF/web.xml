@@ -58,8 +58,8 @@
         <filter-name>UserChecker</filter-name>
         <url-pattern>/Login</url-pattern>
         <url-pattern>/login.html</url-pattern>
-        <!--        <url-pattern>/Register</url-pattern>-->
-        <!--        <url-pattern>/register.html</url-pattern>-->
+                <url-pattern>/Register</url-pattern>
+                <url-pattern>/register.html</url-pattern>
     </filter-mapping>
     <filter>
         <filter-name>PlaylistChecker</filter-name>
