@@ -7,16 +7,22 @@
     <link rel="stylesheet" href="css/app.css?v=20251002-1" th:href="@{/css/app.css(v=${#dates.createNow().getTime()})}" />
     <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
     <meta name="app-version" content="2025-10-02-1" />
+    <style>
+        .modal-overlay { display: none; }
+        .modal-overlay:target { display: flex; position: fixed; inset: 0; }
+        /* Se supportato dal browser, blocca lo scroll del body quando una modale è aperta */
+        body:has(.modal-overlay:target) { overflow: hidden; }
+    </style>
 </head>
 <body class="page-home">
 <div class="page-wrapper">
-    <!-- Toolbar con titolo, ricerca e logout -->
 
+    <!-- Toolbar con titolo, ricerca e logout -->
     <header class="header">
         <div class="header-left"></div>
         <h1 class="header-title main-label sr-only" id="homepage">LE MIE PLAYLIST</h1>
         <div class="header-right actions-row" style="gap:14px;">
-            <button type="button" class="iconbtn" aria-label="Homepage" onclick="window.location.href=this.getAttribute('data-href')" th:attr="data-href=@{/HomePage}">
+            <a class="iconbtn" aria-label="Homepage" href="HomePage" th:href="@{/HomePage}">
                 <svg viewBox="0 0 24 24" width="29"  height="29"
                      fill="none" stroke="currentColor" stroke-width="2"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -26,9 +32,10 @@
                     <!-- porta piena -->
                     <rect x="10" y="14" width="4" height="7" rx="1" ry="1"
                           fill="currentColor" stroke="none"/>
-                </svg>            </button>
-            <button type="button" class="btn secondary" onclick="openPlaylistModal()">Nuova Playlist</button>
-            <button type="button" class="btn" onclick="openTrackModal()">Carica Brani</button>
+                </svg>
+            </a>
+            <a href="#playlistModal" class="btn secondary" role="button">Nuova Playlist</a>
+            <a href="#trackModal" class="btn" role="button">Carica Brani</a>
             <a
                     class="btn secondary logout"
                     style="font-size:1.17rem !important; font-weight:800 !important; height:50px !important; padding:0 16px !important; display:flex !important; align-items:center !important; justify-content:center !important;"
@@ -43,17 +50,15 @@
     </div>
 
     <main class="main">
-        <!-- Flash toast (transient) for playlist/track create, upload & duplicate errors -->
-        <div id="flashToast" class="toast" role="alert"
-             th:if="${createdPlaylist or uploadedTrack or duplicatePlaylist or duplicateTrack}"
-             th:attr="data-created-playlist=${createdPlaylist},
-                   data-created-playlist-title=${createdPlaylistTitle},
-                   data-created-playlist-added=${createdPlaylistAdded},
-                   data-uploaded-track=${uploadedTrack},
-                   data-uploaded-track-title=${uploadedTrackTitle},
-                   data-duplicate-playlist=${duplicatePlaylist},
-                   data-duplicate-track=${duplicateTrack}"></div>
-        <!-- actions spostate nella header-right per parità grafica con RIA -->
+        <div class="toast" role="alert"
+             th:if="${createdPlaylist or uploadedTrack or duplicatePlaylist or duplicateTrack}">
+            <span th:if="${createdPlaylist}">Playlist <span th:text="${createdPlaylistTitle}">titolo</span> creata
+                <span th:if="${createdPlaylistAdded != null}"> con <span th:text="${createdPlaylistAdded}">0</span> brano<span th:if="${createdPlaylistAdded != 1}">i</span></span>.
+            </span>
+            <span th:if="${uploadedTrack}"> Brano <span th:text="${uploadedTrackTitle}">titolo</span> caricato con successo.</span>
+            <span th:if="${duplicatePlaylist}"> Nome playlist già esistente.</span>
+            <span th:if="${duplicateTrack}"> Traccia già presente (duplicato).</span>
+        </div>
 
         <div class="playlists-wrapper">
             <div th:if="${!hasPlaylists}" style="padding:14px 0 6px;color:var(--am-muted);text-align:center;">Nessuna playlist ancora.</div>
@@ -71,16 +76,16 @@
     <div class="modal">
         <div class="modal-header">
             <h2 class="modal-title">Nuova Playlist</h2>
-            <button class="modal-close" type="button" onclick="closePlaylistModal()" aria-label="Chiudi">
+            <!-- Chiudi via link a #homepage -->
+            <a class="modal-close" href="#homepage" aria-label="Chiudi">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                 </svg>
-            </button>
+            </a>
         </div>
         <div class="modal-content">
             <form id="playlistForm" action="CreatePlaylist" th:action="@{/CreatePlaylist}" method="post">
                 <div class="form-group">
-                    <!-- Etichetta visiva rimossa su richiesta; manteniamo etichetta per screen reader -->
                     <label class="sr-only" for="playlistName">Nome della playlist</label>
                     <div class="field">
                         <input type="text" id="playlistName" name="playlistTitle" placeholder="Inserisci il nome..." aria-label="Nome della playlist" required autocomplete="off" />
@@ -89,16 +94,7 @@
 
                 <div class="form-group">
                     <label class="form-label">Seleziona brani</label>
-                    <!-- Nuovo blocco compatto -->
                     <div class="playlist-tracks-block" id="playlistTracksBlock">
-                        <div class="playlist-tracks-tools" th:if="${availableTracksCount > 0}">
-                            <div class="field" style="flex:1; height:42px;">
-                                <input type="search" id="trackFilter" placeholder="Filtra brani (titolo, artista, album)..." autocomplete="off" />
-                            </div>
-                            <div class="counts">
-                                <span id="selectedCount">0</span>/<span th:text="${availableTracksCount}">0</span> selezionati
-                            </div>
-                        </div>
                         <div class="custom-scroll-wrapper">
                             <ul class="playlist-tracks-list custom-scroll-hide-native" id="playlistTracksList">
                                 <li class="playlist-tracks-empty" th:if="${availableTracksCount == 0}">Nessun brano disponibile</li>
@@ -107,25 +103,20 @@
                                     <label th:for="'pltrk_' + ${t.id}" class="track-choice-info">
                                         <span class="track-choice-title" th:text="${t.title}">Titolo</span>
                                         <span class="track-choice-meta">
-                    <span th:text="${t.artist}">Artista</span>
-                    <span> · </span>
-                    <span th:text="${t.album_title}">Album</span>
-                    <span th:if="${t.year != null}"> · <span th:text="${t.year}">2024</span></span>
-                  </span>
+                                            <span th:text="${t.artist}">Artista</span>
+                                            <span> · </span>
+                                            <span th:text="${t.album_title}">Album</span>
+                                            <span th:if="${t.year != null}"> · <span th:text="${t.year}">2024</span></span>
+                                        </span>
                                     </label>
                                 </li>
                             </ul>
-                            <div class="custom-scrollbar"><div class="custom-scrollbar-track"><span class="custom-scrollbar-thumb"></span></div></div>
-                        </div>
-                        <div class="playlist-tracks-actions" th:if="${availableTracksCount > 0}">
-                            <button type="button" id="selectAllTracksBtn" title="Seleziona tutti i brani visibili">Seleziona tutti</button>
-                            <button type="button" id="clearTracksBtn" title="Deseleziona tutti i brani">Pulisci</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="modal-actions">
-                    <button type="button" class="btn ghost" onclick="closePlaylistModal()">Annulla</button>
+                    <a href="#homepage" class="btn ghost">Annulla</a>
                     <button type="submit" class="btn">Crea Playlist</button>
                 </div>
             </form>
@@ -138,364 +129,74 @@
     <div class="modal">
         <div class="modal-header">
             <h2 class="modal-title">Carica Nuovo Brano</h2>
-            <button class="modal-close" type="button" onclick="closeTrackModal()" aria-label="Chiudi">
+            <a class="modal-close" href="#homepage" aria-label="Chiudi">
                 <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                 </svg>
-            </button>
+            </a>
         </div>
         <div class="modal-content">
             <form id="trackForm" action="UploadTrack" th:action="@{/UploadTrack}" method="post" enctype="multipart/form-data">
-                <div class="fieldset-compact custom-scroll-wrapper" id="trackFieldsetWrapper">
-                <div class="fieldset-scroll-area custom-scroll-hide-native" id="trackFieldsetScroll">
-                <div class="form-group">
-                    <label class="form-label" for="trackTitle">Titolo del brano</label>
-                    <div class="field">
-                        <input type="text" id="trackTitle" name="title" placeholder="Inserisci il titolo..." required autocomplete="off" />
-                    </div>
-                </div>
+                <div class="fieldset-compact" id="trackFieldsetWrapper">
+                    <div class="fieldset-scroll-area" id="trackFieldsetScroll" style="max-height:50vh; overflow:auto;">
+                        <div class="form-group">
+                            <label class="form-label" for="trackTitle">Titolo del brano</label>
+                            <div class="field">
+                                <input type="text" id="trackTitle" name="title" placeholder="Inserisci il titolo..." required autocomplete="off" />
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="trackArtist">Artista/Gruppo</label>
-                    <div class="field">
-                        <input type="text" id="trackArtist" name="artist" placeholder="Nome dell'artista..." required autocomplete="off" />
-                    </div>
-                </div>
+                        <div class="form-group">
+                            <label class="form-label" for="trackArtist">Artista/Gruppo</label>
+                            <div class="field">
+                                <input type="text" id="trackArtist" name="artist" placeholder="Nome dell'artista..." required autocomplete="off" />
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="trackAlbum">Album</label>
-                    <div class="field">
-                        <input type="text" id="trackAlbum" name="album" placeholder="Nome dell'album..." required autocomplete="off" />
-                    </div>
-                </div>
+                        <div class="form-group">
+                            <label class="form-label" for="trackAlbum">Album</label>
+                            <div class="field">
+                                <input type="text" id="trackAlbum" name="album" placeholder="Nome dell'album..." required autocomplete="off" />
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="trackYear">Anno di pubblicazione</label>
-                    <div class="field">
-                        <input type="number" id="trackYear" name="year" placeholder="2023" min="1900" max="2025" required autocomplete="off" />
-                    </div>
-                </div>
+                        <div class="form-group">
+                            <label class="form-label" for="trackYear">Anno di pubblicazione</label>
+                            <div class="field">
+                                <input type="number" id="trackYear" name="year" placeholder="2023" min="1900" max="2025" required autocomplete="off" />
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="trackGenre">Genere</label>
-                    <div class="field">
-                        <input type="text" id="trackGenre" name="genre" placeholder="Rock, Pop, Jazz..." autocomplete="off" required />
-                    </div>
-                </div>
+                        <div class="form-group">
+                            <label class="form-label" for="trackGenre">Genere</label>
+                            <div class="field">
+                                <input type="text" id="trackGenre" name="genre" placeholder="Rock, Pop, Jazz..." autocomplete="off" required />
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="trackFile">File audio</label>
-                    <div class="field">
-                        <input type="file" id="trackFile" name="musicTrack" accept="audio/mp3,audio/wav,audio/ogg,audio/m4a" required />
-                    </div>
-                </div>
+                        <div class="form-group">
+                            <label class="form-label" for="trackFile">File audio</label>
+                            <div class="field">
+                                <input type="file" id="trackFile" name="musicTrack" accept="audio/mp3,audio/wav,audio/ogg,audio/m4a" required />
+                            </div>
+                        </div>
 
-                <div class="form-group">
-                    <label class="form-label" for="trackCover">Copertina</label>
-                    <div class="field">
-                        <input type="file" id="trackCover" name="image" accept="image/jpeg,image/png,image/gif,image/webp" required />
+                        <div class="form-group">
+                            <label class="form-label" for="trackCover">Copertina</label>
+                            <div class="field">
+                                <input type="file" id="trackCover" name="image" accept="image/jpeg,image/png,image/gif,image/webp" required />
+                            </div>
+                        </div>
                     </div>
                 </div>
-                </div><!-- /.fieldset-scroll-area -->
-                <div class="custom-scrollbar" aria-hidden="true">
-                    <div class="custom-scrollbar-track">
-                        <span class="custom-scrollbar-thumb" id="trackFieldsetThumb"></span>
-                    </div>
-                </div>
-                </div><!-- /.fieldset-compact -->
 
                 <div class="modal-actions">
-                    <button type="button" class="btn ghost" onclick="closeTrackModal()">Annulla</button>
+                    <a href="#homepage" class="btn ghost">Annulla</a>
                     <button type="submit" class="btn">Carica Brano</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<script>
-    // Gestione modali: apertura/chiusura, lock body e focus iniziale
-    (function modalManager(){
-        'use strict';
-
-        const MODALS = {
-            playlist: { id: 'playlistModal', focusSelector: '#playlistModal input[type="text"]' },
-            track: { id: 'trackModal', focusSelector: '#trackModal input[type="text"]' }
-        };
-        const overlays = new Map();
-        const closeHooks = new Map();
-        let activeKey = null;
-
-        Object.entries(MODALS).forEach(([key, cfg]) => {
-            const overlay = document.getElementById(cfg.id);
-            if (!overlay) { return; }
-            overlays.set(key, overlay);
-            overlay.style.display = 'none';
-            overlay.addEventListener('click', evt => {
-                if (evt.target === overlay) {
-                    closeModal(key);
-                }
-            });
-        });
-
-        function anyModalOpen() {
-            for (const overlay of overlays.values()) {
-                if (overlay.classList.contains('active')) { return true; }
-            }
-            return false;
-        }
-
-        function lockBody() {
-            document.body.dataset.modalOpen = '1';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function unlockBody() {
-            delete document.body.dataset.modalOpen;
-            document.body.style.overflow = '';
-        }
-
-        function focusField(selector) {
-            if (!selector) { return; }
-            const field = document.querySelector(selector);
-            if (field) {
-                setTimeout(() => field.focus(), 80);
-            }
-        }
-
-        function openModal(key) {
-            const cfg = MODALS[key];
-            const overlay = overlays.get(key);
-            if (!cfg || !overlay) { return; }
-            activeKey = key;
-            overlay.classList.add('active');
-            overlay.style.display = 'flex';
-            overlay.style.position = 'fixed';
-            overlay.style.inset = '0';
-            lockBody();
-            focusField(cfg.focusSelector);
-        }
-
-        function closeModal(key) {
-            const overlay = overlays.get(key);
-            if (!overlay) { return; }
-            const hook = closeHooks.get(key);
-            if (hook) { hook(); }
-            overlay.classList.remove('active');
-            overlay.style.display = 'none';
-            if (activeKey === key) {
-                activeKey = null;
-            }
-            if (!anyModalOpen()) {
-                unlockBody();
-            }
-        }
-
-        window.openPlaylistModal = () => openModal('playlist');
-        window.closePlaylistModal = () => closeModal('playlist');
-        window.openTrackModal = () => openModal('track');
-        window.closeTrackModal = () => closeModal('track');
-
-        window.__registerModalCloseHook = (key, callback) => {
-            if (MODALS[key]) {
-                closeHooks.set(key, callback);
-            }
-        };
-
-        window.addEventListener('load', () => {
-            overlays.forEach(overlay => {
-                if (!overlay.classList.contains('active')) {
-                    overlay.style.display = 'none';
-                }
-            });
-        });
-
-        document.addEventListener('keydown', evt => {
-            if (evt.key === 'Escape' && activeKey) {
-                closeModal(activeKey);
-            }
-        });
-    })();
-
-    // Funzionalità aggiuntive per il modal playlist: filtro, contatore, reset automatico
-    (function playlistModalEnhancements(){
-        const list = document.getElementById('playlistTracksList');
-        if(!list) return; // nessun elenco disponibile
-        const filterInput = document.getElementById('trackFilter');
-        const selectedCountEl = document.getElementById('selectedCount');
-        const selectAllBtn = document.getElementById('selectAllTracksBtn');
-        const clearBtn = document.getElementById('clearTracksBtn');
-
-        function updateHighlight(chk){
-            const li = chk.closest('li.track-choice');
-            if(!li) return; li.classList.toggle('track-choice--selected', chk.checked);
-        }
-        function updateSelectedCount(){
-            if(!selectedCountEl) return;
-            const c = list.querySelectorAll('input[name="selectedTracks"]:checked').length;
-            selectedCountEl.textContent = c;
-        }
-        function eachCheckbox(cb){ Array.prototype.forEach.call(list.querySelectorAll('input[name="selectedTracks"]'), cb); }
-
-        // Inizializza highlight/contatore
-        eachCheckbox(chk=>{ updateHighlight(chk); });
-        updateSelectedCount();
-
-        // Change listener
-        list.addEventListener('change', e=>{
-            if(e.target && e.target.matches('input[name="selectedTracks"]')){
-                updateHighlight(e.target); updateSelectedCount();
-            }
-        });
-
-        // Filtro
-        if(filterInput){
-            filterInput.addEventListener('input', () => {
-                const term = filterInput.value.toLowerCase().trim();
-                let visible = 0;
-                list.querySelectorAll('li.track-choice').forEach(li => {
-                    const txt = (li.textContent || '').toLowerCase();
-                    const show = !term || txt.includes(term);
-                    li.style.display = show ? '' : 'none';
-                    if(show) visible++;
-                });
-                // Aggiorna bottone seleziona tutti stato disabled se 0 visibili
-                if(selectAllBtn){ selectAllBtn.disabled = (visible === 0); }
-            });
-        }
-
-        // Seleziona tutti (solo quelli visibili)
-        if(selectAllBtn){
-            selectAllBtn.addEventListener('click', () => {
-                list.querySelectorAll('li.track-choice').forEach(li => {
-                    if(li.style.display === 'none') return; // skip filtrati
-                    const chk = li.querySelector('input[name="selectedTracks"]');
-                    if(chk && !chk.checked){ chk.checked = true; updateHighlight(chk); }
-                });
-                updateSelectedCount();
-            });
-        }
-
-        // Pulisci tutti
-        if(clearBtn){
-            clearBtn.addEventListener('click', () => {
-                eachCheckbox(chk => { if(chk.checked){ chk.checked=false; updateHighlight(chk);} });
-                updateSelectedCount();
-            });
-        }
-
-        function resetModalState(){
-            if(filterInput){
-                filterInput.value='';
-                filterInput.dispatchEvent(new Event('input'));
-            }
-            eachCheckbox(chk => { if(chk.checked){ chk.checked=false; updateHighlight(chk);} });
-            updateSelectedCount();
-        }
-
-        if (typeof window.__registerModalCloseHook === 'function') {
-            window.__registerModalCloseHook('playlist', resetModalState);
-        } else {
-            const originalClose = window.closePlaylistModal;
-            window.closePlaylistModal = function(){
-                resetModalState();
-                if (typeof originalClose === 'function') {
-                    originalClose();
-                }
-            };
-        }
-    })();
-
-    // Flash toast builder per messaggi (creazione playlist / upload / duplicati)
-    (function flashToast(){
-        const toast = document.getElementById('flashToast');
-        if(!toast) return;
-        const ds = toast.dataset;
-        const messages = [];
-        if(ds.createdPlaylist === 'true'){
-            let msg = 'Playlist ' + (ds.createdPlaylistTitle || '') + ' creata';
-            if(ds.createdPlaylistAdded && ds.createdPlaylistAdded !== 'null' && ds.createdPlaylistAdded !== ''){
-                const n = parseInt(ds.createdPlaylistAdded,10);
-                if(!isNaN(n)) msg += ' con ' + n + ' brano' + (n===1?'':'i');
-            }
-            messages.push(msg + '.');
-        }
-        if(ds.uploadedTrack === 'true'){
-            messages.push('Brano ' + (ds.uploadedTrackTitle || '') + ' caricato con successo.');
-        }
-        if(ds.duplicatePlaylist === 'true'){
-            messages.push('Nome playlist già esistente.');
-        }
-        if(ds.duplicateTrack === 'true'){
-            messages.push('Traccia già presente (duplicato).');
-        }
-        if(messages.length===0){ return; }
-        toast.textContent = messages.join(' ');
-        // Mostra
-        requestAnimationFrame(()=>{
-            toast.classList.add('show');
-        });
-        // Nascondi dopo 3200ms
-        setTimeout(()=>{
-            toast.classList.remove('show');
-        },3200);
-    })();
-</script>
-<script>
-    // Scrollbar custom 5cm per playlistTracksList (sempre visibile anche con pochi elementi)
-    (function(){
-        const wrapper = document.querySelector('#playlistTracksList')?.closest('.custom-scroll-wrapper');
-        if(!wrapper) return;
-        const list = wrapper.querySelector('.playlist-tracks-list');
-        const thumb = wrapper.querySelector('.custom-scrollbar-thumb');
-        const track = wrapper.querySelector('.custom-scrollbar-track');
-        if(!list||!thumb||!track) return;
-        function enforce(){
-            // Se il contenuto non supera l'altezza, reset thumb top 0 (ma resta visibile)
-            if(list.scrollHeight <= list.clientHeight){ thumb.style.top='0px'; return; }
-            const maxScroll = list.scrollHeight - list.clientHeight;
-            const trackH = track.clientHeight;
-            const maxTop = trackH - thumb.offsetHeight;
-            const ratio = list.scrollTop / maxScroll;
-            thumb.style.top = (ratio * maxTop) + 'px';
-        }
-        list.addEventListener('scroll', enforce);
-        window.addEventListener('resize', enforce);
-        let dragging=false, startY=0, startTop=0;
-        thumb.addEventListener('mousedown', e=>{ dragging=true; startY=e.clientY; startTop=parseFloat(thumb.style.top)||0; wrapper.classList.add('dragging'); e.preventDefault(); });
-        document.addEventListener('mousemove', e=>{ if(!dragging) return; const dy=e.clientY-startY; const trackH=track.clientHeight; const maxTop=trackH-thumb.offsetHeight; let newTop=Math.min(Math.max(0,startTop+dy),maxTop); thumb.style.top=newTop+'px'; const maxScroll=list.scrollHeight-list.clientHeight; if(maxScroll>0){ list.scrollTop = (newTop/maxTop)*maxScroll; } });
-        document.addEventListener('mouseup', ()=>{ if(dragging){ dragging=false; wrapper.classList.remove('dragging'); }});
-        track.addEventListener('wheel', e=>{ e.preventDefault(); list.scrollTop += e.deltaY; }, {passive:false});
-        const mo = new MutationObserver(()=>{ requestAnimationFrame(enforce); });
-        mo.observe(list,{childList:true,subtree:true});
-        enforce();
-    })();
-    // Custom scrollbar anche per fieldset upload brano
-    (function(){
-        const wrapper = document.getElementById('trackFieldsetWrapper');
-        if(!wrapper) return;
-        const list = document.getElementById('trackFieldsetScroll');
-        const thumb = document.getElementById('trackFieldsetThumb');
-        const track = wrapper.querySelector('.custom-scrollbar-track');
-        if(!list||!thumb||!track) return;
-        function enforce(){
-            if(list.scrollHeight <= list.clientHeight){ thumb.style.top='0px'; return; }
-            const maxScroll = list.scrollHeight - list.clientHeight;
-            const trackH = track.clientHeight;
-            const maxTop = trackH - thumb.offsetHeight;
-            thumb.style.top = (list.scrollTop / maxScroll) * maxTop + 'px';
-        }
-        list.addEventListener('scroll', enforce);
-        window.addEventListener('resize', enforce);
-        let dragging=false,startY=0,startTop=0;
-        thumb.addEventListener('mousedown', e=>{ dragging=true; startY=e.clientY; startTop=parseFloat(thumb.style.top)||0; wrapper.classList.add('dragging'); e.preventDefault(); });
-        document.addEventListener('mousemove', e=>{ if(!dragging) return; const dy=e.clientY-startY; const trackH=track.clientHeight; const maxTop=trackH-thumb.offsetHeight; let newTop=Math.min(Math.max(0,startTop+dy),maxTop); thumb.style.top=newTop+'px'; const maxScroll=list.scrollHeight-list.clientHeight; if(maxScroll>0){ list.scrollTop = (newTop/maxTop)*maxScroll; }});
-        document.addEventListener('mouseup', ()=>{ if(dragging){ dragging=false; wrapper.classList.remove('dragging'); }});
-        track.addEventListener('wheel', e=>{ e.preventDefault(); list.scrollTop += e.deltaY; }, {passive:false});
-        const mo = new MutationObserver(()=>{ requestAnimationFrame(enforce); });
-        mo.observe(list,{childList:true,subtree:true});
-        enforce();
-    })();
-</script>
 </body>
 </html>

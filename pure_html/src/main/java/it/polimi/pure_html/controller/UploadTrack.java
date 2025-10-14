@@ -1,6 +1,6 @@
 package it.polimi.pure_html.controller;
 
-
+import it.polimi.pure_html.Config.MediaConfig;
 import it.polimi.pure_html.DAO.TrackDAO;
 import it.polimi.pure_html.entities.Track;
 import it.polimi.pure_html.entities.User;
@@ -23,18 +23,21 @@ import java.io.Serial;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.sql.*;
-import java.time.Year;
-import java.util.*;
-
-import it.polimi.pure_html.Config.MediaConfig;
-import java.nio.file.Path;
-import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.security.NoSuchAlgorithmException;
 import java.security.DigestInputStream;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+/**
+ * Gestisce il caricamento di nuove tracce audio e delle relative copertine.
+ * Verifica la validità dei metadati, deduplica i file tramite checksum
+ * e salva fisicamente le risorse nelle directory configurate.
+ */
 
 @WebServlet("/UploadTrack")
 @MultipartConfig(
@@ -46,20 +49,17 @@ public class UploadTrack extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
     private Connection connection = null;
-    // Rimosso outputPath: i file vengono sempre salvati sotto /media/img
-    private User user;
-    private Track track;
-    private List<File> newFiles;
     private ServletContext context;
-    private List<String> genres; // lista fissa hardcoded
+    private List<String> genres;
+
+    /**
+     * Inizializza le risorse condivise necessarie all'upload delle tracce multimediali.
+     */
 
     public void init() throws ServletException {
         context = getServletContext();
         connection = ConnectionHandler.openConnection(context);
-        //NOME CARTELLA DOVE SALVARE I FILE NELLA WEBAPP ES. ''uploads''
-        newFiles = new ArrayList<>();
 
-        // Lista hardcoded (niente più json)
         genres = List.of(
                 "Classical","Rock","Edm","Pop","Hip-hop","R&B","Country","Jazz","Blues",
                 "Metal","Folk","Soul","Funk","Electronic","Indie","Reggae","Disco"
@@ -81,81 +81,83 @@ public class UploadTrack extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // Non creare nuova sessione se scaduta
         var session = req.getSession(false);
-        if (session == null || (user = (User) session.getAttribute("user")) == null) {
-            // Sessione scaduta: redirect login o 401
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Sessione scaduta");
+        User user = session == null ? null : (User) session.getAttribute("user");
+        if (user == null) {
+            resp.sendRedirect(getServletContext().getContextPath() + "/Login");
             return;
         }
 
+        List<File> newFiles = new ArrayList<>();
+        Track track;
+
         try {
-            String title = getRequiredParameter(req, "title");
-            String artist = getRequiredParameter(req, "artist");
+            String title = getRequiredParameter(req, "title").trim();
+            String artist = getRequiredParameter(req, "artist").trim();
 
             int year;
             try {
                 year = Integer.parseInt(req.getParameter("year"));
             } catch (NumberFormatException e) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Anno non valido");
-
+                resp.sendRedirect(getServletContext().getContextPath()+"/HomePage?uploadError=Anno%20non%20valido#upload-track");
                 return;
             }
             if (year < 1901 || year > Year.now().getValue()) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Anno non valido");
+                resp.sendRedirect(getServletContext().getContextPath()+"/HomePage?uploadError=Anno%20non%20valido#upload-track");
                 return;
             }
 
-            String album = getRequiredParameter(req, "album");
+            String album = getRequiredParameter(req, "album").trim();
 
-            String genre = getRequiredParameter(req, "genre");
-            if (!genres.contains(genre)) {
-                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Genere non valido");
+            String genreRaw = getRequiredParameter(req, "genre").trim();
+            // Normalizza genere (case-insensitive) confrontando con lista canonical
+            String genre = genres.stream()
+                    .filter(g -> g.equalsIgnoreCase(genreRaw))
+                    .findFirst()
+                    .orElse(null);
+            if (genre == null) {
+                resp.sendRedirect(getServletContext().getContextPath()+"/HomePage?uploadError=Genere%20non%20valido#upload-track");
                 return;
             }
 
-            FileDetails fileDetails;
+            FileDetails imageDetails = processPart(req.getPart("image"), "image", newFiles);
+            String imagePath = imageDetails.path();
+            String imageHash = imageDetails.hash();
 
-            // Immagini in /media/img
-            fileDetails = processPart(req.getPart("image"), "image");
-            String imagePath = fileDetails.path();
-            String imageHash = fileDetails.hash();
-
-            // Audio in /media/audio
-            fileDetails = processPart(req.getPart("musicTrack"), "audio");
-            String songPath = fileDetails.path();
-            String songHash = fileDetails.hash();
+            FileDetails audioDetails = processPart(req.getPart("musicTrack"), "audio", newFiles);
+            String songPath = audioDetails.path();
+            String songHash = audioDetails.hash();
 
             track = new Track(0, user.id(), title, artist, year, album, genre, imagePath, songPath, songHash, imageHash);
-        } catch (ClientErrorException | ServerErrorException e) {
+        } catch (ClientErrorException e) {
+            resp.sendRedirect(getServletContext().getContextPath()+"/HomePage?uploadError=" + java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8) + "#upload-track");
+            return;
+        } catch (ServerErrorException e) {
             resp.sendError(e.getResponse().getStatus(), e.getMessage());
             return;
         } catch (SQLException e) {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return;
         } catch (IllegalStateException tooBig) {
-            // File oltre i limiti del @MultipartConfig
-            resp.sendError(HttpServletResponse.SC_REQUEST_ENTITY_TOO_LARGE, "File troppo grande");
+            resp.sendRedirect(getServletContext().getContextPath()+"/HomePage?uploadError=File%20troppo%20grande#upload-track");
             return;
         }
 
-        // Add track
         TrackDAO trackDAO = new TrackDAO(connection);
         try {
             trackDAO.addTrack(track, user);
             String qp = "?uploadedTrack=true&trkTitle=" + java.net.URLEncoder.encode(track.title(), java.nio.charset.StandardCharsets.UTF_8) + "#upload-track";
             resp.sendRedirect(getServletContext().getContextPath() + "/HomePage" + qp);
-
-
         } catch (SQLIntegrityConstraintViolationException e) {
-            if (e.getMessage().contains("Duplicate")) {
+            String msg = e.getMessage();
+            if (msg != null && msg.toLowerCase().contains("duplicate")) {
                 resp.sendRedirect(getServletContext().getContextPath() + "/HomePage?duplicateTrack=true#upload-track");
-
+            } else {
+                resp.sendRedirect(getServletContext().getContextPath() + "/HomePage?uploadError=Vincolo%20violato#upload-track");
             }
-            // Delete newly created files if addTrack fails
             newFiles.forEach(File::delete);
         } catch (SQLException e) {
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.sendRedirect(getServletContext().getContextPath() + "/HomePage?uploadError=Errore%20server#upload-track");
             newFiles.forEach(File::delete);
             e.printStackTrace();
         } finally {
@@ -163,7 +165,7 @@ public class UploadTrack extends HttpServlet {
         }
     }
 
-    private FileDetails processPart(Part part, String mimeType) throws IOException, SQLException {
+    private FileDetails processPart(Part part, String mimeType, List<File> newFiles) throws IOException, SQLException {
         if (part == null || part.getSize() <= 0) {
             throw new ClientErrorException("Manca " + mimeType, Response.Status.BAD_REQUEST);
         }
@@ -171,11 +173,10 @@ public class UploadTrack extends HttpServlet {
             throw new ClientErrorException("File non permesso per " + mimeType + " tipo", HttpServletResponse.SC_BAD_REQUEST);
         }
 
-        // 1) Leggi in temp + calcola SHA-256 in streaming
         Path tempFile = Files.createTempFile("upload_", ".bin");
         java.security.MessageDigest digest;
         try { digest = java.security.MessageDigest.getInstance("SHA-256"); }
-        catch (NoSuchAlgorithmException e) { throw new ServerErrorException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); }
+        catch (java.security.NoSuchAlgorithmException e) { throw new ServerErrorException(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); }
 
         try (var in = part.getInputStream();
              var dis = new java.security.DigestInputStream(in, digest);
@@ -184,7 +185,6 @@ public class UploadTrack extends HttpServlet {
         }
         String hash = java.util.HexFormat.of().formatHex(digest.digest());
 
-        // 2) Dedup su DB
         TrackDAO trackDAO = new TrackDAO(connection);
         String pathFileRelative = switch (mimeType) {
             case "audio" -> trackDAO.isTrackFileAlreadyPresent(hash);
@@ -196,7 +196,6 @@ public class UploadTrack extends HttpServlet {
             return new FileDetails(pathFileRelative, hash);
         }
 
-        // 3) Sposta nella cartella ESTERNA configurata
         var mediaBase = MediaConfig.baseDir(context);
         final String folder = switch (mimeType) {
             case "audio" -> "audio";
@@ -210,10 +209,10 @@ public class UploadTrack extends HttpServlet {
         String ext = "";
         int dot = realname.lastIndexOf('.');
         if (dot > -1 && dot < realname.length() - 1) ext = realname.substring(dot);
-        String fileName = java.util.UUID.randomUUID() + ext;
+        String fileName = UUID.randomUUID() + ext;
 
         Path absolutePath = targetDir.resolve(fileName);
-        Files.move(tempFile, absolutePath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        Files.move(tempFile, absolutePath, StandardCopyOption.REPLACE_EXISTING);
         newFiles.add(absolutePath.toFile());
 
         pathFileRelative = "/media/" + folder + "/" + fileName;

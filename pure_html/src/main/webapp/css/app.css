@@ -1,8 +1,6 @@
-/* Replaced with unified Apple Music style from ria project */
-
-/* ===========================================================================
-    Apple Music–inspired Theme (customized pink variant)
-    =========================================================================== */
+/* =========================================================
+   Palette e variabili di tema
+   ========================================================= */
 :root {
     --am-bg: #ffffff;
     --am-bg-alt: #f5f5f7;
@@ -20,8 +18,9 @@
     --am-icon: 38px;
     --am-focus: 0 0 0 3px rgba(0,113,227,.35);
 }
-/* Global enhancement: add 2px black outline to formerly light-gray bordered components */
-/* We use box-shadow inset to avoid shifting layout where border thickness was 1px */
+
+/* Evidenza i contenitori interattivi con un bordo nero sottile senza alterare le dimensioni.
+   Usiamo un'ombra interna; .playlists-vertical resta esclusa per evitare un riquadro esterno. */
 .board,
 .field,
 .playlist-card-row,
@@ -43,49 +42,114 @@
 .badge,
 .iconbtn,
 .iconbtn.tiny,
-    /* removed .playlists-vertical to avoid outer black rectangle */
 .actions-row .btn,
 .btn,
 .button {
-    /* Add crisp black edge without altering existing colored accent borders */
-    box-shadow: 0 0 0 0.01px transparent, 0 0 0 2px #000 inset, var(--am-shadow, 0 0 0 rgba(0,0,0,0));
+    box-shadow: 0 0 0 0.01px transparent,
+                0 0 0 2px #000 inset,
+                var(--am-shadow, 0 0 0 rgba(0,0,0,0));
 }
 
-/* Preserve accent-only surfaces where a pink border defines identity (avoid double heavy edge) */
+/* Preserva il bordo rosa sulle superfici accent per non perdere l'identita' visiva. */
 .btn.accent,
 .playlist-card-row,
 .player-track-info,
 .mini-player,
 .playlist-card-row:focus-visible {
-    box-shadow: 0 0 0 2px #000 inset, 0 0 0 0.5px var(--am-accent) inset, 0 10px 28px -6px rgba(0,0,0,.35);
+    box-shadow: 0 0 0 2px #000 inset,
+                0 0 0 0.5px var(--am-accent) inset,
+                0 10px 28px -6px rgba(0,0,0,.35);
 }
-@media (prefers-color-scheme: dark){
-    :root {--am-bg:#0b0b0f;--am-bg-alt:#121216;--am-surface:#16161b;--am-text:#f5f5f7;--am-muted:#a1a1aa;--am-border:#2a2a31;--am-accent:#fa2c8b;--am-accent-press:#0062c6;--am-shadow:0 10px 28px rgba(0,0,0,.35);} }
-html{-webkit-text-size-adjust:100%}*{box-sizing:border-box}html,body{height:100%}
-body{margin:0;color:var(--am-text);background:var(--am-bg);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;line-height:1.45;
-    /* Background image layer (opacity adjusted from 0.60 -> 0.45 to match RIA) */
-    background-image:linear-gradient(rgba(0,0,0,0.01),rgba(0,0,0,0.01)),url('../img/background.jpg');
-    background-size:cover; /* fill viewport */
-    background-attachment:fixed; /* subtle parallax */
-    background-position:center center;
-    background-repeat:no-repeat;
-}
-/* Ensure inner surfaces remain readable over image */
-.auth-box,.player-track-info,.playlist-card-row,.board,.modal,.mini-player,.title-box,.title-strip-inner{backdrop-filter:saturate(130%) blur(6px);}
-/* IMPORTANT: avoid using background shorthand here (would wipe image); only adjust layout */
-body.page-home{display:flex;flex-direction:column;min-height:100vh;background-color:transparent}
 
-/* Safety re-assert (low-specificity) to guarantee image persists even if earlier rules inject a shorthand elsewhere */
-body{background-image:linear-gradient(rgba(0,0,0,0.01),rgba(0,0,0,0.01)),url('../img/background.jpg') !important;}
-/* Player page background override */
+/* Variante automatica per tema scuro (stesse variabili con palette invertita). */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --am-bg: #0b0b0f;
+        --am-bg-alt: #121216;
+        --am-surface: #16161b;
+        --am-text: #f5f5f7;
+        --am-muted: #a1a1aa;
+        --am-border: #2a2a31;
+        --am-accent: #fa2c8b;
+        --am-accent-press: #0062c6;
+        --am-shadow: 0 10px 28px rgba(0,0,0,.35);
+    }
+}
+
+/* =========================================================
+   Reset elementari e base tipografica
+   ========================================================= */
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+/* =========================================================
+   Layout generale e sfondo
+   ========================================================= */
+body {
+    margin: 0;
+    color: var(--am-text);
+    background: var(--am-bg);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+        "Segoe UI", Roboto, Ubuntu, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    line-height: 1.45;
+    /* Strato d'immagine con velo piu' leggero per allinearsi al design RIA. */
+    background-image: linear-gradient(rgba(0,0,0,0.01), rgba(0,0,0,0.01)),
+        url("../img/background.jpg");
+    background-size: cover; /* riempie l'intero viewport */
+    background-attachment: fixed; /* leggero effetto parallax */
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+/* Mantiene leggibili i blocchi principali sopra lo sfondo fotografico. */
+.auth-box,
+.player-track-info,
+.playlist-card-row,
+.board,
+.modal,
+.mini-player,
+.title-box,
+.title-strip-inner {
+    backdrop-filter: saturate(130%) blur(6px);
+}
+
+/* Struttura della home verticale con sfondo trasparente. */
+body.page-home {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: transparent;
+}
+
+/* Forza nuovamente l'immagine di sfondo se altri fogli applicano shorthand background. */
+body {
+    background-image: linear-gradient(rgba(0,0,0,0.01), rgba(0,0,0,0.01)),
+        url("../img/background.jpg") !important;
+}
+
+/* Pagina player: rimuove lo sfondo generale per sostituirlo con il blur della cover. */
 body.page-player,
 body.page-player::after {
     background-image: none !important;
 }
+
 body.page-player .player-track-info {
     position: relative;
     z-index: 2;
 }
+
 #playerCoverBg.player-bg {
     position: fixed;
     inset: 0;
@@ -96,337 +160,1544 @@ body.page-player .player-track-info {
     filter: blur(14px) saturate(101%);
     transform: scale(1.01);
 }
+
 #playerCoverBg.player-bg::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
 }
-.title-box{margin:42px auto 18px;text-align:center;font-weight:800;letter-spacing:.5px;font-size:clamp(1.4rem,1.1rem + .9vw,2rem);padding:14px 30px;background:#000;border:2px solid var(--am-accent);border-radius:40px;color:#fff;max-width:760px;box-shadow:0 6px 20px -6px rgba(0,0,0,.55)} /* +30px (~8mm) top gap */
-.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0,0,0,0)}.hidden{display:none!important}
-.wrap{width:100%;max-width:1220px;margin:0 auto;padding:0 24px}.panel,.stack{display:grid;gap:18px}
-.header{position:sticky;top:0;z-index:100;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;padding:12px 20px;background:color-mix(in oklab,var(--am-bg) 90%,transparent);backdrop-filter:saturate(120%) blur(12px);border-bottom:1px solid var(--am-border)}
-.header-title{margin:0;text-align:center;font-weight:800;letter-spacing:.2px;font-size:clamp(1.25rem,1rem + 1.2vw,2rem)}
-.main{flex:1;padding:18px 0 36px;background:transparent}.board{background:var(--am-surface);border:1px solid var(--am-border);border-radius:var(--am-radius);padding:22px;box-shadow:var(--am-shadow)}
-.title-strip{width:100%;margin:42px 0 14px}.title-strip-inner{max-width:1220px;margin:0 auto;padding:14px 34px;background:#fff;border:2px solid var(--am-accent);border-radius:46px;font-weight:800;font-size:clamp(1.4rem,1.05rem + .9vw,2rem);letter-spacing:.5px;text-align:center;color:#000;box-shadow:0 3px 10px -4px rgba(0,0,0,.10)} /* top margin increased (+38px) for more separation */
-/* Pure HTML dark variant for nav buttons + title strip */
-.header .btn, .header .button, .header .iconbtn{
-    background:#000 !important;
-    color:#fff !important;
-    border-color:var(--am-accent) !important;
-}
-.header .btn:hover, .header .button:hover, .header .iconbtn:hover{
-    background:#0f0f0f !important;
-    box-shadow:0 6px 18px rgba(0,0,0,.45);
-}
-.header .btn:active, .header .button:active, .header .iconbtn:active{transform:translateY(1px)}
-.title-strip-inner{
-    background:#000 !important;
-    color:#fff !important;
-    box-shadow:0 6px 20px -6px rgba(0,0,0,.55) !important;
-}
-.playlists-wrapper{max-width:1220px;margin:0 auto;padding:0 24px 40px}.tracks-wrapper{max-width:1220px;margin:0 auto;padding:0 24px 40px}.tracks-pagination{display:flex;align-items:center;justify-content:space-between;margin-top:34px;gap:8px}.tracks-pagination .left{margin-left:8px}.tracks-pagination .right{margin-right:8px}.tracks-pagination .center{flex:1;text-align:center;font-weight:600}
-.btn,.button{-webkit-tap-highlight-color:transparent;height:var(--am-ctrl-h);border-radius:var(--am-radius-pill);border:2px solid var(--am-accent);background:#000;color:#fff;font-weight:800;font-size:1rem ; letter-spacing:.3px;padding:0 20px;cursor:pointer;transition:transform .05s ease,box-shadow .15s ease,background .15s ease,color .15s ease;box-shadow:0 1px 0 rgba(0,0,0,.4);text-decoration:none;display:flex;align-items:center;justify-content:center}
-.btn:hover,.button:hover{box-shadow:0 6px 18px rgba(0,0,0,.55);background:rgba(250,44,139,0.18);color:#fff}
-.btn:active,.button:active{transform:translateY(1px);background:rgba(250,44,139,0.28);color:#fff}
-/* Keep accent variant visually distinct (filled accent) */
-.btn.accent{background:var(--am-accent);border-color:color-mix(in oklab,var(--am-accent) 85%,#000)}.btn.accent:hover{background:var(--am-accent);box-shadow:0 8px 22px rgba(10,132,255,.35)}.btn.accent:active{background:var(--am-accent-press)}
-/* Disabled adjustments still readable */
-.btn.disabled,.btn[disabled],.button[disabled]{background:#000;color:#fff;opacity:.45;box-shadow:none}
-.btn.auth-secondary{background:#000;color:#fff;border:2px solid var(--am-accent);font-size:1rem;font-weight:800}
-.btn.auth-secondary:hover{background:rgba(250,44,139,0.18);color:#fff}
-.btn.auth-secondary:active{background:rgba(250,44,139,0.30);color:#fff}
-.iconbtn{width:var(--am-ctrl-h);height:var(--am-ctrl-h);display:grid;place-items:center;border-radius:50%;border:2px solid var(--am-accent);background:var(--am-surface);cursor:pointer;transition:background .15s ease,transform .05s ease}
-.iconbtn:hover{background:color-mix(in oklab,var(--am-surface) 92%,var(--am-text))}.iconbtn:active{transform:translateY(1px)}
-.field{position:relative;display:flex;align-items:center;gap:10px;height:var(--am-ctrl-h);padding:0 16px;border-radius:var(--am-radius-pill);background:var(--am-surface);border:1px solid var(--am-border);margin-bottom:12px}
-.field input{width:100%;border:0;outline:0;background:transparent;color:var(--am-text);font-size:1rem}
-.badge{position:absolute;top:50%;left:8px;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:var(--am-accent);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(10,132,255,.25)}.field.pad-left{padding-left:64px}
-form.stack>.btn,form.stack>.button,form.stack>a.btn{width:100%;display:flex;align-items:center;justify-content:center}form.stack>a.btn{text-align:center}a.btn{text-decoration:none}
-/* Auth container parity with RIA */
-.auth-box{background:#000;border:2px solid var(--am-accent);border-radius:46px;padding:40px 46px 46px;max-width:1220px;margin:0 auto 34px;box-shadow:0 10px 28px -6px rgba(0,0,0,.45);display:block}
-.auth-box form.stack{gap:26px}
-.auth-box .field{background:#fff}
-.button:focus-visible,.btn:focus-visible,.field:focus-within,.iconbtn:focus-visible,.playlist-card-row:focus-visible,.track-card:focus-visible{outline:none;box-shadow:var(--am-focus)}
-.playlists-vertical{display:grid;gap:6px;margin-top:4px}
-.playlist-card-row{position:relative;display:block;padding:16px 64px 16px 16px;background:var(--am-surface);border:1px solid var(--am-border);border-radius:var(--am-radius);cursor:pointer;transition:background .15s ease,transform .06s ease,box-shadow .15s ease,border-color .15s ease}
-.playlist-card-row:hover{background:color-mix(in oklab,var(--am-surface) 90%,var(--am-text));box-shadow:0 8px 22px rgba(0,0,0,.08);border-color:color-mix(in oklab,var(--am-border) 70%,var(--am-text))}
-.playlist-card-row:active{transform:translateY(1px)}
-.playlist-card-row .pl-name{margin:0;font-weight:800;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.2px;color:#000}
-/* --- Pure HTML variant override: black playlist cards with centered white text --- */
-.playlist-card-row{
-    /* Base black (fallback) plus subtle multi-stop gradient for depth */
-    background:#000 !important;
-    background:linear-gradient(135deg,#050505 0%,#0b0b0b 55%,#141414 100%) !important;
-    color:#fff !important;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:22px 16px; /* slightly taller for centered feel */
-    border:2px solid var(--am-accent);
-    transition:background .4s ease, box-shadow .25s ease, transform .06s ease, border-color .25s ease;
-}
-.playlist-card-row .pl-name{color:#fff !important; text-align:center; width:100%;}
-/* Hover: gently lift brightness & shift gradient */
-.playlist-card-row:hover{
-    background:linear-gradient(135deg,#0a0a0a 0%,#121212 55%,#1a1a1a 100%) !important;
-    box-shadow:0 8px 22px rgba(0,0,0,.45);
-}
-/* Keyboard focus ring (accessibility refinement) */
-.playlist-card-row:focus-visible{
-    outline:2px solid var(--am-accent);
-    outline-offset:3px;
-    box-shadow:0 0 0 3px rgba(250,44,139,.35),0 10px 28px -6px rgba(0,0,0,.55);
-}
-/* Active press keeps tactile feedback */
-.playlist-card-row:active{transform:translateY(1px);}
-/* Decorative bottom-right icon inside playlist card (pure_html only) */
-.playlist-card-row::after{
-    content:"";
-    position:absolute;
-    right:10px;
-    bottom:8px;
-    width:34px;
-    height:34px;
-    background:#000 url('../img/icon2.png') center/60% no-repeat;
-    border:2px solid var(--am-accent);
-    border-radius:12px;
-    pointer-events:none; /* keep card clickable */
-    opacity:.85;
-    transition:opacity .25s ease, transform .25s ease;
-}
-.playlist-card-row:hover::after{opacity:1;transform:translateY(-2px);}
-.playlist-card-row:active::after{transform:translateY(0);}
-.tracks-vertical{display:grid;gap:8px;margin-top:8px}
-.track-card{display:grid;grid-template-columns:60px 1fr;gap:14px;align-items:center;min-height:76px;padding:12px 14px;background:#000 ;border:1px solid var(--am-border);border-radius:var(--am-radius);cursor:pointer;transition:background .15s ease,transform .06s ease,box-shadow .15s ease,border-color .15s ease}
 
-/*.track-card:hover{background:color-mix(in oklab,var(--am-surface) 90%,var(--am-text));box-shadow:0 8px 22px rgba(0,0,0,.08);border-color:color-mix(in oklab,var(--am-border) 70%,var(--am-text))}*/
-/*.track-card:hover .track-title {*/
-/*    color: #000 !important;*/
-/*}*/
-.track-card:active{transform:translateY(1px)}
-.track-cover{width:60px;height:60px;border-radius:12px;overflow:hidden;background:#f0f0f0;border:1px solid var(--am-border);display:grid;place-items:center}
-.track-cover img{width:100%;height:100%;object-fit:cover;display:block}.track-cover--placeholder{background:#f6f6f6;object-fit:cover;filter:saturate(.85);}
-.track-info{min-width:0;display:grid;gap:4px}.track-title{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#fff}.track-sub{font-size:.78rem;color:var(--am-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.player-track-info{display:flex;gap:28px;align-items:center;flex-wrap:nowrap;margin:26px 4cm 0;padding:30px 46px 40px 46px;background:#000;color:#fff;border:2px solid var(--am-accent);border-radius:46px;box-shadow:0 6px 20px -6px rgba(0,0,0,.55)}
-.player-cover{flex:0 0 auto;max-width:480px;border-radius:26px;overflow:visible;box-shadow:0 6px 18px rgba(0,0,0,.12)}.player-cover img{display:block;width:100%;height:auto}
+/* =========================================================
+   Titoli, contenitori e struttura di pagina
+   ========================================================= */
+.title-box {
+    margin: 42px auto 18px;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: .5px;
+    font-size: clamp(1.4rem, 1.1rem + .9vw, 2rem);
+    padding: 14px 30px;
+    background: #000;
+    border: 2px solid var(--am-accent);
+    border-radius: 40px;
+    color: #fff;
+    max-width: 760px;
+    box-shadow: 0 6px 20px -6px rgba(0,0,0,.55);
+}
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.wrap {
+    width: 100%;
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.panel,
+.stack {
+    display: grid;
+    gap: 18px;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    background: color-mix(in oklab, var(--am-bg) 90%, transparent);
+    backdrop-filter: saturate(120%) blur(12px);
+    border-bottom: 1px solid var(--am-border);
+}
+
+.header-title {
+    margin: 0;
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: .2px;
+    font-size: clamp(1.25rem, 1rem + 1.2vw, 2rem);
+}
+
+.main {
+    flex: 1;
+    padding: 18px 0 36px;
+    background: transparent;
+}
+
+.board {
+    background: var(--am-surface);
+    border: 1px solid var(--am-border);
+    border-radius: var(--am-radius);
+    padding: 22px;
+    box-shadow: var(--am-shadow);
+}
+
+.title-strip {
+    width: 100%;
+    margin: 42px 0 14px;
+}
+
+.title-strip-inner {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 14px 34px;
+    background: #fff;
+    border: 2px solid var(--am-accent);
+    border-radius: 46px;
+    font-weight: 800;
+    font-size: clamp(1.4rem, 1.05rem + .9vw, 2rem);
+    letter-spacing: .5px;
+    text-align: center;
+    color: #000;
+    box-shadow: 0 3px 10px -4px rgba(0,0,0,.10);
+}
+
+/* Variante scura per i controlli all'interno dell'header e della title strip. */
+.header .btn,
+.header .button,
+.header .iconbtn {
+    background: #000 !important;
+    color: #fff !important;
+    border-color: var(--am-accent) !important;
+}
+
+.header .btn:hover,
+.header .button:hover,
+.header .iconbtn:hover {
+    background: #0f0f0f !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,.45);
+}
+
+.header .btn:active,
+.header .button:active,
+.header .iconbtn:active {
+    transform: translateY(1px);
+}
+
+.title-strip-inner {
+    background: #000 !important;
+    color: #fff !important;
+    box-shadow: 0 6px 20px -6px rgba(0,0,0,.55) !important;
+}
+
+.playlists-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+}
+
+.tracks-wrapper {
+    max-width: 1220px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+}
+
+.tracks-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 34px;
+    gap: 8px;
+}
+
+.tracks-pagination .left {
+    margin-left: 8px;
+}
+
+.tracks-pagination .right {
+    margin-right: 8px;
+}
+
+.tracks-pagination .center {
+    flex: 1;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* =========================================================
+   Pulsanti e controlli di input
+   ========================================================= */
+.btn,
+.button {
+    -webkit-tap-highlight-color: transparent;
+    height: var(--am-ctrl-h);
+    border-radius: var(--am-radius-pill);
+    border: 2px solid var(--am-accent);
+    background: #000;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: .3px;
+    padding: 0 20px;
+    cursor: pointer;
+    transition: transform .05s ease, box-shadow .15s ease,
+        background .15s ease, color .15s ease;
+    box-shadow: 0 1px 0 rgba(0,0,0,.4);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:hover,
+.button:hover {
+    box-shadow: 0 6px 18px rgba(0,0,0,.55);
+    background: rgba(250,44,139,0.18);
+    color: #fff;
+}
+
+.btn:active,
+.button:active {
+    transform: translateY(1px);
+    background: rgba(250,44,139,0.28);
+    color: #fff;
+}
+
+.btn.accent {
+    background: var(--am-accent);
+    border-color: color-mix(in oklab, var(--am-accent) 85%, #000);
+}
+
+.btn.accent:hover {
+    background: var(--am-accent);
+    box-shadow: 0 8px 22px rgba(10,132,255,.35);
+}
+
+.btn.accent:active {
+    background: var(--am-accent-press);
+}
+
+.btn.disabled,
+.btn[disabled],
+.button[disabled] {
+    background: #000;
+    color: #fff;
+    opacity: .45;
+    box-shadow: none;
+}
+
+.btn.auth-secondary {
+    background: #000;
+    color: #fff;
+    border: 2px solid var(--am-accent);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.btn.auth-secondary:hover {
+    background: rgba(250,44,139,0.18);
+    color: #fff;
+}
+
+.btn.auth-secondary:active {
+    background: rgba(250,44,139,0.30);
+    color: #fff;
+}
+
+.iconbtn {
+    width: var(--am-ctrl-h);
+    height: var(--am-ctrl-h);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 2px solid var(--am-accent);
+    background: var(--am-surface);
+    cursor: pointer;
+    transition: background .15s ease, transform .05s ease;
+}
+
+.iconbtn:hover {
+    background: color-mix(in oklab, var(--am-surface) 92%, var(--am-text));
+}
+
+.iconbtn:active {
+    transform: translateY(1px);
+}
+
+.field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--am-ctrl-h);
+    padding: 0 16px;
+    border-radius: var(--am-radius-pill);
+    background: var(--am-surface);
+    border: 1px solid var(--am-border);
+    margin-bottom: 12px;
+}
+
+.field input {
+    width: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--am-text);
+    font-size: 1rem;
+}
+
+.badge {
+    position: absolute;
+    top: 50%;
+    left: 8px;
+    transform: translateY(-50%);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--am-accent);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 6px 16px rgba(10,132,255,.25);
+}
+
+.field.pad-left {
+    padding-left: 64px;
+}
+
+form.stack > .btn,
+form.stack > .button,
+form.stack > a.btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+form.stack > a.btn {
+    text-align: center;
+}
+
+a.btn {
+    text-decoration: none;
+}
+
+/* Box autenticazione coerente con RIA. */
+.auth-box {
+    background: #000;
+    border: 2px solid var(--am-accent);
+    border-radius: 46px;
+    padding: 40px 46px 46px;
+    max-width: 1220px;
+    margin: 0 auto 34px;
+    box-shadow: 0 10px 28px -6px rgba(0,0,0,.45);
+    display: block;
+}
+
+.auth-box form.stack {
+    gap: 26px;
+}
+
+.auth-box .field {
+    background: #fff;
+}
+
+.button:focus-visible,
+.btn:focus-visible,
+.field:focus-within,
+.iconbtn:focus-visible,
+.playlist-card-row:focus-visible,
+.track-card:focus-visible {
+    outline: none;
+    box-shadow: var(--am-focus);
+}
+
+/* =========================================================
+   Playlists e carte tracce
+   ========================================================= */
+.playlists-vertical {
+    display: grid;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.playlist-card-row {
+    position: relative;
+    display: block;
+    padding: 16px 64px 16px 16px;
+    background: var(--am-surface);
+    border: 1px solid var(--am-border);
+    border-radius: var(--am-radius);
+    cursor: pointer;
+    transition: background .15s ease, transform .06s ease,
+        box-shadow .15s ease, border-color .15s ease;
+}
+
+.playlist-card-row:hover {
+    background: color-mix(in oklab, var(--am-surface) 90%, var(--am-text));
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    border-color: color-mix(in oklab, var(--am-border) 70%, var(--am-text));
+}
+
+.playlist-card-row:active {
+    transform: translateY(1px);
+}
+
+.playlist-card-row .pl-name {
+    margin: 0;
+    font-weight: 800;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: .2px;
+    color: #000;
+}
+
+/* Variante pure_html: card nere con testo centrato e icona decorativa. */
+.playlist-card-row {
+    background: #000 !important;
+    background: linear-gradient(135deg, #050505 0%, #0b0b0b 55%, #141414 100%) !important;
+    color: #fff !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px 16px;
+    border: 2px solid var(--am-accent);
+    transition: background .4s ease, box-shadow .25s ease,
+        transform .06s ease, border-color .25s ease;
+}
+
+.playlist-card-row .pl-name {
+    color: #fff !important;
+    text-align: center;
+    width: 100%;
+}
+
+.playlist-card-row:hover {
+    background: linear-gradient(135deg, #0a0a0a 0%, #121212 55%, #1a1a1a 100%) !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,.45);
+}
+
+.playlist-card-row:focus-visible {
+    outline: 2px solid var(--am-accent);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px rgba(250,44,139,.35), 0 10px 28px -6px rgba(0,0,0,.55);
+}
+
+.playlist-card-row:active {
+    transform: translateY(1px);
+}
+
+.playlist-card-row::after {
+    content: "";
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    width: 34px;
+    height: 34px;
+    background: #000 url("../img/icon2.png") center/60% no-repeat;
+    border: 2px solid var(--am-accent);
+    border-radius: 12px;
+    pointer-events: none;
+    opacity: .85;
+    transition: opacity .25s ease, transform .25s ease;
+}
+
+.playlist-card-row:hover::after {
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.playlist-card-row:active::after {
+    transform: translateY(0);
+}
+
+.tracks-vertical {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.track-card {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 14px;
+    align-items: center;
+    min-height: 76px;
+    padding: 12px 14px;
+    background: #000;
+    border: 1px solid var(--am-border);
+    border-radius: var(--am-radius);
+    cursor: pointer;
+    transition: background .15s ease, transform .06s ease,
+        box-shadow .15s ease, border-color .15s ease;
+}
+
+/* Hover legacy disattivato ma lasciato per riferimento.
+.track-card:hover {
+    background: color-mix(in oklab, var(--am-surface) 90%, var(--am-text));
+    box-shadow: 0 8px 22px rgba(0,0,0,.08);
+    border-color: color-mix(in oklab, var(--am-border) 70%, var(--am-text));
+}
+.track-card:hover .track-title {
+    color: #000 !important;
+}
+*/
+
+.track-card:active {
+    transform: translateY(1px);
+}
+
+.track-cover {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f0f0f0;
+    border: 1px solid var(--am-border);
+    display: grid;
+    place-items: center;
+}
+
+.track-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.track-cover--placeholder {
+    background: #f6f6f6;
+    object-fit: cover;
+    filter: saturate(.85);
+}
+
+.track-info {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.track-title {
+    font-weight: 700;
+    font-size: .98rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+}
+
+.track-sub {
+    font-size: .78rem;
+    color: var(--am-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================================
+   Player e componenti multimediali
+   ========================================================= */
+.player-track-info {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 26px 4cm 0;
+    padding: 30px 46px 40px 46px;
+    background: #000;
+    color: #fff;
+    border: 2px solid var(--am-accent);
+    border-radius: 46px;
+    box-shadow: 0 6px 20px -6px rgba(0,0,0,.55);
+}
+
+.player-cover {
+    flex: 0 0 auto;
+    max-width: 480px;
+    border-radius: 26px;
+    overflow: visible;
+    box-shadow: 0 6px 18px rgba(0,0,0,.12);
+}
+
+.player-cover img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
 
 .player-track-info .player-artist {
     color: #fff !important;
     font-weight: 800 !important;
 }
-.player-text{flex:1 1 auto;min-width:0;display:grid;gap:6px}.player-title{font-weight:800;font-size:1.25rem;letter-spacing:.2px;color:#000}.player-artist,.player-album,.player-year,.player-genre{font-size:.9rem;color:var(--am-muted)}.player-sep{display:none}
-.player-text audio{width:100%;max-width:none;background:#fff;border:2px solid var(--am-accent);border-radius:var(--am-radius-pill);padding:10px 20px;display:block;box-sizing:border-box;margin-top:4px}
-/* Removed legacy custom play button; using native audio controls like RIA */
-@media (prefers-color-scheme: dark){.player-title{color:#f5f5f7}.player-text audio{background:var(--am-surface);border-color:var(--am-accent)}.player-track-info{background:#000}}
-.nav-bar{display:flex;align-items:center;gap:12px;margin-bottom:16px}.spacer{flex:1}.modal-window{position:fixed;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);z-index:9999}
-/* RIMOSSA scrollbar nativa dalla modal-content: niente overflow auto qui */
-/* Modal inner box compattato: padding verticale ridotto per rientrare con margine uniforme */
-.modal-content{width:min(560px,92vw);max-height:none;overflow:visible;background:#fff;border:2px solid var(--am-accent);border-radius:46px;padding:8px 16px 12px;box-shadow:0 24px 54px -14px rgba(0,0,0,.45)}
 
-.modal-title{margin:0 0 14px;font-size:1.05rem;font-weight:800;color:#000;display:inline-block;padding:8px 20px;border:2px solid var(--am-accent);border-radius:999px;background:#fff}.modal-content,.modal-window form,.modal-window label,.modal-window input,.modal-window select,.modal-window div,.modal-window span{color:#000}
+.player-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: grid;
+    gap: 6px;
+}
 
-.modal-close{background:#fff;border:2px solid var(--am-accent);color:#000;font-weight:700;cursor:pointer;border-radius:50%;width:44px;height:44px;display:grid;place-items:center;line-height:1;padding:0;font-size:1rem}
-.modal-close:hover{background:color-mix(in oklab,#fff 94%,var(--am-accent));filter:none}
+.player-title {
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: .2px;
+    color: #000;
+}
 
-.modal-form-grid{display:grid;gap:8px}.modal-form-grid .field{margin-bottom:0}.modal-window .field{gap:6px;height:42px;padding:0 12px;margin-bottom:4px}.modal-window .label{margin-bottom:2px;font-size:.78rem}.modal-content form{padding-bottom:12px}.modal-content form .btn:last-child,.modal-content form .button:last-child{margin-top:14px}
-.label{display:block;margin-bottom:4px;font-weight:600;font-size:.85rem;color:var(--am-text)}.alert{margin:0 0 6px;padding:10px 14px;border-radius:12px;background:#fff2f2;border:1px solid #ffdada;color:#7a0000}
-@media (prefers-color-scheme: dark){.alert{background:#3a1212;border-color:#5a2020;color:#ffd7d7}}
-.actions-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-.actions-row .btn{width:auto;min-width:200px;display:flex;align-items:center;justify-content:center;  font-size: 1rem !important;
-    font-weight: 800 !important}
-img.scale-on-hover{transition:transform .25s ease}img.scale-on-hover:hover{transform:scale(1.03)}
-@media (max-width:880px){.wrap{padding:0 16px}.actions-row .btn{min-width:200px}.player-track-info{flex-direction:column;align-items:stretch}.player-cover{max-width:100%}}
-/* Inline bottom mini player */
-.mini-player{position:fixed;left:0;right:0;bottom:0;z-index:500;display:flex;align-items:center;gap:14px;padding:10px 24px;background:#fff;border-top:2px solid var(--am-accent);box-shadow:0 -4px 18px -4px rgba(0,0,0,.18);font-size:.75rem;letter-spacing:.3px}
-.mini-player.hidden{display:none}
-/* ====== Track upload inner fieldset compact box ====== */
-#trackModal .fieldset-compact{position:relative;display:block;padding:10px 30px 20px 20px;margin:6px 0 14px;border:2px solid var(--am-accent);border-radius:34px;background:#fff;}
-#trackModal .fieldset-compact .fieldset-scroll-area{max-height:50vh;overflow:auto;scrollbar-width:none;-ms-overflow-style:none;padding-right:18px;padding-top:6px;display:grid;gap:10px;}
-#trackModal .fieldset-compact .field input:focus{outline:2px solid #89b9e5;outline-offset:3px;}
-#trackModal .fieldset-compact .fieldset-scroll-area::-webkit-scrollbar{display:none;}
-#trackModal .fieldset-compact .custom-scrollbar{top:10px;height:calc(100% - 30px);width:12px;right:3mm;}
-#trackModal .fieldset-compact .custom-scrollbar-thumb{background:#444;border-radius:8px;}
-#trackModal .fieldset-compact .custom-scrollbar-thumb:hover{background:#333}
-#trackModal .fieldset-compact .form-group{margin:0}
-#trackModal .fieldset-compact .field{margin-bottom:0}
-#trackModal .modal-content{width:min(460px,70vw);padding:6px 10px 12px}
-#trackModal .modal-actions{display:flex;gap:10px;justify-content:flex-end;padding:0 4px}
-#trackModal .modal-actions .btn{min-width:140px}
-@media (max-height:620px){#trackModal .fieldset-compact{max-height:40vh;padding:12px 14px}}
-/* Rimuovi effetto focus blu (glow + outline) solo nel modal upload brano */
-#trackModal .fieldset-compact .field:focus-within{box-shadow:0 0 0 0.01px transparent,0 0 0 2px #000 inset,var(--am-shadow,0 0 0 rgba(0,0,0,0));}
-#trackModal .fieldset-compact .field input:focus{outline:none;}
-/* Rimuovi glow blu anche per modale Crea Playlist (playlistModal) e uniforma bottoni / icone in entrambe */
+.player-artist,
+.player-album,
+.player-year,
+.player-genre {
+    font-size: .9rem;
+    color: var(--am-muted);
+}
+
+.player-sep {
+    display: none;
+}
+
+.player-text audio {
+    width: 100%;
+    max-width: none;
+    background: #fff;
+    border: 2px solid var(--am-accent);
+    border-radius: var(--am-radius-pill);
+    padding: 10px 20px;
+    display: block;
+    box-sizing: border-box;
+    margin-top: 4px;
+}
+
+/* Audio player: in tema scuro mantiene contrasto elevato. */
+@media (prefers-color-scheme: dark) {
+    .player-title {
+        color: #f5f5f7;
+    }
+
+    .player-text audio {
+        background: var(--am-surface);
+        border-color: var(--am-accent);
+    }
+
+    .player-track-info {
+        background: #000;
+    }
+}
+
+.nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.spacer {
+    flex: 1;
+}
+
+.modal-window {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: rgba(0,0,0,.55);
+    z-index: 9999;
+}
+
+/* =========================================================
+   Modali e messaggi
+   ========================================================= */
+/* Rimuove la scrollbar nativa e compattata la modale interna. */
+.modal-content {
+    width: min(560px, 92vw);
+    max-height: none;
+    overflow: visible;
+    background: #fff;
+    border: 2px solid var(--am-accent);
+    border-radius: 46px;
+    padding: 8px 16px 12px;
+    box-shadow: 0 24px 54px -14px rgba(0,0,0,.45);
+}
+
+.modal-title {
+    margin: 0 0 14px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #000;
+    display: inline-block;
+    padding: 8px 20px;
+    border: 2px solid var(--am-accent);
+    border-radius: 999px;
+    background: #fff;
+}
+
+.modal-content,
+.modal-window form,
+.modal-window label,
+.modal-window input,
+.modal-window select,
+.modal-window div,
+.modal-window span {
+    color: #000;
+}
+
+.modal-close {
+    background: #fff;
+    border: 2px solid var(--am-accent);
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    padding: 0;
+    font-size: 1rem;
+}
+
+.modal-close:hover {
+    background: color-mix(in oklab, #fff 94%, var(--am-accent));
+    filter: none;
+}
+
+.modal-form-grid {
+    display: grid;
+    gap: 8px;
+}
+
+.modal-form-grid .field {
+    margin-bottom: 0;
+}
+
+.modal-window .field {
+    gap: 6px;
+    height: 42px;
+    padding: 0 12px;
+    margin-bottom: 4px;
+}
+
+.modal-window .label {
+    margin-bottom: 2px;
+    font-size: .78rem;
+}
+
+.modal-content form {
+    padding-bottom: 12px;
+}
+
+.modal-content form .btn:last-child,
+.modal-content form .button:last-child {
+    margin-top: 14px;
+}
+
+.label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: .85rem;
+    color: var(--am-text);
+}
+
+.alert {
+    margin: 0 0 6px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #fff2f2;
+    border: 1px solid #ffdada;
+    color: #7a0000;
+}
+
+@media (prefers-color-scheme: dark) {
+    .alert {
+        background: #3a1212;
+        border-color: #5a2020;
+        color: #ffd7d7;
+    }
+}
+
+.actions-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.actions-row .btn {
+    width: auto;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem !important;
+    font-weight: 800 !important;
+}
+
+img.scale-on-hover {
+    transition: transform .25s ease;
+}
+
+img.scale-on-hover:hover {
+    transform: scale(1.03);
+}
+
+@media (max-width: 880px) {
+    .wrap {
+        padding: 0 16px;
+    }
+
+    .actions-row .btn {
+        min-width: 200px;
+    }
+
+    .player-track-info {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .player-cover {
+        max-width: 100%;
+    }
+}
+
+/* Mini player ancorato in basso. */
+.mini-player {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 24px;
+    background: #fff;
+    border-top: 2px solid var(--am-accent);
+    box-shadow: 0 -4px 18px -4px rgba(0,0,0,.18);
+    font-size: .75rem;
+    letter-spacing: .3px;
+}
+
+.mini-player.hidden {
+    display: none;
+}
+
+/* Form upload traccia: fieldset compatto con scrollbar custom. */
+#trackModal .fieldset-compact {
+    position: relative;
+    display: block;
+    padding: 10px 30px 20px 20px;
+    margin: 6px 0 14px;
+    border: 2px solid var(--am-accent);
+    border-radius: 34px;
+    background: #fff;
+}
+
+#trackModal .fieldset-compact .fieldset-scroll-area {
+    max-height: 50vh;
+    overflow: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-right: 18px;
+    padding-top: 6px;
+    display: grid;
+    gap: 10px;
+}
+
+#trackModal .fieldset-compact .field input:focus {
+    outline: 2px solid #89b9e5;
+    outline-offset: 3px;
+}
+
+#trackModal .fieldset-compact .fieldset-scroll-area::-webkit-scrollbar {
+    display: none;
+}
+
+#trackModal .fieldset-compact .custom-scrollbar {
+    top: 10px;
+    height: calc(100% - 30px);
+    width: 12px;
+    right: 3mm;
+}
+
+#trackModal .fieldset-compact .custom-scrollbar-thumb {
+    background: #444;
+    border-radius: 8px;
+}
+
+#trackModal .fieldset-compact .custom-scrollbar-thumb:hover {
+    background: #333;
+}
+
+#trackModal .fieldset-compact .form-group {
+    margin: 0;
+}
+
+#trackModal .fieldset-compact .field {
+    margin-bottom: 0;
+}
+
+#trackModal .modal-content {
+    width: min(460px, 70vw);
+    padding: 6px 10px 12px;
+}
+
+#trackModal .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 0 4px;
+}
+
+#trackModal .modal-actions .btn {
+    min-width: 140px;
+}
+
+@media (max-height: 620px) {
+    #trackModal .fieldset-compact {
+        max-height: 40vh;
+        padding: 12px 14px;
+    }
+}
+
+/* Rimuove il glow azzurro sulle modali di upload/playlist. */
+#trackModal .fieldset-compact .field:focus-within {
+    box-shadow: 0 0 0 0.01px transparent,
+                0 0 0 2px #000 inset,
+                var(--am-shadow, 0 0 0 rgba(0,0,0,0));
+}
+
+#trackModal .fieldset-compact .field input:focus {
+    outline: none;
+}
+
 #playlistModal .field:focus-within,
 #playlistModal .btn:focus-visible,
 #playlistModal .button:focus-visible,
 #playlistModal .iconbtn:focus-visible,
 #trackModal .btn:focus-visible,
 #trackModal .button:focus-visible,
-#trackModal .iconbtn:focus-visible{
-    outline:none;
-    box-shadow:0 0 0 0.01px transparent,0 0 0 2px #000 inset,var(--am-shadow,0 0 0 rgba(0,0,0,0));
+#trackModal .iconbtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.01px transparent,
+                0 0 0 2px #000 inset,
+                var(--am-shadow, 0 0 0 rgba(0,0,0,0));
 }
-/* Rimuovi glow blu anche per modale Aggiungi Brani */
+
 #addTracksModal .field:focus-within,
 #addTracksModal .btn:focus-visible,
 #addTracksModal .button:focus-visible,
-#addTracksModal .iconbtn:focus-visible{
-    outline:none;
-    box-shadow:0 0 0 0.01px transparent,0 0 0 2px #000 inset,var(--am-shadow,0 0 0 rgba(0,0,0,0));
-}
-.mini-player .mini-close{width:34px;height:34px;border-radius:50%;border:2px solid var(--am-accent);background:#000;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s ease,transform .07s ease;margin-right:4px}
-.mini-player .mini-close:hover{background:rgba(250,44,139,0.18)}
-.mini-player .mini-close:active{transform:translateY(1px);background:rgba(250,44,139,0.28)}
-.mini-player .mini-btn{width:40px;height:40px;border-radius:50%;border:2px solid #000;background:#000;color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s ease,transform .07s ease,opacity .2s ease}
-.mini-player .mini-btn:disabled{opacity:.35;cursor:default}
-.mini-player .mini-btn:hover:not(:disabled){background:#111}
-.mini-player .mini-btn:active:not(:disabled){transform:translateY(1px)}
-.mini-player .mini-meta{flex:1;display:flex;align-items:center;gap:14px;overflow:hidden;white-space:nowrap}
-.mini-player .mini-meta .t{font-weight:700;color:#000;overflow:hidden;text-overflow:ellipsis;max-width:40%}
-.mini-player .mini-meta .s{color:var(--am-muted);overflow:hidden;text-overflow:ellipsis}
-/* =====================================================================
-   Additions for legacy pages & feature parity (modals, All_Tracks list)
-   ===================================================================== */
-/* Final safety override for modal rounding & accent border */
-.modal, .modal-content { background:#fff !important; border:2px solid var(--am-accent) !important; border-radius:46px !important; }
-/* Disabled helper */
-.btn.disabled,.btn[disabled]{opacity:.45;pointer-events:none;filter:grayscale(.2)}
-
-/* Modal overlay + structure reused in HomePage pure_html */
-.modal-overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:1200;padding:20px}
-.modal-overlay.active{display:flex}
-/* Modal: rimosso overflow:auto per evitare scrollbar nativa della modale (si scrollano solo le liste interne con scrollbar custom) */
-/* Aggiunto padding-bottom extra (1cm) per mantenere il riquadro interno completamente dentro quello esterno con distacco inferiore costante */
-.modal{width:min(640px,94vw);max-height:88vh;overflow:visible;background:var(--am-surface);border:1px solid var(--am-border);border-radius:32px;padding:28px 30px calc(34px + 1cm);box-shadow:0 20px 46px -10px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:20px}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin:-6px 0 4px}
-.modal-title{margin:0;font-size:1.15rem;font-weight:800;color:#000;letter-spacing:.4px}
-.modal-close{background:#fff;border:2px solid var(--am-accent);color:#000;border-radius:20px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .05s ease}
-.modal-close:hover{background:color-mix(in oklab,#fff 90%,var(--am-accent))}
-.modal-close:active{transform:translateY(1px)}
-/* Gap verticale ridotto per compattare */
-.modal-content{display:grid;gap:13px}
-.modal-actions{display:flex;gap:14px;justify-content:flex-end;margin-top:4px}
-
-/* Playlist creation: selectable track list */
-.playlist-tracks-block{border:1px solid var(--am-border);border-radius:24px;padding:14px 16px;background:var(--am-surface);display:grid;gap:12px}
-/* Rimosso margine inferiore dal blocco lista: lo spazio di separazione viene ora gestito dal box interno generale (.modal-content) */
-.playlist-tracks-tools{display:flex;gap:14px;align-items:center}
-.playlist-tracks-tools .counts{font-size:.75rem;color:var(--am-muted);letter-spacing:.5px;font-weight:600;padding:4px 10px;border:1px solid var(--am-border);border-radius:999px}
-/* Lista brani (solo struttura, niente scrollbar nativa: verrà nascosta e sostituita da custom esterna) */
-.playlist-tracks-list{list-style:none;margin:0;padding:4mm 0 0 0;height:160px;max-height:180px;overflow-y:auto;display:grid;gap:4px;}
-/* Nascondi nativa ovunque (anche se manca accidentalmente la classe helper) */
-.playlist-tracks-list::-webkit-scrollbar{width:0;height:0;display:none;}
-.playlist-tracks-list{scrollbar-width:none;-ms-overflow-style:none;}
-
-/* === Scrollbar custom (pure_html modali playlist) === */
-.custom-scroll-wrapper{position:relative;}
-.custom-scroll-wrapper .playlist-tracks-list.custom-scroll-hide-native{scrollbar-width:none;-ms-overflow-style:none;}
-.custom-scroll-wrapper .playlist-tracks-list.custom-scroll-hide-native::-webkit-scrollbar{display:none;}
-/* spazio interno a destra per evitare sovrapposizione con barra */
-.custom-scroll-wrapper .playlist-tracks-list{padding-right:18px;}
-.custom-scrollbar{position:absolute;top:16px;right:0px;width:10px;height:calc(100% - 32px);display:flex;align-items:flex-start;justify-content:center;}
-.custom-scrollbar-track{position:relative;width:100%;height:100%;background:transparent;}
-.custom-scrollbar-thumb{position:absolute;left:0;top:0;width:100%;height:100px;background:#4a4a4f;border-radius:8px;cursor:pointer;display:block;}
-.custom-scrollbar-thumb:hover{background:#2f2f33;}
-.custom-scrollbar-thumb:after{content:"";position:absolute;inset:0;border:1px solid #fff3;border-radius:inherit;}
-.custom-scroll-wrapper.dragging{user-select:none;}
-.playlist-tracks-empty{font-size:.85rem;color:var(--am-muted);text-align:center;padding:10px 0}
-.track-choice{display:grid;grid-template-columns:auto 1fr;align-items:start;gap:10px;padding:10px 12px;border:1px solid var(--am-border);border-radius:18px;background:var(--am-surface);cursor:pointer;transition:background .15s ease,border-color .15s ease}
-.track-choice:hover{background:color-mix(in oklab,var(--am-surface) 90%,var(--am-text))}
-.track-choice--selected{border-color:var(--am-accent);background:color-mix(in oklab,var(--am-surface) 85%,var(--am-accent))}
-.track-choice-info{display:grid;gap:4px;cursor:pointer}
-.track-choice-title{font-weight:600;font-size:.85rem;color:#000}
-.track-choice-meta{font-size:.7rem;color:var(--am-muted);letter-spacing:.3px}
-.playlist-tracks-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:4px}
-/* Rimosso margin-bottom: lo spazio inferiore è gestito dal padding della .modal */
-/* (nessun margin-bottom qui per evitare che il bordo interno esca all'esterno) */
-.playlist-tracks-actions button{border:1px solid var(--am-border);background:#fff;color:#000;padding:6px 12px;border-radius:16px;cursor:pointer;font-size:.7rem;font-weight:600;letter-spacing:.4px}
-.playlist-tracks-actions button:hover{background:color-mix(in oklab,#fff 92%,var(--am-accent))}
-/* Toast message (unified style) */
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);background:#fff;color:#000;padding:12px 22px;border:2px solid var(--am-accent);border-radius:40px;font-size:.75rem;font-weight:600;letter-spacing:.4px;box-shadow:0 10px 28px -8px rgba(0,0,0,.35);opacity:0;pointer-events:none;z-index:1300;max-width:72vw;display:inline-flex;align-items:center;gap:10px;transition:opacity .30s ease,transform .30s ease}
-/* Top variant (e.g. login success registration) */
-.toast.toast--top{top:84px;bottom:auto;transform:translateX(-50%) translateY(-18px);background:color-mix(in oklab,var(--am-accent) 24%, #fff);backdrop-filter:saturate(140%) blur(6px);}
-.toast.toast--top.show{transform:translateX(-50%) translateY(0)}
-/* When mini player is visible, shift toast upward to avoid overlap */
-body.has-mini-player .toast{bottom:88px}
-/* Override to restore visible pink border on modals (remove global black inset shadow) */
-.modal, .modal-content { box-shadow:0 24px 54px -14px rgba(0,0,0,.45) !important; }
-
-.modal-content form .form-group:first-child { margin:1mm 1mm 0 1mm; }
-@media (prefers-color-scheme: dark){.toast{background:var(--am-surface)}}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* All_Tracks legacy list (progressively enhance but keep working) */
-.tracks{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px}
-.track{position:relative;display:grid;grid-template-columns:38px 54px 1fr 56px 80px;align-items:center;gap:10px;padding:10px 14px;background:var(--am-surface);border:1px solid var(--am-border);border-radius:18px;min-height:62px;transition:background .15s ease,border-color .15s ease}
-.track:hover{background:color-mix(in oklab,var(--am-surface) 90%,var(--am-text));border-color:color-mix(in oklab,var(--am-border) 70%,var(--am-text))}
-.track.playing{outline:2px solid var(--am-accent);outline-offset:2px}
-.idx{width:38px;text-align:center;font-size:.7rem;color:var(--am-muted);font-weight:600}
-.cover-thumb{width:54px;height:54px;border-radius:14px;overflow:hidden;border:1px solid var(--am-border);background:#f0f0f0;display:grid;place-items:center}
-.cover-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.cover-thumb--empty{color:var(--am-muted);font-size:1rem;opacity:.8}
-.info{min-width:0;display:grid;gap:4px}
-.info .t{font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#000}
-.info .a{font-size:.68rem;color:var(--am-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.dur{font-size:.65rem;font-weight:600;text-align:right;color:var(--am-muted)}
-.row-actions{display:flex;gap:6px;justify-content:flex-end}
-.iconbtn.tiny{width:30px;height:30px;border-radius:50%;border:2px solid var(--am-accent);background:var(--am-surface);display:grid;place-items:center;cursor:pointer;transition:background .15s ease,transform .05s ease}
-/* Override: remove black inset outline from all modal close "X" buttons, keep only pink border */
-.modal-close{box-shadow:none !important;}
-.iconbtn.tiny:hover{background:color-mix(in oklab,var(--am-surface) 92%,var(--am-text))}
-.iconbtn.tiny:active{transform:translateY(1px)}
-
-@media (max-width:640px){
-    .track{grid-template-columns:30px 46px 1fr 46px 56px;padding:10px 10px}
+#addTracksModal .iconbtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 0.01px transparent,
+                0 0 0 2px #000 inset,
+                var(--am-shadow, 0 0 0 rgba(0,0,0,0));
 }
 
-/* Pagination centering fix: absolute-center the middle label to remain visually centered
-   even when the left button is hidden (server-side). Keep flex:none so it doesn't
-   take available space, and clamp width to avoid overlapping side buttons. */
-.pagination-row{position:relative}
-.pagination-row .pagination-label{position:absolute;left:50%;transform:translateX(-50%);flex:none;max-width:calc(100% - 260px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
-/* Keep Prev/Next anchored to left/right even when one is absent.
-    Using margin-left:auto on the next button forces it to the right side.
-    Ensure the buttons render as inline-flex to behave consistently. */
-.pagination-row a#nextBtn, .pagination-row a#prevBtn, .pagination-row .btn, .pagination-row .button{display:inline-flex}
-.pagination-row a#nextBtn{margin-left:auto}
-.pagination-row a#prevBtn{margin-right:0}
-
-
-/* Cover (track/playlist) border: 2px solid grey matching muted text color */
-.track-cover, .cover-thumb, .player-cover img {
-    border: 2px solid rgba(110,110,115,0.8); /* same tone as --am-muted */
+.mini-player .mini-close {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 2px solid var(--am-accent);
+    background: #000;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background .2s ease, transform .07s ease;
+    margin-right: 4px;
 }
 
-/* If cover uses rounded corners, keep consistent radius */
-.track-cover, .cover-thumb { border-radius: 8px; }
+.mini-player .mini-close:hover {
+    background: rgba(250,44,139,0.18);
+}
 
-/* Small helper: when specific modal IDs are targeted later, the user can switch to #create-playlist .modal-content etc. */
+.mini-player .mini-close:active {
+    transform: translateY(1px);
+    background: rgba(250,44,139,0.28);
+}
 
-/*!* Force header button font size and layout consistency *!*/
-/*.header .actions-row .btn,*/
-/*.header .actions-row .iconbtn {*/
-/*    font-size: 1.17rem !important;*/
-/*    font-weight: 800 !important;*/
-/*    height: 50px !important;*/
-/*    padding: 0 16px !important;*/
-/*    display: flex !important;*/
-/*    align-items: center !important;*/
-/*    gap: 6px !important;*/
-/*}*/
+.mini-player .mini-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #000;
+    background: #000;
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background .2s ease, transform .07s ease, opacity .2s ease;
+}
+
+.mini-player .mini-btn:disabled {
+    opacity: .35;
+    cursor: default;
+}
+
+.mini-player .mini-btn:hover:not(:disabled) {
+    background: #111;
+}
+
+.mini-player .mini-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.mini-player .mini-meta {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.mini-player .mini-meta .t {
+    font-weight: 700;
+    color: #000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40%;
+}
+
+.mini-player .mini-meta .s {
+    color: var(--am-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* =========================================================
+   Supporto modali legacy e liste personalizzate
+   ========================================================= */
+.modal,
+.modal-content {
+    background: #fff !important;
+    border: 2px solid var(--am-accent) !important;
+    border-radius: 46px !important;
+}
+
+.btn.disabled,
+.btn[disabled] {
+    opacity: .45;
+    pointer-events: none;
+    filter: grayscale(.2);
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.55);
+    z-index: 1200;
+    padding: 20px;
+}
+
+.modal-overlay.active {
+    display: flex;
+}
+
+.modal {
+    width: min(640px, 94vw);
+    max-height: 88vh;
+    overflow: visible;
+    background: var(--am-surface);
+    border: 1px solid var(--am-border);
+    border-radius: 32px;
+    padding: 28px 30px calc(34px + 1cm);
+    box-shadow: 0 20px 46px -10px rgba(0,0,0,.35);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: -6px 0 4px;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #000;
+    letter-spacing: .4px;
+}
+
+.modal-close {
+    background: #fff;
+    border: 2px solid var(--am-accent);
+    color: #000;
+    border-radius: 20px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background .15s ease, transform .05s ease;
+}
+
+.modal-close:hover {
+    background: color-mix(in oklab, #fff 90%, var(--am-accent));
+}
+
+.modal-close:active {
+    transform: translateY(1px);
+}
+
+.modal-content {
+    display: grid;
+    gap: 13px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 14px;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.playlist-tracks-block {
+    border: 1px solid var(--am-border);
+    border-radius: 24px;
+    padding: 14px 16px;
+    background: var(--am-surface);
+    display: grid;
+    gap: 12px;
+}
+
+.playlist-tracks-tools {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+
+.playlist-tracks-tools .counts {
+    font-size: .75rem;
+    color: var(--am-muted);
+    letter-spacing: .5px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border: 1px solid var(--am-border);
+    border-radius: 999px;
+}
+
+.playlist-tracks-list {
+    list-style: none;
+    margin: 0;
+    padding: 4mm 0 0 0;
+    height: 160px;
+    max-height: 180px;
+    overflow-y: auto;
+    display: grid;
+    gap: 4px;
+}
+
+.playlist-tracks-list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+}
+
+.playlist-tracks-list {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.custom-scroll-wrapper {
+    position: relative;
+}
+
+.custom-scroll-wrapper .playlist-tracks-list.custom-scroll-hide-native {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.custom-scroll-wrapper .playlist-tracks-list.custom-scroll-hide-native::-webkit-scrollbar {
+    display: none;
+}
+
+.custom-scroll-wrapper .playlist-tracks-list {
+    padding-right: 18px;
+}
+
+.custom-scrollbar {
+    position: absolute;
+    top: 16px;
+    right: 0;
+    width: 10px;
+    height: calc(100% - 32px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.custom-scrollbar-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+}
+
+.custom-scrollbar-thumb {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100px;
+    background: #4a4a4f;
+    border-radius: 8px;
+    cursor: pointer;
+    display: block;
+}
+
+.custom-scrollbar-thumb:hover {
+    background: #2f2f33;
+}
+
+.custom-scrollbar-thumb::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid #fff3;
+    border-radius: inherit;
+}
+
+.custom-scroll-wrapper.dragging {
+    user-select: none;
+}
+
+.playlist-tracks-empty {
+    font-size: .85rem;
+    color: var(--am-muted);
+    text-align: center;
+    padding: 10px 0;
+}
+
+.track-choice {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--am-border);
+    border-radius: 18px;
+    background: var(--am-surface);
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.track-choice:hover {
+    background: color-mix(in oklab, var(--am-surface) 90%, var(--am-text));
+}
+
+.track-choice--selected {
+    border-color: var(--am-accent);
+    background: color-mix(in oklab, var(--am-surface) 85%, var(--am-accent));
+}
+
+.track-choice-info {
+    display: grid;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.track-choice-title {
+    font-weight: 600;
+    font-size: .85rem;
+    color: #000;
+}
+
+.track-choice-meta {
+    font-size: .7rem;
+    color: var(--am-muted);
+    letter-spacing: .3px;
+}
+
+.playlist-tracks-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
+
+.playlist-tracks-actions button {
+    border: 1px solid var(--am-border);
+    background: #fff;
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 16px;
+    cursor: pointer;
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .4px;
+}
+
+.playlist-tracks-actions button:hover {
+    background: color-mix(in oklab, #fff 92%, var(--am-accent));
+}
+
+.toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(20px);
+    background: #fff;
+    color: #000;
+    padding: 12px 22px;
+    border: 2px solid var(--am-accent);
+    border-radius: 40px;
+    font-size: .75rem;
+    font-weight: 600;
+    letter-spacing: .4px;
+    box-shadow: 0 10px 28px -8px rgba(0,0,0,.35);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1300;
+    max-width: 72vw;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: opacity .30s ease, transform .30s ease;
+}
+
+.toast.toast--top {
+    top: 84px;
+    bottom: auto;
+    transform: translateX(-50%) translateY(-18px);
+    background: color-mix(in oklab, var(--am-accent) 24%, #fff);
+    backdrop-filter: saturate(140%) blur(6px);
+}
+
+.toast.toast--top.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+body.has-mini-player .toast {
+    bottom: 88px;
+}
+
+.modal,
+.modal-content {
+    box-shadow: 0 24px 54px -14px rgba(0,0,0,.45) !important;
+}
+
+.modal-content form .form-group:first-child {
+    margin: 1mm 1mm 0 1mm;
+}
+
+@media (prefers-color-scheme: dark) {
+    .toast {
+        background: var(--am-surface);
+    }
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* =========================================================
+   Lista All_Tracks e paginazione legacy
+   ========================================================= */
+.tracks {
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+}
+
+.track {
+    position: relative;
+    display: grid;
+    grid-template-columns: 38px 54px 1fr 56px 80px;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--am-surface);
+    border: 1px solid var(--am-border);
+    border-radius: 18px;
+    min-height: 62px;
+    transition: background .15s ease, border-color .15s ease;
+}
+
+.track:hover {
+    background: color-mix(in oklab, var(--am-surface) 90%, var(--am-text));
+    border-color: color-mix(in oklab, var(--am-border) 70%, var(--am-text));
+}
+
+.track.playing {
+    outline: 2px solid var(--am-accent);
+    outline-offset: 2px;
+}
+
+.idx {
+    width: 38px;
+    text-align: center;
+    font-size: .7rem;
+    color: var(--am-muted);
+    font-weight: 600;
+}
+
+.cover-thumb {
+    width: 54px;
+    height: 54px;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid var(--am-border);
+    background: #f0f0f0;
+    display: grid;
+    place-items: center;
+}
+
+.cover-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cover-thumb--empty {
+    color: var(--am-muted);
+    font-size: 1rem;
+    opacity: .8;
+}
+
+.info {
+    min-width: 0;
+    display: grid;
+    gap: 4px;
+}
+
+.info .t {
+    font-weight: 700;
+    font-size: .85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000;
+}
+
+.info .a {
+    font-size: .68rem;
+    color: var(--am-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dur {
+    font-size: .65rem;
+    font-weight: 600;
+    text-align: right;
+    color: var(--am-muted);
+}
+
+.row-actions {
+    display: flex;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+.iconbtn.tiny {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--am-accent);
+    background: var(--am-surface);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background .15s ease, transform .05s ease;
+}
+
+.modal-close {
+    box-shadow: none !important;
+}
+
+.iconbtn.tiny:hover {
+    background: color-mix(in oklab, var(--am-surface) 92%, var(--am-text));
+}
+
+.iconbtn.tiny:active {
+    transform: translateY(1px);
+}
+
+@media (max-width: 640px) {
+    .track {
+        grid-template-columns: 30px 46px 1fr 46px 56px;
+        padding: 10px 10px;
+    }
+}
+
+.pagination-row {
+    position: relative;
+}
+
+.pagination-row .pagination-label {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    flex: none;
+    max-width: calc(100% - 260px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+.pagination-row a#nextBtn,
+.pagination-row a#prevBtn,
+.pagination-row .btn,
+.pagination-row .button {
+    display: inline-flex;
+}
+
+.pagination-row a#nextBtn {
+    margin-left: auto;
+}
+
+.pagination-row a#prevBtn {
+    margin-right: 0;
+}
+
+.track-cover,
+.cover-thumb,
+.player-cover img {
+    border: 2px solid rgba(110,110,115,0.8);
+}
+
+.track-cover,
+.cover-thumb {
+    border-radius: 8px;
+}
+
 .header .actions-row .iconbtn svg {
     vertical-align: middle !important;
 }
 
-/* Force primary header icons (homepage & back) svg to 29×29 to avoid other rules shrinking them */
-/* Use high-specificity + !important so these take precedence when loaded last */
 #backToPlaylistBtn.iconbtn svg,
 .header .actions-row .iconbtn svg {
     width: 29px !important;
     height: 29px !important;
 }
 
-/*attiva o disattiva messaggi toast*/
-.toast { display: none !important; pointer-events: none !important; }
+/* Attiva o disattiva i messaggi toast lato front-end. */
+.toast {
+    display: none !important;
+    pointer-events: none !important;
+}
+

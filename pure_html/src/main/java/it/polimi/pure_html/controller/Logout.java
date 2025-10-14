@@ -10,6 +10,10 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
+/**
+ * Invalida la sessione corrente e reindirizza l'utente alla pagina di login.
+ */
+
 @WebServlet("/Logout")
 public class Logout extends HttpServlet {
 

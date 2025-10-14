@@ -17,6 +17,8 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import java.io.IOException;
 import java.io.Serial;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -32,6 +34,10 @@ public class PlayerController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Mostra la pagina del player con la traccia corrente e le eventuali tracce precedente/successiva.
+     * La view si basa sui template Thymeleaf e sui dati caricati dal database.
+     */
     private static final String PLACEHOLDER_COVER = "/img/placeholder_cover.svg"; // asset locale
 
     private TemplateEngine templateEngine;
@@ -119,6 +125,23 @@ public class PlayerController extends HttpServlet {
         context.setVariable("nextTrack", nextView);
         context.setVariable("tracksUrl", req.getContextPath() + "/All_Tracks");
 
+        // Calcola backUrl lato server per evitare JS: torna alla playlist se presente, altrimenti agli all tracks
+        String pid = req.getParameter("playlistId");
+        String gr = req.getParameter("gr");
+        String backUrl;
+        if (pid != null && !pid.isBlank()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(req.getContextPath()).append("/Playlist?playlistId=")
+              .append(URLEncoder.encode(pid, StandardCharsets.UTF_8));
+            if (gr != null && !gr.isBlank()) {
+                sb.append("&gr=").append(URLEncoder.encode(gr, StandardCharsets.UTF_8));
+            }
+            backUrl = sb.toString();
+        } else {
+            backUrl = req.getContextPath() + "/All_Tracks";
+        }
+        context.setVariable("backUrl", backUrl);
+
         templateEngine.process("player_page.html", context, res.getWriter());
     }
 
@@ -140,8 +163,8 @@ public class PlayerController extends HttpServlet {
         String rawSongPath = track.song_path();
         String rawImagePath = track.image_path();
 
-    rawSongPath = normalizeLegacyPath(rawSongPath, true);
-    rawImagePath = normalizeLegacyPath(rawImagePath, false);
+        rawSongPath = normalizeLegacyPath(rawSongPath, true);
+        rawImagePath = normalizeLegacyPath(rawImagePath, false);
 
         String audioUrl = buildUrl(contextPath, rawSongPath);
         String coverUrl = buildUrl(contextPath, rawImagePath);
@@ -171,7 +194,7 @@ public class PlayerController extends HttpServlet {
         if (relativePath == null || relativePath.isBlank()) {
             return null;
         }
-            if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
+        if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
             return relativePath;
         }
         if (contextPath == null || contextPath.isBlank()) {

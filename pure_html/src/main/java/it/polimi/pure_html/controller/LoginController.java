@@ -18,8 +18,13 @@ import java.io.IOException;
 import java.io.Serial;
 import java.sql.Connection;
 import java.sql.SQLException;
-//prima get che genera login.html che chiama post , se post fallisce redirect a get che genera login.html con errore mostrato con thymeleaf
-@WebServlet("/Login") // nome servlet per accesso via html
+
+/**
+ * Gestisce l'autenticazione degli utenti e l'erogazione della pagina di login.
+ * GET: visualizza il form di login ed eventuali messaggi di errore.
+ * POST: valida le credenziali e crea la sessione applicativa.
+ */
+@WebServlet("/Login")
 public class LoginController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
@@ -36,7 +41,6 @@ public class LoginController extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
         JakartaServletWebApplication webApplication = JakartaServletWebApplication.buildApplication(getServletContext());
-        //creo un contesto leggibile a thymeleaf con le info della request(url,posizione ecc...) e risposta modificabile
         WebContext context = new WebContext(webApplication.buildExchange(req, res), req.getLocale());
         String error = req.getParameter("error");
         if (error != null) {
@@ -52,22 +56,21 @@ public class LoginController extends HttpServlet {
         String password = req.getParameter("password");
 
         UserDAO userDAO = new UserDAO(connection);
-        User UserToCheck = null;
+        User userToCheck = null;
         try {
-            UserToCheck = userDAO.checkUser(nickname, password);
+            userToCheck = userDAO.checkUser(nickname, password);
         } catch (SQLException e) {
             res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database errore");
             e.printStackTrace();
             return;
         }
 
-        req.getSession().setAttribute("user", UserToCheck);
+        req.getSession().setAttribute("user", userToCheck);
 
-        if (UserToCheck != null) {
+        if (userToCheck != null) {
             res.sendRedirect(getServletContext().getContextPath() + "/HomePage");
         } else {
             res.sendRedirect(getServletContext().getContextPath() + "/Login?error=Credenziali%20non%20valide");
-            //chiama il get di loginController con ? come separatore delle variabili e error=true
         }
     }
 

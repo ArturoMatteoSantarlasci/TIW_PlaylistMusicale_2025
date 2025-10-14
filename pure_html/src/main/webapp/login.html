@@ -7,8 +7,6 @@
     <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
 <body>
-<!-- Toast top (registrazione) -->
-<div id="regToast" class="toast toast--top">Registrazione avvenuta con successo</div>
 <div class="wrap">
     <h1 class="title-box">PLAYLIST MANAGER</h1>
 
@@ -26,7 +24,7 @@
             <div class="field pad-left">
           <span class="badge left" aria-hidden="true">
             <!-- utente -->
-            <svg viewBox="0 0 24 24" fill="currentColor">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="30" height="30">
                 <path d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5Z"/>
             </svg>
           </span>
@@ -37,7 +35,7 @@
             <div class="field pad-left">
           <span class="badge left" aria-hidden="true">
             <!-- lucchetto -->
-            <svg viewBox="0 0 24 24" fill="currentColor">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="30" height="30">
                 <path d="M12 1a5 5 0 0 0-5 5v3H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V11a2 2 0 0 0-2-2h-2V6a5 5 0 0 0-5-5Zm3 8H9V6a3 3 0 0 1 6 0Z"/>
             </svg>
           </span>
@@ -46,24 +44,10 @@
 
             <!-- Azioni -->
       <button class="btn" type="submit">LOGIN</button>
-      <!-- Link coerente con @WebServlet("/Register") -->
+
       <a class="btn auth-secondary" href="#" th:href="@{/Register}">REGISTRATI</a>
         </form>
     </div>
 </div>
-<script>
-  (function(){
-    // Mostra toast se nella query c'è reg=1
-    const params = new URLSearchParams(window.location.search);
-    const t = document.getElementById('regToast');
-    if(params.get('reg')==='1' && t){
-      requestAnimationFrame(()=> t.classList.add('show'));
-      setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=> t.remove(),400); },2600);
-      params.delete('reg');
-      const clean = window.location.pathname + (params.toString()? '?'+params.toString() : '');
-      window.history.replaceState({}, '', clean);
-    } else { if(t) t.remove(); }
-  })();
- </script>
 </body>
 </html>
