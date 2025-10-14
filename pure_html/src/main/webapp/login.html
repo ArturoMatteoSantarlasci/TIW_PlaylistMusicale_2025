@@ -7,8 +7,8 @@
     <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
 </head>
 <body>
-<!-- Toast top (registrazione) -->
-<div id="regToast" class="toast toast--top">Registrazione avvenuta con successo</div>
+<!-- Toast top (registrazione) mostrato solo se ?reg=1 -->
+<div id="regToast" class="toast toast--top" th:if="${param.reg != null and param.reg[0] == '1'}">Registrazione avvenuta con successo</div>
 <div class="wrap">
     <h1 class="title-box">PLAYLIST MANAGER</h1>
 
@@ -46,24 +46,12 @@
 
             <!-- Azioni -->
       <button class="btn" type="submit">LOGIN</button>
-      <!-- Link coerente con @WebServlet("/Register") -->
+
       <a class="btn auth-secondary" href="#" th:href="@{/Register}">REGISTRATI</a>
         </form>
     </div>
 </div>
-<script>
-  (function(){
-    // Mostra toast se nella query c'è reg=1
-    const params = new URLSearchParams(window.location.search);
-    const t = document.getElementById('regToast');
-    if(params.get('reg')==='1' && t){
-      requestAnimationFrame(()=> t.classList.add('show'));
-      setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=> t.remove(),400); },2600);
-      params.delete('reg');
-      const clean = window.location.pathname + (params.toString()? '?'+params.toString() : '');
-      window.history.replaceState({}, '', clean);
-    } else { if(t) t.remove(); }
-  })();
- </script>
+
+<!-- Rimosso lo script: il toast è gestito lato server con th:if su param.reg -->
 </body>
 </html>

@@ -46,20 +46,19 @@ public class UploadTrack extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
     private Connection connection = null;
-    // Rimosso outputPath: i file vengono sempre salvati sotto /media/img
     private User user;
     private Track track;
     private List<File> newFiles;
     private ServletContext context;
-    private List<String> genres; // lista fissa hardcoded
+    private List<String> genres;
 
     public void init() throws ServletException {
         context = getServletContext();
         connection = ConnectionHandler.openConnection(context);
-        //NOME CARTELLA DOVE SALVARE I FILE NELLA WEBAPP ES. ''uploads''
+        //NOME CARTELLA DOVE SALVARE I FILE
         newFiles = new ArrayList<>();
 
-        // Lista hardcoded (niente più json)
+        // Lista hardcoded (al posto di json)
         genres = List.of(
                 "Classical","Rock","Edm","Pop","Hip-hop","R&B","Country","Jazz","Blues",
                 "Metal","Folk","Soul","Funk","Electronic","Indie","Reggae","Disco"

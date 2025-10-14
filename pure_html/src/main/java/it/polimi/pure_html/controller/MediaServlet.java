@@ -6,6 +6,24 @@ import java.io.IOException;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.*;
 
+/**
+ * Risolve quale file servire:
+ *      Legge il path richiesto da /media/* con req.getPathInfo().
+ *      Esegue controlli di sicurezza (niente .., normalizza il percorso, deve stare sotto
+ *      la base dei media, deve esistere e non essere una directory).
+ * Prepara la risposta:
+ *      Determina il MIME type (Content-Type).
+ *      Imposta intestazioni HTTP utili (es. Accept-Ranges per lo streaming; cache secondo configurazione).
+ * Gestisce richieste parziali (Range):
+ *      Se il client invia Range: bytes=… calcola start/end, imposta 206 Partial Content, Content-Range e Content-Length della porzione.
+ *      Se non c’è Range: imposta Content-Length totale (200 OK).
+ * Scrive il corpo:
+ *      Se headOnly è true (richiesta HEAD), invia solo gli header e termina.
+ *      Altrimenti apre il file e invia i byte richiesti (tutto il file o solo la porzione), a blocchi, sul response output stream.
+ * Codici di stato possibili: 200 (intero), 206 (parziale), 400 (path non valido), 404 (file non trovato/fuori base), 416 (range non valido).
+ * */
+
+
 @WebServlet(urlPatterns = "/media/*")
 public class MediaServlet extends HttpServlet {
     @Override protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -18,7 +36,7 @@ public class MediaServlet extends HttpServlet {
 
     private void serve(HttpServletRequest req, HttpServletResponse resp, boolean headOnly) throws IOException {
         var base = MediaConfig.baseDir(getServletContext());
-        var rel = req.getPathInfo(); // es: /img/xxx.jpg
+        var rel = req.getPathInfo(); // es: /img/101.jpg
         if (rel == null || rel.contains("..")) { resp.sendError(400); return; }
         var file = base.resolve(rel.substring(1)).normalize();
         if (!file.startsWith(base) || !Files.exists(file) || Files.isDirectory(file)) { resp.sendError(404); return; }
