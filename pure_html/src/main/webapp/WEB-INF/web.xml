@@ -10,7 +10,6 @@
     <!--Database connection parameters-->
     <context-param>
         <param-name>dbUrl</param-name>
-        <!-- Allineato a tables.sql: USE tiw2025; -->
         <param-value>jdbc:mariadb://localhost:3307/tiw2025?serverTimezone=UTC</param-value>
     </context-param>
     <context-param>
@@ -37,13 +36,10 @@
     <filter-mapping>
         <!-- Class to invoke -->
         <filter-name>InvalidUserChecker</filter-name>
-        <!-- Servlets and URLs on which to invoke the check -->
         <url-pattern>/HomePage</url-pattern>
         <url-pattern>/home_page.html</url-pattern>
         <url-pattern>/Playlist</url-pattern>
         <url-pattern>/playlist_page.html</url-pattern>
-<!--        <url-pattern>/All_Tracks</url-pattern>-->
-<!--        <url-pattern>/tracks_page.html</url-pattern>-->
         <url-pattern>/player</url-pattern>
         <url-pattern>/player_page.html</url-pattern>
         <url-pattern>/AddTracks</url-pattern>
@@ -80,13 +76,4 @@
         <url-pattern>/CreatePlaylist</url-pattern>
         <url-pattern>/AddTracks</url-pattern>
     </filter-mapping>
-<!--    <filter>-->
-<!--        <filter-name>TrackChecker</filter-name>-->
-<!--        <filter-class>it.polimi.pure_html.filters.TrackChecker</filter-class>-->
-<!--    </filter>-->
-<!--    <filter-mapping>-->
-<!--        <filter-name>TrackChecker</filter-name>-->
-<!--        <url-pattern>/All_Tracks</url-pattern>-->
-<!--    </filter-mapping>-->
-
 </web-app>

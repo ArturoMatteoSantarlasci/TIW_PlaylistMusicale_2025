@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="css/app.css" th:href="@{/css/app.css}" />
   <link rel="icon" sizes="32x32" type="image/png" href="img/icon2.png" th:href="@{/img/icon2.png}">
   <style>
-    /* Modali senza JS: :target mostra l'overlay e blocca lo scroll (se supportato) */
     .modal-overlay { display: none; }
     .modal-overlay:target { display: flex; position: fixed; inset: 0; }
     body:has(.modal-overlay:target) { overflow: hidden; }
@@ -32,7 +31,6 @@
                     fill="currentColor" stroke="none"/>
           </svg>
       </a>
-      <!-- Apertura modale senza JS -->
       <a class="btn secondary" href="#addTracksModal">Aggiungi Brani</a>
       <a class="btn secondary logout"
          style="font-size:1.17rem !important; font-weight:800 !important; height:50px !important; padding:0 16px !important; display:flex !important; align-items:center !important; justify-content:center !important;"
@@ -76,7 +74,7 @@
     </div>
   </main>
 
-  <!-- Modal Aggiungi brani (CSS :target, senza JS) -->
+  <!-- Modal Aggiungi brani -->
   <div id="addTracksModal" class="modal-overlay">
     <div class="modal" style="max-width:640px;width:100%;">
       <div class="modal-header">
@@ -95,11 +93,10 @@
 
           <div th:if="${!#lists.isEmpty(addableTracks)}">
             <div class="playlist-tracks-block" id="addableTracksBlock">
-              <!-- Rimossi filtro, contatore, seleziona tutti/pulisci e scrollbar custom -->
               <div style="max-height:50vh; overflow:auto;">
                 <ul class="playlist-tracks-list" id="addTracksList">
                   <li class="track-choice" th:each="t : ${addableTracks}">
-                    <input type="checkbox" th:id="'addtrk_' + ${t.id}" th:value="${t.id}" name="selectedTracksIds" />
+                    <input type="checkbox" th:id="'addtrk_' + ${t.id}" th:value="${t.id}" name="selectedTracks" />
                     <label th:for="'addtrk_' + ${t.id}" class="track-choice-info">
                       <span class="track-choice-title" th:text="${t.title}">Titolo</span>
                       <span class="track-choice-meta">
@@ -123,7 +120,5 @@
       </div>
     </div>
   </div>
-
-  <!-- Nessun <script>: pagina funzionante senza JS -->
 </body>
 </html>

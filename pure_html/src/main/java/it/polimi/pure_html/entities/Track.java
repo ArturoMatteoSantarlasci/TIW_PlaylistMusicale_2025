@@ -1,5 +1,9 @@
 package it.polimi.pure_html.entities;
 
+/**
+ * Descrive una traccia musicale caricata da un utente.
+ * Le proprietà coprono i metadati e i percorsi dei file audio/immagine.
+ */
 public record Track(
         int id,
         int user_id,

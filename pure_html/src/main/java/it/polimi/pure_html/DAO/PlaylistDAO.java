@@ -8,6 +8,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Gestisce la persistenza delle playlist e delle relative associazioni con le tracce.
+ */
+
 public class PlaylistDAO implements DAO {
     private final Connection connection;
 
@@ -22,6 +26,7 @@ public class PlaylistDAO implements DAO {
      * @return Lista di Playlist
      * @throws SQLException
      */
+
     public List<Playlist> getUserPlaylists(User user) throws SQLException {
         List<Playlist> playlists = new ArrayList<>();
 
@@ -58,6 +63,7 @@ public class PlaylistDAO implements DAO {
      * @return lista di riassunti playlist
      * @throws SQLException in caso di errori di accesso al DB
      */
+
     public List<PlaylistSummary> getPlaylistSummaries(User user) throws SQLException {
         List<PlaylistSummary> playlists = new ArrayList<>();
 
@@ -95,6 +101,7 @@ public class PlaylistDAO implements DAO {
      * @return lista di tracce
      * @throws SQLException
      */
+
     public List<Track> getPlaylistTracksByTitle(String playlistTitle, User user) throws SQLException {
         List<Track> tracks = new ArrayList<>();
 
@@ -140,6 +147,7 @@ public class PlaylistDAO implements DAO {
      * @return lista di tracce
      * @throws SQLException
      */
+
     public List<Track> getPlaylistTracksById(int playlistID) throws SQLException {
         List<Track> tracks = new ArrayList<>();
 
@@ -176,6 +184,7 @@ public class PlaylistDAO implements DAO {
         closeQuery(res, querywithparam);
         return tracks;
     }
+
 /**
      * Ritorna le tracce di un utente che non sono nella playlist
      * @param playlistTitle titolo della playlist
@@ -183,6 +192,7 @@ public class PlaylistDAO implements DAO {
      * @return lista di tracce
      * @throws SQLException
      */
+
     public List<Track> getTracksNotInPlaylist(String playlistTitle, Integer userId) throws SQLException {
         List<Track> userTracks = new ArrayList<>();
         PreparedStatement querywithparam = connection.prepareStatement("""
@@ -240,6 +250,7 @@ public class PlaylistDAO implements DAO {
       * @return lista di tracce
       * @throws SQLException
       */
+
     public List<Track> getTrackGroup(int playlistId, int groupId) throws SQLException {
         List<Track> tracks = new ArrayList<>();
 
@@ -286,6 +297,7 @@ public class PlaylistDAO implements DAO {
      * @return numero tracce (0 se vuota)
      * @throws SQLException propagata al chiamante
      */
+
     public int countPlaylistTracks(int playlistId) throws SQLException {
         String sql = "SELECT COUNT(*) FROM playlist_tracks WHERE playlist_id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -303,6 +315,7 @@ public class PlaylistDAO implements DAO {
      * @return titolo della playlist
      * @throws SQLException
      */
+
     public String getPlaylistTitle(int playlistID) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
                         SELECT playlist_title
@@ -328,6 +341,7 @@ public class PlaylistDAO implements DAO {
      * @param playlist Playlist da creare
      * @throws SQLException
      */
+
     public Integer createPlaylist(Playlist playlist) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
                 INSERT INTO playlist (playlist_title, user_id) VALUES (?,?)
@@ -356,6 +370,7 @@ public class PlaylistDAO implements DAO {
      * @param playlistId
      * @throws SQLException
      */
+
     public void addTracksToPlaylist(List<Integer> trackIds, Integer playlistId) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
                 INSERT INTO playlist_tracks (playlist_id, track_id) VALUES (?,?)
@@ -388,6 +403,7 @@ public class PlaylistDAO implements DAO {
      * @return true se l'utente è il proprietario, false altrimenti
      * @throws SQLException
      */
+
     public boolean checkPlaylistOwner(int playlist_id, User user) throws SQLException {
         PreparedStatement querywithparam = connection.prepareStatement("""
                  SELECT playlist_id,

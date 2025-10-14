@@ -6,6 +6,10 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+/**
+ * Gestisce l'apertura e la chiusura delle connessioni al database
+ * sfruttando i parametri configurati nel contesto della servlet.
+ */
 public class ConnectionHandler {
 
     public static Connection openConnection(ServletContext context) throws UnavailableException {

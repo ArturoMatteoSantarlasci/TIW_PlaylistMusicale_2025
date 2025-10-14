@@ -4,6 +4,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Interfaccia di supporto per i DAO dell'applicazione.
+ * Fornisce metodi di utilità per chiudere in sicurezza ResultSet e Statement.
+ */
+
 public interface DAO {
     default void closeQuery(ResultSet resultSet, Statement query) {
         try {
@@ -21,4 +26,3 @@ public interface DAO {
         }
     }
 }
-

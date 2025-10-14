@@ -19,13 +19,15 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
-//aggiunge tracce alla creazione di playlist
+/**
+ * Gestisce la creazione di una nuova playlist e l'eventuale associazione
+ * di tracce selezionate durante la fase di creazione.
+ */
 @WebServlet("/CreatePlaylist")
 public class CreatePlaylist extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
     private Connection connection = null;
-    User user;
 
     @Override
     public void init() throws ServletException {
@@ -41,7 +43,7 @@ public class CreatePlaylist extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         PlaylistDAO playlistDAO = new PlaylistDAO(connection);
-        user = (User) req.getSession().getAttribute("user");
+        User user = (User) req.getSession().getAttribute("user");
 
         String playlistTitle = req.getParameter("playlistTitle");
         Playlist playlist = new Playlist(0, playlistTitle, null, user);
@@ -50,17 +52,21 @@ public class CreatePlaylist extends HttpServlet {
         List<Integer> selectedCreationTracksIds = new ArrayList<>();
         if (selectedCreationTracksStringIds != null) {
             for (String id : selectedCreationTracksStringIds) {
-                selectedCreationTracksIds.add(Integer.parseInt(id));
+                try {
+                    selectedCreationTracksIds.add(Integer.parseInt(id));
+                } catch (NumberFormatException ex) {
+                    resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "TrackId non valido");
+                    return;
+                }
             }
         }
 
         if (playlistTitle == null || playlistTitle.isEmpty()) {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Playlist title not valid");
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Titolo playlist non valido");
             return;
         }
         try {
-            Integer playlistId = null;
-            playlistId = playlistDAO.createPlaylist(playlist);
+            Integer playlistId = playlistDAO.createPlaylist(playlist);
             int added = 0;
             if (!selectedCreationTracksIds.isEmpty()) {
                 playlistDAO.addTracksToPlaylist(selectedCreationTracksIds, playlistId);

@@ -7,6 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Fornisce le operazioni CRUD principali sugli utenti dell'applicazione.
+ */
 public class UserDAO implements DAO {
     private final Connection connection;
 

@@ -24,7 +24,6 @@
         <a class="btn secondary logout"
            style="font-size:1.17rem !important; font-weight:800 !important; height:50px !important; padding:0 16px !important; display:flex !important; align-items:center !important; justify-content:center !important;"
            th:href="@{/Logout}" href="Logout">Logout</a>
-        <!-- Torna alla playlist o all'elenco, senza JS -->
         <a id="backToPlaylistBtn" class="iconbtn" title="Torna alla playlist" aria-label="Torna alla playlist" th:href="${backUrl}" href="#">
             <svg viewBox="0 0 24 24" width="29" height="29" fill="currentColor" aria-hidden="true">
                 <path d="M10 9V5L3 12l7 7v-4.1c5.1 0 8.6 1.8 11 5.1
@@ -47,7 +46,5 @@
         <audio id="player-audio" controls preload="metadata" th:src="${track.audioUrl}" aria-label="Player traccia"></audio>
     </div>
 </div>
-
-<!-- Nessuno script: logica di ritorno e UI gestite lato server/HTML -->
 </body>
 </html>

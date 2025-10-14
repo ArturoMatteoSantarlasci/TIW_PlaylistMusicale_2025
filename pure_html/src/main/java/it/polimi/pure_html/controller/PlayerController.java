@@ -34,6 +34,10 @@ public class PlayerController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Mostra la pagina del player con la traccia corrente e le eventuali tracce precedente/successiva.
+     * La view si basa sui template Thymeleaf e sui dati caricati dal database.
+     */
     private static final String PLACEHOLDER_COVER = "/img/placeholder_cover.svg"; // asset locale
 
     private TemplateEngine templateEngine;

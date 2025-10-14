@@ -23,9 +23,19 @@ import java.nio.file.*;
  * Codici di stato possibili: 200 (intero), 206 (parziale), 400 (path non valido), 404 (file non trovato/fuori base), 416 (range non valido).
  * */
 
-
 @WebServlet(urlPatterns = "/media/*")
 public class MediaServlet extends HttpServlet {
+
+    /*
+    * È un metodo HTTP standard (RFC 9110) che deve restituire gli stessi header che restituirebbe un GET sulla stessa
+    * risorsa, ma senza corpo (nessun byte del file).
+    *
+    * Permette a un client di sapere se una risorsa esiste e quali saranno dimensione (Content-Length), tipo (Content-Type),
+    * supporto Range (Accept-Ranges), cache (Cache-Control) senza scaricare il contenuto.
+    *
+    * Le intestazioni per HEAD devono rispecchiare ciò che un GET manderebbe
+    * */
+
     @Override protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         serve(req, resp, true);
     }
@@ -33,6 +43,11 @@ public class MediaServlet extends HttpServlet {
     @Override protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         serve(req, resp, false);
     }
+
+    /*
+    * Non è un metodo HTTP: è solo un helper privato per evitare
+    * di duplicare la stessa logica sia in doGet sia in doHead.
+    */
 
     private void serve(HttpServletRequest req, HttpServletResponse resp, boolean headOnly) throws IOException {
         var base = MediaConfig.baseDir(getServletContext());

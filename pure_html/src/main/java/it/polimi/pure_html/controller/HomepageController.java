@@ -28,6 +28,10 @@ import java.util.List;
 public class HomepageController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * Prepara i dati necessari a popolare la dashboard principale:
+     * tracce disponibili dell'utente, playlist e messaggi di cortesia.
+     */
     private TemplateEngine templateEngine;
     private Connection connection;
     private TrackDAO trackDAO;

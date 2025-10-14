@@ -29,6 +29,10 @@ import java.util.stream.Stream;
 public class PlaylistController extends HttpServlet {
     @Serial
     private static final long serialVersionUID = 1L;
+    /**
+     * Visualizza il dettaglio di una playlist e consente di aggiungere nuove tracce.
+     * Supporta paginazione lato server per playlist di grandi dimensioni.
+     */
     private TemplateEngine templateEngine;
     private Connection connection = null;
 

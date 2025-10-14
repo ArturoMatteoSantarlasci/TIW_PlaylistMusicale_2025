@@ -17,7 +17,11 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 import java.io.IOException;
 import java.io.Serial;
 import java.sql.Connection;
-//prima get poi register.html che chiama post , o login se ok o redirect a get e mostra errore con thymeleaf
+
+/**
+ * Gestisce la registrazione di un nuovo utente e la presentazione del form dedicato.
+ */
+
 @WebServlet("/Register")
 public class RegisterController extends HttpServlet {
     @Serial
@@ -72,8 +76,8 @@ public class RegisterController extends HttpServlet {
         boolean isUserAdded = userDAO.addUser(user);
 
         if (isUserAdded) {
-            // Redirect con parametro per mostrare toast di successo su Login
-            res.sendRedirect(getServletContext().getContextPath() + "/Login?reg=1");
+            // Redirect to Login without query params
+            res.sendRedirect(getServletContext().getContextPath() + "/Login");
         } else {
             res.sendRedirect(
                     getServletContext().getContextPath() + "/Register?isUserAdded=" + false
