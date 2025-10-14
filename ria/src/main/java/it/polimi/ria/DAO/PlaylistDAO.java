@@ -138,7 +138,7 @@ public class PlaylistDAO implements DAO {
                 ORDER BY
                     CASE WHEN c.count = 0 THEN artist END,
                     CASE WHEN c.count = 0 THEN year END,
-                    CASE WHEN c.count = 0 THEN a.track_id END,
+                    CASE WHEN c.count = 0 THEN a.title END,
                     CASE WHEN c.count != 0 THEN -custom_order END DESC,
                     CASE WHEN c.count != 0 THEN a.track_id END
                 """);//- DESC per avere ordine crescente in caso di negativi
@@ -199,7 +199,7 @@ public class PlaylistDAO implements DAO {
                     FROM playlist p NATURAL JOIN playlist_tracks pt
                     WHERE p.playlist_title= ? AND p.user_id = ?
                  )
-                 ORDER BY artist ASC, year ASC, track_id ASC
+                 ORDER BY artist ASC, year ASC, title ASC
                 """);
         querywithparam.setInt(1, userId);
         querywithparam.setString(2, playlistTitle);
@@ -245,7 +245,7 @@ public class PlaylistDAO implements DAO {
                  SELECT track_id, user_id, title, album_title, artist, year, genre, song_checksum, image_checksum, song_path, image_path
                  FROM track a NATURAL JOIN playlist_tracks b
                  WHERE b.playlist_id = ?
-                 ORDER BY custom_order, artist ASC, year ASC, track_id ASC
+                 ORDER BY custom_order, artist ASC, year ASC, title ASC
                  OFFSET ? ROWS
                  FETCH NEXT 5 ROWS ONLY
                 """);
@@ -342,28 +342,38 @@ public class PlaylistDAO implements DAO {
      * @throws SQLException alla servlet
      */
     public void addTracksToPlaylist(List<Integer> trackIds, Integer playlistId) throws SQLException {
-        //void e non boolean per gestione errori, lancia eccezioni e non dice solo true o false
-        PreparedStatement querywithparam = connection.prepareStatement("""
-                INSERT INTO playlist_tracks (playlist_id, track_id) VALUES (?,?)
-                """);
-        querywithparam.setInt(1, playlistId);
+        // Use a single PreparedStatement for inserts. The query sets custom_order only if the playlist
+        // already has at least one non-null custom_order (checked with a subquery). This preserves the
+        // "no custom order -> keep natural ordering by artist/year/title" behavior.
         connection.setAutoCommit(false);
+        PreparedStatement querywithparam = null;
         try {
-            for (Integer i : trackIds) {
-                querywithparam.setInt(2, i);
+            String sql = "INSERT INTO playlist_tracks (playlist_id, track_id, custom_order) VALUES (?,?,"
+                    + "CASE WHEN (SELECT COUNT(*) FROM playlist_tracks WHERE playlist_id = ? AND custom_order IS NOT NULL) > 0 "
+                    + "THEN (SELECT COALESCE(MAX(custom_order),0) FROM playlist_tracks WHERE playlist_id = ?) + ? ELSE NULL END)";
+
+            querywithparam = connection.prepareStatement(sql);
+            for (int i = 0; i < trackIds.size(); i++) {
+                int tid = trackIds.get(i);
+                querywithparam.setInt(1, playlistId);
+                querywithparam.setInt(2, tid);
+                // params for subqueries
+                querywithparam.setInt(3, playlistId); // COUNT(...) check
+                querywithparam.setInt(4, playlistId); // MAX(...) base
+                querywithparam.setInt(5, i + 1);      // offset
                 querywithparam.executeUpdate();
             }
-            connection.commit();
 
+            connection.commit();
         } catch (SQLIntegrityConstraintViolationException e) {
             connection.rollback();
             throw new SQLIntegrityConstraintViolationException();
         } catch (SQLException e) {
             connection.rollback();
-            throw new SQLException();
+            throw new SQLException(e);
         } finally {
             connection.setAutoCommit(true);
-            closeQuery(querywithparam);
+            if (querywithparam != null) closeQuery(querywithparam);
         }
     }
 

@@ -2,9 +2,9 @@
     document.getElementById("create-account-button").addEventListener("click", (e) => register(e));
 
     /**
-     * Register a new User. If successful, redirect to login; otherwise show error.
+     * Registra un nuovo utente e lo reindirizza alla pagina di login.
      *
-     * @param e mouse event from the User
+     * @param e evento mouse dall'utente
      */
     function register(e) {
         e.preventDefault();

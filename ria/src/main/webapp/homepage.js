@@ -1,7 +1,8 @@
 (function () {
     // =================== VARIABILI GLOBALI ===================
+    // Memorizzo l'ultima playlist e traccia mostrate per navigazione indietro/riapri
     let lastPlaylist = null, lastTrack = null;
-    // Toast util: mostra messaggio temporaneo (simile a pure_html)
+    // Mostra messaggi toast temporanei nell'interfaccia
     function showToast(msg, duration=3000){
         const t = document.getElementById('toast');
         if(!t) return; // fallback silenzioso
@@ -9,30 +10,26 @@
         t.classList.add('show');
         clearTimeout(t._h); t._h = setTimeout(()=>{ t.classList.remove('show'); }, duration);
     }
-    // Determina (best-effort) il context path (es: /ria) se l'app è deployata non in root
+    // Determina il context path della app (es. '/ria') se la pagina non è in root
     const CONTEXT_PATH = (function() {
-        // Se la pagina è ad es. http://host/ria/homepage.html -> estrae "/ria"
-        // Se è root (homepage.html in /) ritorna stringa vuota
         try {
             const path = window.location.pathname; // es: /ria/homepage.html
             const parts = path.split('/').filter(Boolean);
             if (parts.length > 1) {
-                // heuristica: se esiste cartella 'ria' o nome progetto all'inizio
                 return '/' + parts[0];
             }
         } catch(_) {}
         return '';
     })();
 
+    // Normalizza i path media aggiungendo il context path se necessario
     function normalizeMediaPath(p) {
         if (!p) return p;
-        // Se già contiene http o // o il context path esplicito, lascio stare
         if (p.startsWith('http://') || p.startsWith('https://')) return p;
-        // Evita doppio slash
-        if (CONTEXT_PATH && p.startsWith('/media/')) return CONTEXT_PATH + p; // server serve le risorse statiche con context prefix
-        return p; // fallback
+        if (CONTEXT_PATH && p.startsWith('/media/')) return CONTEXT_PATH + p;
+        return p;
     }
-    // ===== Utility: blurred album cover as page background (inside IIFE) =====
+    // Utilities per impostare/rimuovere lo sfondo blur del player (layer DOM creato al volo)
     function ensurePlayerBgLayer(){
         let el = document.getElementById('playerCoverBg');
         if(!el){
@@ -41,7 +38,7 @@
             el.className = 'player-bg';
             document.body.prepend(el);
         }
-        // Helper: refresh global playlists and re-render playlist grid (used after reorder/save)
+        // Ricarica le playlist dalla server API e ridisegna la griglia quando serve
         function refreshHomePlaylists(callback) {
             makeCall('GET', 'HomePage', null, (req) => {
                 if (req.readyState !== XMLHttpRequest.DONE) return;
@@ -110,6 +107,7 @@
     });
 
     // =================== HOME VIEW ===================
+    // Gestisce la vista principale mostrando la lista delle playlist
     function HomeView() {
         const HOMEPAGE_LABEL = "Le mie Playlist"; // tradotto in italiano
         const HOMEPAGE_ID = "homepage";
@@ -125,7 +123,8 @@
             showBackToPlaylist(false); // mai visibile in home
         };
 
-        function loadPlaylists() {
+    // Costruisce la sezione principale della home e richiede le playlist al server
+    function loadPlaylists() {
             const main = document.getElementById("main");
             // Inserisce un box titolo standalone + contenitore playlist subito sotto
             main.innerHTML = `<div class=\"title-strip\"><div class=\"title-strip-inner\">${HOMEPAGE_LABEL}</div></div><div class=\"playlists-wrapper\"><section class=\"playlists-vertical\" id=\"playlistsGrid\"></section></div>`;
@@ -148,8 +147,9 @@
             });
         }
 
+        // Imposta i controlli della toolbar (nuova playlist, upload) e i rispettivi handler
         function loadButtons() {
-            // Rimpiazzo per rimuovere vecchi event listener
+            // Sostituisco il nodo per evitare listener duplicati
             let modalButton = document.getElementById("track-selector-modal-button");
             let newButton = modalButton.cloneNode(true);
             modalButton.parentNode.replaceChild(newButton, modalButton);
@@ -259,7 +259,19 @@
             reorderBtn.type = "button";
             reorderBtn.className = "playlist-reorder-inline";
             reorderBtn.setAttribute("aria-label", "Riordina " + playlist.title);
-            reorderBtn.innerHTML = '<img src="img/reorder/reorder.svg" width="20" height="20" alt="Reorder" />';
+            reorderBtn.innerHTML = `
+<svg
+  width="20" height="20" viewBox="0 0 24 24"
+  fill="none" stroke="currentColor" stroke-width="2"
+  stroke-linecap="round" stroke-linejoin="round"
+  aria-hidden="true" role="img"
+>
+  <polyline points="16 3 21 3 21 8"></polyline>
+  <line x1="4" y1="20" x2="21" y2="3"></line>
+  <polyline points="21 16 21 21 16 21"></polyline>
+  <line x1="15" y1="15" x2="21" y2="21"></line>
+  <line x1="4" y1="4" x2="9" y2="9"></line>
+</svg>`;
             reorderBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 // ensure any previous modal removed to avoid stale state
@@ -273,8 +285,9 @@
             return card;
         }
 
-        // ===== Modali =====
-        function loadCreatePlaylistModal() {
+    // ===== Modali =====
+    // Carica il modal per creare una nuova playlist (DOM creato dinamicamente)
+    function loadCreatePlaylistModal() {
             let modalContainer = document.getElementById("modals"),
                 modal = createModal("create-playlist", "Crea nuova playlist", "create-playlist-btn", "Crea"),
                 form = modal.getElementsByTagName("form").item(0), navbar = form.firstChild;
@@ -329,8 +342,8 @@
             modalContainer.appendChild(modal);
         }
 
-        // Modal riordino (manuale, stile amico)
-        function loadReorderModal(playlist) {
+    // Modal riordino (manuale, permette di trascinare le tracce per cambiare ordine)
+    function loadReorderModal(playlist) {
             let modalContainer = document.getElementById("modals");
             let modal_div = document.createElement("div");
             modal_div.setAttribute("id", "reorder-tracks-modal");
@@ -367,12 +380,13 @@
         }
         window.closeReorderModal = closeReorderModal;
 
-        // Drag & Drop per riordino
+        // Drag & Drop per riordino delle <li> dentro l'ordered list del modal
         let startElement; // elemento trascinato
         function dragStart(event) { startElement = event.target; }
         function dragOver(event) { event.preventDefault(); }
         function dragLeave(event) { /* no-op semplice */ }
         function drop(event) {
+            // Calcola posizione di destinazione e inserisce l'elemento nella nuova posizione
             let finalDest = event.target;
             let completeList = finalDest.closest("ol");
             let songsArray = Array.from(completeList.querySelectorAll("li"));
@@ -383,7 +397,8 @@
                 startElement.parentElement.insertBefore(startElement, songsArray[indexDest]);
             }
         }
-        function loadUserTracksOl(trackSelector, playlist) {
+    // Popola l'ordered list del modal di riordino con le tracce della playlist
+    function loadUserTracksOl(trackSelector, playlist) {
             trackSelector.innerHTML = "";
             makeCall("GET", "Playlist?playlistId=" + playlist.id, null, function (req) {
                 if (req.readyState == XMLHttpRequest.DONE) {
@@ -398,10 +413,11 @@
                             //  li.title = "ID DB: " + track.id; // tooltip debug opzionale
                             trackSelector.appendChild(li);
                         });
-                    } else alert("Impossibile recuperare i dati. Forse la sessione è scaduta.");
+                    } else alert("Impossibile recuperare i dati o non ci sono brani da riordinare");
                 }
             });
         }
+        // Invia al server l'ordine corrente delle tracce (array di trackId) per la playlist
         function saveOrder(e, _playlistId) {
             let songsContainer = document.getElementById("track-reorder");
             // Estrae gli ID reali nell'ordine corrente
@@ -409,7 +425,7 @@
             let req = new XMLHttpRequest();
             let target = e.target;
             // attempt to disable save button to prevent duplicates
-            try { const btn = document.getElementById('track-reorder-btn'); if (btn) btn.disabled = true; } catch(_){}
+                try { const btn = document.getElementById('track-reorder-btn'); if (btn) btn.disabled = true; } catch(_) {}
             req.onreadystatechange = function () {
                 if (req.readyState == XMLHttpRequest.DONE) {
                     let message = req.responseText;
@@ -446,22 +462,23 @@
     }
 
     // =================== PLAYLIST VIEW ===================
+    // Mostra le tracce di una singola playlist e gestisce la pagina dei brani
     function PlaylistView() {
         const PLAYLIST_PAGE_ID = "playlist";
 
+        // Apre la vista playlist, prepara modali e disabilita upload nella vista
         this.show = function (playlist) {
             clearBottomNavbar();
             clearModals();
             loadAddTracksModal();
             loadPlaylistView(playlist);
-            // Nascondi upload nella vista playlist
             document.getElementById("upload-track-modal-button").className = "button hidden";
             document.getElementById("track-selector-modal-button").className = "button";
-            showBackToPlaylist(false); // non serve in lista tracce
+            showBackToPlaylist(false);
         };
 
+        // Renderizza una pagina di tracce: crea container e inserisce le card
         function renderTrackPage(tracksPage, wrapper) {
-            // wrapper è già stato creato con classe tracks-wrapper
             const container = document.createElement("div");
             container.className = "tracks-vertical";
             wrapper.appendChild(container);
@@ -474,18 +491,16 @@
             }
         }
 
+        // Crea la card per ogni traccia: cover, info e gestione click/dblclick/keydown
         function buildTrackCard(track) {
             const card = document.createElement("div");
             card.className = "track-card";
             card.tabIndex = 0;
-            // dataset per mini player
             if(track.song_path) card.dataset.audio = normalizeMediaPath(track.song_path);
-            // Gestione click / doppio click robusta:
-            // 1) Usiamo nativo dblclick per immediatezza.
-            // 2) Manteniamo fallback timer per utenti che cliccano molto veloce ma il browser non genera dblclick.
+            // Gestione click/dblclick: dblclick apre mini-player, click singolo apre la vista track
             let singleTimer = null;
             let lastClickTime = 0;
-            const SINGLE_DELAY = 280; // leggermente più ampio
+            const SINGLE_DELAY = 280;
             card.addEventListener('dblclick', (e)=> {
                 e.preventDefault();
                 if(singleTimer){ clearTimeout(singleTimer); singleTimer=null; }
@@ -494,7 +509,6 @@
             card.addEventListener('click', (e)=> {
                 const now = Date.now();
                 if(now - lastClickTime < 280){
-                    // È già gestito da dblclick nella maggior parte dei browser, ma fallback:
                     if(singleTimer){ clearTimeout(singleTimer); singleTimer=null; }
                     openMiniFromCard(card);
                     return;
@@ -503,6 +517,7 @@
                 if(singleTimer) clearTimeout(singleTimer);
                 singleTimer = setTimeout(()=> { singleTimer=null; trackView.show(track); }, SINGLE_DELAY);
             });
+            // Supporto tastiera: Enter/Space apre la vista traccia
             card.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); trackView.show(track); }});
 
             // Cover
@@ -521,14 +536,13 @@
             }
             card.appendChild(cover);
 
-            // Info
+            // Info: titolo e seconda riga (album • anno)
             const info = document.createElement("div");
             info.className = "track-info";
             const titleDiv = document.createElement("div");
             titleDiv.className = "track-title";
             titleDiv.textContent = track.title;
             info.appendChild(titleDiv);
-            // Seconda riga Album • Year
             const parts = [];
             if (track.album_title) parts.push(track.album_title);
             if (track.year) parts.push(track.year.toString());
@@ -540,7 +554,6 @@
             }
             card.appendChild(info);
 
-            // (Placeholder azioni future) potenziale colonna azioni rimossa per semplicità
             return card;
         }
 
@@ -704,23 +717,23 @@
     }
 
     // =================== TRACK VIEW ===================
+    // Mostra la pagina del singolo brano con player e metadati
     function TrackView() {
         const PLAYER_PAGE_ID = "player";
         this.show = function (track) {
             clearModals();
             clearBottomNavbar();
             loadSingleTrack(track);
-            showBackToPlaylist(true); // in player mostra il bottone indietro
-            // Imposta sfondo blur con cover (se disponibile)
+            showBackToPlaylist(true); // mostra il bottone indietro nella vista player
             try { setPlayerBackground(track?.image_path); } catch(_) {}
         };
+
+        // Costruisce il DOM del player: cover, metadata e elemento audio
         function trackPlayer(container, track) {
             container.innerHTML = "";
-            // Wrapper principale (ora direttamente con bordo rosa)
             const playerWrapper = document.createElement("div");
-            playerWrapper.className = "player-track-info"; // layout flessibile e box principale
+            playerWrapper.className = "player-track-info";
 
-            // Colonna immagine (se presente)
             if (track.image_path) {
                 const coverWrap = document.createElement("div");
                 coverWrap.className = "player-cover";
@@ -732,33 +745,27 @@
                 playerWrapper.appendChild(coverWrap);
             }
 
-            // Colonna testi + audio
             const textCol = document.createElement("div");
-            textCol.className = "player-text"; // contiene righe con ellipsis
-            textCol.style.minWidth = "0"; // necessario per ellipsis in flex
+            textCol.className = "player-text";
+            textCol.style.minWidth = "0";
 
             function metaLine(txt, cls) {
                 const d = document.createElement("div");
-                d.className = cls + " ellipsis-1"; // applica ellipsis una riga
+                d.className = cls + " ellipsis-1";
                 d.textContent = txt;
-                // rimosso: niente attributo title per evitare tooltip nativo su hover
-                // se serve accessibilità senza tooltip, valutare: d.setAttribute('aria-label', txt);
                 return d;
             }
 
             if (track.title) textCol.appendChild(metaLine(track.title, "player-title"));
             if (track.artist) textCol.appendChild(metaLine(track.artist, "player-artist"));
-            // Album + anno + genere mantenendo una riga ciascuno (come richiesto "ogni dato su una riga")
             if (track.album_title) textCol.appendChild(metaLine(track.album_title, "player-album"));
             if (track.year) textCol.appendChild(metaLine(track.year.toString(), "player-year"));
             if (track.genre) textCol.appendChild(metaLine(track.genre, "player-genre"));
 
-            // Separatore visivo leggero (opzionale)
             const hr = document.createElement("hr");
             hr.className = "player-sep";
             textCol.appendChild(hr);
 
-            // Audio element
             const audio = document.createElement("audio");
             audio.controls = true;
             const src = document.createElement("source");
@@ -770,19 +777,19 @@
             playerWrapper.appendChild(textCol);
             container.appendChild(playerWrapper);
         }
+
+        // Carica i dati del singolo track dal server e costruisce il player
         function loadSingleTrack(track) {
             cleanMain();
             document.getElementById("upload-track-modal-button").className = "button hidden";
             document.getElementById("track-selector-modal-button").className = "button hidden";
             let mainLabel = document.getElementsByClassName("main-label").item(0); mainLabel.id = PLAYER_PAGE_ID; mainLabel.textContent = track.title;
             lastTrack = track;
-            // Stack rimosso: niente tracking traccia
             makeCall("GET", "Track?track_id=" + track.id, null, (req) => {
                 if (req.readyState == XMLHttpRequest.DONE) {
                     if (req.status == 200) {
                         let t = JSON.parse(req.responseText); if (!t) { alert("This Track can't be played."); return; }
                         trackPlayer(document.getElementById("main"), t);
-                        // Aggiorna sfondo con eventuale path normalizzato ricevuto dal server
                         try { setPlayerBackground(t?.image_path); } catch(_) {}
                     } else alert("Cannot recover data. Maybe the User has been logged out.");
                 }
@@ -791,6 +798,7 @@
     }
 
     // =================== MAIN LOADER ===================
+    // Inizializza listener globali della UI (logout, navigazione homepage, back button)
     function MainLoader() {
         this.start = function () {
             document.getElementById("logout-button").addEventListener("click", () => {
@@ -808,21 +816,19 @@
                 else { homeView.show(); }
             });
             document.getElementById("upload-track-modal-button").addEventListener("click", () => {
-                // year and genre are free-text now; loaders are no-ops to avoid overwriting user input
-                // loadYears();
-                // loadGenres();
+                // I campi year/genre sono free-text; non carico selezioni per non sovrascrivere l'input utente
                 showModal(document.getElementById("upload-track"));
             });
-            // Previous global handler removed. Per-card reorder buttons provide click handlers directly.
         };
+        // Ricarica la home (usato al bootstrap)
         this.refreshPage = function () { homeView.show(); };
-        // Year and genre are entered manually now; keep loader functions as no-ops to avoid changing user input
-        function loadYears() { /* no-op: year is free-text input */ }
-        function loadGenres() { /* no-op: genre is free-text input */ }
+        function loadYears() { /* no-op: year è free-text */ }
+        function loadGenres() { /* no-op: genre è free-text */ }
     }
 })();
 
 // =================== MINI PLAYER (global) ===================
+// Apre e aggiorna il mini-player che riproduce rapidamente tracce dalla lista
 function openMiniFromCard(card){
     const audioEl = document.getElementById('miniAudio');
     const mp = document.getElementById('miniPlayer');
@@ -841,11 +847,15 @@ function openMiniFromCard(card){
     updateMiniPrevNext(idx, cards.length);
     setMiniPlayIcon(true);
 }
+
+// Aggiorna lo stato dei pulsanti prev/next del mini-player
 function updateMiniPrevNext(i,total){
     const prev = document.getElementById('miniPrev');
     const next = document.getElementById('miniNext');
     if(prev) prev.disabled = i<=0; if(next) next.disabled = i>=total-1;
 }
+
+// Aggiorna l'icona play/pause del mini-player in base allo stato
 function setMiniPlayIcon(isPlaying){
     const btn = document.getElementById('miniPlay');
     if(!btn) return;
@@ -854,6 +864,8 @@ function setMiniPlayIcon(isPlaying){
         : '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
     btn.setAttribute('aria-label', isPlaying? 'Pausa' : 'Riproduci');
 }
+
+// Logica del mini-player: wiring dei pulsanti, cambio traccia e chiusura
 (function miniPlayerLogic(){
     const audio = document.getElementById('miniAudio');
     const play = document.getElementById('miniPlay');
