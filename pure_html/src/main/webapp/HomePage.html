@@ -86,7 +86,6 @@
         <div class="modal-content">
             <form id="playlistForm" action="CreatePlaylist" th:action="@{/CreatePlaylist}" method="post">
                 <div class="form-group">
-                    <!-- Etichetta visiva rimossa su richiesta; manteniamo etichetta per screen reader -->
                     <label class="sr-only" for="playlistName">Nome della playlist</label>
                     <div class="field">
                         <input type="text" id="playlistName" name="playlistTitle" placeholder="Inserisci il nome..." aria-label="Nome della playlist" required autocomplete="off" />
